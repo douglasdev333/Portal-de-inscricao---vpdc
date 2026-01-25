@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { getPaymentStatus, validateWebhookSignature } from "../services/mercadopago-service";
+import { confirmPaymentAtomic } from "../services/registration-service";
 
 const router = Router();
 
@@ -52,8 +53,12 @@ router.post("/mercadopago", async (req, res) => {
       }
 
       if (paymentResult.status === "approved" && order.status === "pendente") {
-        await storage.confirmOrderPayment(order.id, paymentId);
-        console.log(`[webhook] Pedido ${order.id} confirmado via webhook`);
+        const confirmResult = await confirmPaymentAtomic(order.id, order.metodoPagamento || "pix");
+        if (confirmResult.success) {
+          console.log(`[webhook] Pedido ${order.id} confirmado via webhook`);
+        } else {
+          console.error(`[webhook] Erro ao confirmar pedido ${order.id}:`, confirmResult.error);
+        }
       } else if (paymentResult.status === "rejected" || paymentResult.status === "cancelled") {
         console.log(`[webhook] Pagamento ${paymentId} rejeitado/cancelado - pedido ${order.id} permanece pendente`);
       }

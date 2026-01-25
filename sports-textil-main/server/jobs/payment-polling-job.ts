@@ -1,5 +1,6 @@
 import { storage } from '../storage';
 import { getPaymentStatus, isConfigured } from '../services/mercadopago-service';
+import { confirmPaymentAtomic } from '../services/registration-service';
 
 const POLLING_INTERVAL_MS = parseInt(process.env.PAYMENT_POLLING_INTERVAL_MS || '120000', 10);
 
@@ -32,9 +33,14 @@ export async function pollPayments(): Promise<{ processed: number; confirmed: nu
         }
 
         if (result.status === 'approved') {
-          await storage.confirmOrderPayment(order.id, order.idPagamentoGateway);
-          console.log(`[payment-polling] Pedido ${order.id} confirmado via polling`);
-          confirmed++;
+          const confirmResult = await confirmPaymentAtomic(order.id, order.metodoPagamento || "pix");
+          if (confirmResult.success) {
+            console.log(`[payment-polling] Pedido ${order.id} confirmado via polling`);
+            confirmed++;
+          } else {
+            console.error(`[payment-polling] Erro ao confirmar pedido ${order.id}:`, confirmResult.error);
+            errors++;
+          }
         } else if (result.status === 'rejected' || result.status === 'cancelled') {
           console.log(`[payment-polling] Pagamento ${order.idPagamentoGateway} rejeitado/cancelado - pedido ${order.id} permanece pendente`);
         }

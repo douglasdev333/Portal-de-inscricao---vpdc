@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { storage } from "../storage";
 import { createPixPayment, createCardPayment, getPaymentStatus, isConfigured } from "../services/mercadopago-service";
+import { confirmPaymentAtomic } from "../services/registration-service";
 
 const router = Router();
 
@@ -252,7 +253,15 @@ router.post("/create", async (req, res) => {
       await storage.updateOrderPaymentId(order.id, result.paymentId!, "credit_card");
 
       if (result.status === "approved") {
-        await storage.confirmOrderPayment(order.id, result.paymentId!);
+        const confirmResult = await confirmPaymentAtomic(order.id, "credit_card");
+        if (!confirmResult.success) {
+          console.error("[payments] Erro ao confirmar pagamento:", confirmResult.error);
+          return res.status(500).json({ 
+            success: false, 
+            error: confirmResult.error || "Erro ao confirmar pagamento",
+            errorCode: confirmResult.errorCode
+          });
+        }
       }
 
       return res.json({
@@ -470,7 +479,10 @@ router.get("/status/:orderId", async (req, res) => {
     const result = await getPaymentStatus(order.idPagamentoGateway);
 
     if (result.success && result.status === "approved" && order.status === "pendente") {
-      await storage.confirmOrderPayment(order.id, order.idPagamentoGateway);
+      const confirmResult = await confirmPaymentAtomic(order.id, order.metodoPagamento || "pix");
+      if (!confirmResult.success) {
+        console.error("[payments] Erro ao confirmar pagamento via status check:", confirmResult.error);
+      }
     }
 
     return res.json({
@@ -539,7 +551,15 @@ router.post("/confirm-free", async (req, res) => {
       }
     }
 
-    await storage.confirmOrderPayment(order.id, "FREE_ORDER");
+    const confirmResult = await confirmPaymentAtomic(order.id, "free");
+    
+    if (!confirmResult.success) {
+      return res.status(500).json({ 
+        success: false, 
+        error: confirmResult.error || "Erro ao confirmar inscrição gratuita",
+        errorCode: confirmResult.errorCode
+      });
+    }
 
     const registrations = await storage.getRegistrationsByOrder(order.id);
 

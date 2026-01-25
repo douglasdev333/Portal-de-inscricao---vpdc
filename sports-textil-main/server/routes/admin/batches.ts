@@ -152,7 +152,6 @@ router.post("/", requireAuth, requireRole("superadmin", "admin"), async (req, re
 router.patch("/:id", requireAuth, requireRole("superadmin", "admin"), async (req, res) => {
   try {
     const eventId = req.params.eventId;
-    console.log("[batch-update] Request body:", JSON.stringify(req.body, null, 2));
     
     const event = await storage.getEvent(eventId);
     if (!event) {
@@ -171,9 +170,7 @@ router.patch("/:id", requireAuth, requireRole("superadmin", "admin"), async (req
     }
 
     const validation = batchUpdateSchema.safeParse(req.body);
-    console.log("[batch-update] Validation result:", validation.success, validation.data);
     if (!validation.success) {
-      console.log("[batch-update] Validation errors:", validation.error.errors);
       return res.status(400).json({
         success: false,
         error: { code: "VALIDATION_ERROR", message: validation.error.errors[0].message }
