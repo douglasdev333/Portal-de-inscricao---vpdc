@@ -454,16 +454,27 @@ export default function MinhaContaPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="cpf">CPF</Label>
-                    <Input
-                      id="cpf"
-                      type="text"
-                      value={formData.cpf}
-                      disabled
-                      className="bg-muted"
-                      data-testid="input-cpf"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      O CPF não pode ser alterado
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="relative cursor-not-allowed">
+                          <Input
+                            id="cpf"
+                            type="text"
+                            value={formData.cpf}
+                            readOnly
+                            tabIndex={-1}
+                            aria-disabled="true"
+                            className="pointer-events-none bg-muted/50 text-muted-foreground"
+                            data-testid="input-cpf"
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Para alterar o CPF entre em contato com o suporte</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <p className="text-xs text-muted-foreground md:hidden">
+                      Para alterar o CPF entre em contato com o suporte
                     </p>
                   </div>
 
