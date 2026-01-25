@@ -129,11 +129,32 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
     return true;
   };
 
+  const hasValidTime = (dateStr: string | Date | null | undefined): boolean => {
+    if (!dateStr) return false;
+    const str = typeof dateStr === 'string' ? dateStr : dateStr.toISOString();
+    const match = str.match(/T(\d{2}):(\d{2})/);
+    return !!match;
+  };
+
+  const [dateError, setDateError] = useState<string | null>(null);
+
   const handleSaveBatch = () => {
     if (!currentBatch.ordem || currentBatch.ordem < 1) {
       setOrderError("A ordem deve ser um numero inteiro maior ou igual a 1.");
       return;
     }
+
+    if (!hasValidTime(currentBatch.dataInicio)) {
+      setDateError("Informe a data e horario de inicio do lote.");
+      return;
+    }
+    
+    if (currentBatch.dataTermino && !hasValidTime(currentBatch.dataTermino)) {
+      setDateError("Informe o horario de termino do lote.");
+      return;
+    }
+    
+    setDateError(null);
 
     if (!validateOrderIndex(currentBatch.ordem, editingBatchIndex)) {
       return;
@@ -551,7 +572,7 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="batch-inicio">Data de Inicio *</Label>
+                <Label htmlFor="batch-inicio">Data e Horario de Inicio *</Label>
                 <Input
                   id="batch-inicio"
                   type="datetime-local"
@@ -560,13 +581,13 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
                     : currentBatch.dataInicio 
                       ? currentBatch.dataInicio.toISOString().slice(0, 16)
                       : ""}
-                  onChange={(e) => updateCurrentBatch("dataInicio", e.target.value)}
+                  onChange={(e) => { updateCurrentBatch("dataInicio", e.target.value); setDateError(null); }}
                   data-testid="input-batch-start"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="batch-termino">Data de Termino</Label>
+                <Label htmlFor="batch-termino">Data e Horario de Termino</Label>
                 <Input
                   id="batch-termino"
                   type="datetime-local"
@@ -575,11 +596,17 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
                     : currentBatch.dataTermino 
                       ? currentBatch.dataTermino.toISOString().slice(0, 16)
                       : ""}
-                  onChange={(e) => updateCurrentBatch("dataTermino", e.target.value || undefined)}
+                  onChange={(e) => { updateCurrentBatch("dataTermino", e.target.value || undefined); setDateError(null); }}
                   data-testid="input-batch-end"
                 />
               </div>
             </div>
+            
+            {dateError && (
+              <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                {dateError}
+              </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">

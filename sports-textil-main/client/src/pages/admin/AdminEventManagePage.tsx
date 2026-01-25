@@ -390,8 +390,28 @@ export default function AdminEventManagePage() {
     setEditDialogOpen(true);
   };
 
+  const hasValidTime = (dateStr: string | null | undefined): boolean => {
+    if (!dateStr) return false;
+    const match = dateStr.match(/^\d{4}-\d{2}-\d{2}T(\d{2}):(\d{2})$/);
+    return !!match;
+  };
+
+  const [batchDateError, setBatchDateError] = useState<string | null>(null);
+
   const handleSaveBatch = async () => {
     if (!editingBatch) return;
+    
+    if (!hasValidTime(editingBatch.dataInicio)) {
+      setBatchDateError("Informe a data e horario de inicio do lote.");
+      return;
+    }
+    
+    if (editingBatch.dataTermino && !hasValidTime(editingBatch.dataTermino)) {
+      setBatchDateError("Informe o horario de termino do lote.");
+      return;
+    }
+    
+    setBatchDateError(null);
     
     updateBatchMutation.mutate({
       batchId: editingBatch.id,
@@ -937,6 +957,12 @@ export default function AdminEventManagePage() {
           
           {editingBatch && (
             <div className="space-y-4 py-4">
+              {batchDateError && (
+                <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+                  {batchDateError}
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="batch-nome">Nome do Lote</Label>
                 <Input
@@ -949,22 +975,22 @@ export default function AdminEventManagePage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="batch-inicio">Data de Inicio</Label>
+                  <Label htmlFor="batch-inicio">Data e Horario de Inicio *</Label>
                   <Input
                     id="batch-inicio"
                     type="datetime-local"
                     value={editingBatch.dataInicio}
-                    onChange={(e) => setEditingBatch({ ...editingBatch, dataInicio: e.target.value })}
+                    onChange={(e) => { setEditingBatch({ ...editingBatch, dataInicio: e.target.value }); setBatchDateError(null); }}
                     data-testid="input-edit-batch-start"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="batch-termino">Data de Termino</Label>
+                  <Label htmlFor="batch-termino">Data e Horario de Termino</Label>
                   <Input
                     id="batch-termino"
                     type="datetime-local"
                     value={editingBatch.dataTermino || ""}
-                    onChange={(e) => setEditingBatch({ ...editingBatch, dataTermino: e.target.value || null })}
+                    onChange={(e) => { setEditingBatch({ ...editingBatch, dataTermino: e.target.value || null }); setBatchDateError(null); }}
                     data-testid="input-edit-batch-end"
                   />
                 </div>
