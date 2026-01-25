@@ -521,18 +521,28 @@ export default function MinhaContaPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="sexo">Sexo</Label>
-                      <Select
-                        value={formData.sexo}
-                        onValueChange={(value) => handleChange("sexo", value)}
-                      >
-                        <SelectTrigger id="sexo" data-testid="select-sexo">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="masculino">Masculino</SelectItem>
-                          <SelectItem value="feminino">Feminino</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="relative cursor-not-allowed">
+                            <Input
+                              id="sexo"
+                              type="text"
+                              value={formData.sexo === "masculino" ? "Masculino" : formData.sexo === "feminino" ? "Feminino" : formData.sexo}
+                              readOnly
+                              tabIndex={-1}
+                              aria-disabled="true"
+                              className="pointer-events-none bg-muted/50 text-muted-foreground"
+                              data-testid="input-sexo"
+                            />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          <p>Para alterar o sexo entre em contato com o suporte</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <p className="text-xs text-muted-foreground md:hidden">
+                        Para alterar o sexo entre em contato com o suporte
+                      </p>
                     </div>
                   </div>
                 </div>
