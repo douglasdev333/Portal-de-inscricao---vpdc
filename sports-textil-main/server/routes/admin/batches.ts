@@ -17,7 +17,7 @@ function formatBatchForResponse(batch: any) {
 const batchCreateSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   dataInicio: z.string().refine(val => !isNaN(Date.parse(val)), "Data de inicio invalida"),
-  dataTermino: z.string().refine(val => !isNaN(Date.parse(val)), "Data de termino invalida").optional().nullable(),
+  dataTermino: z.string().refine(val => val === "" || !isNaN(Date.parse(val)), "Data de termino invalida").optional().nullable().transform(val => val === "" ? null : val),
   quantidadeMaxima: z.number().int().positive().optional().nullable(),
   ativo: z.boolean().optional(),
   status: z.enum(["active", "closed", "future"]).optional(),
