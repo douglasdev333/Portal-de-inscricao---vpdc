@@ -27,7 +27,7 @@ const batchCreateSchema = z.object({
 const batchUpdateSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").optional(),
   dataInicio: z.string().refine(val => !isNaN(Date.parse(val)), "Data de inicio invalida").optional(),
-  dataTermino: z.string().refine(val => !isNaN(Date.parse(val)), "Data de termino invalida").optional().nullable(),
+  dataTermino: z.string().refine(val => val === "" || !isNaN(Date.parse(val)), "Data de termino invalida").optional().nullable().transform(val => val === "" ? null : val),
   quantidadeMaxima: z.number().int().positive().optional().nullable(),
   ordem: z.number().int().optional()
 });
