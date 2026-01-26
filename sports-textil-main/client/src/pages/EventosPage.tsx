@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, CalendarX, MapPin, Calendar, Trophy, ChevronLeft, ChevronRight, CalendarCheck } from "lucide-react";
-import heroImage from '@assets/generated_images/Marathon_runners_landscape_hero_b439e181.png';
+import heroBanner from '@assets/hero-banner.jpg';
 import type { Event } from "@shared/schema";
 
 function useMediaQuery(query: string): boolean {
@@ -206,7 +206,7 @@ function EventsSection({
             local={event.endereco}
             cidade={event.cidade}
             estado={event.estado}
-            imagemUrl={event.bannerUrl || heroImage}
+            imagemUrl={event.bannerUrl || heroBanner}
             isPast={isPast}
           />
         ))}
@@ -320,19 +320,22 @@ export default function EventosPage() {
       
       <main className="flex-1">
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/90 to-primary/70 z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70 z-10"></div>
           <img
-            src={heroImage}
-            alt="Corrida"
+            src={heroBanner}
+            alt="Corrida de rua"
             className="w-full h-[300px] md:h-[400px] object-cover"
           />
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
             <div className="text-center px-4 max-w-3xl">
+              <p className="text-sm md:text-base uppercase tracking-widest text-white/80 mb-2 font-medium">
+                Portal de Inscrições
+              </p>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Encontre Sua Próxima Corrida
+                Sua próxima conquista começa aqui
               </h1>
               <p className="text-lg md:text-xl text-white/90">
-                Inscreva-se nos melhores eventos esportivos do Brasil
+                Descubra e inscreva-se nos melhores eventos de corrida do Brasil
               </p>
             </div>
           </div>
