@@ -524,11 +524,10 @@ export default function EventoDetailPage() {
                   <>
                     {/* Price Header */}
                     <div className="bg-primary p-6 text-primary-foreground">
-                      <p className="text-sm opacity-90 mb-1">A partir de</p>
-                      <p className="text-3xl font-bold">{getLowestPrice()}</p>
+                      <p className="text-2xl font-bold">Preços e Categorias</p>
                       {event.activeBatch && (
                         <p className="text-sm opacity-90 mt-2">
-                          Lote: {event.activeBatch.nome}
+                          Lote atual: {event.activeBatch.nome}
                         </p>
                       )}
                     </div>
