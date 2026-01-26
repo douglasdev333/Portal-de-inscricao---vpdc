@@ -316,7 +316,7 @@ export default function InscricaoResumoPage() {
                         {selectedModality.nome} ({selectedModality.distancia} {selectedModality.unidadeDistancia})
                       </p>
                       <p className="text-lg font-bold text-foreground">
-                        {formatPrice(valorComAjuste)}
+                        {formatPrice(valorModalidade)}
                       </p>
                     </div>
                     {taxaComodidade > 0 && (
