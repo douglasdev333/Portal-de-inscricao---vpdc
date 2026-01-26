@@ -671,7 +671,7 @@ export default function AdminEventInscritosPage() {
                             className="text-left hover:underline focus:outline-none focus:underline"
                             data-testid={`button-view-inscrito-${reg.id}`}
                           >
-                            <p className="font-medium text-primary">{reg.nomeCompleto || reg.athleteName}</p>
+                            <p className="font-medium text-[#1f2025]">{reg.nomeCompleto || reg.athleteName}</p>
                             <p className="text-xs text-muted-foreground">{reg.athleteEmail}</p>
                           </button>
                         </TableCell>
