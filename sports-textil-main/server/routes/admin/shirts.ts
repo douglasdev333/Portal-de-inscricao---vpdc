@@ -10,7 +10,10 @@ const shirtSizeSchema = z.object({
   tamanho: z.string().min(1, "Tamanho e obrigatorio"),
   quantidadeTotal: z.number().int().positive("Quantidade deve ser positiva"),
   quantidadeDisponivel: z.number().int().min(0, "Quantidade disponivel nao pode ser negativa").optional(),
-  ajustePreco: z.number().optional().default(0)
+  ajustePreco: z.union([z.number(), z.string()]).transform(val => {
+    const num = typeof val === 'string' ? parseFloat(val) : val;
+    return isNaN(num) ? 0 : num;
+  }).optional().default(0)
 });
 
 router.get("/", requireAuth, async (req, res) => {
