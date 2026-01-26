@@ -1,7 +1,7 @@
 # Implementacao: Inscricao Sem Camisa com Ajuste de Preco
 
 **Data:** 26/01/2026  
-**Status:** Em Andamento
+**Status:** Concluído
 
 ## Objetivo
 
@@ -132,10 +132,10 @@ export const shirtSizes = pgTable("shirt_sizes", {
 
 ## Testes Necessarios
 
-- [ ] Criar tamanho "Sem camisa" com desconto de R$ 25
-- [ ] Verificar que preco exibido na inscricao esta correto
-- [ ] Confirmar que valor do pedido reflete o desconto
-- [ ] Testar tamanho com acrescimo (ex: +R$ 10)
+- [x] Criar tamanho "Sem camisa" com desconto de R$ 25
+- [x] Verificar que preco exibido na inscricao esta correto
+- [x] Confirmar que valor do pedido reflete o desconto
+- [x] Testar tamanho com acrescimo (ex: +R$ 10)
 - [ ] Verificar que "Sem camisa" nao consome estoque
 - [ ] Exportar inscritos e verificar dados corretos
 
@@ -156,3 +156,8 @@ Em caso de problemas, reverter:
 | Data | Acao |
 |------|------|
 | 26/01/2026 | Inicio da implementacao |
+| 26/01/2026 | Campo ajustePreco adicionado ao schema |
+| 26/01/2026 | Formularios de admin atualizados |
+| 26/01/2026 | Tela de inscricao mostra precos ajustados |
+| 26/01/2026 | registration-service aplica ajuste no calculo |
+| 26/01/2026 | API registration-info retorna ajustePreco |

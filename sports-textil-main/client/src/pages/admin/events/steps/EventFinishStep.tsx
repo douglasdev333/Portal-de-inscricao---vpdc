@@ -22,6 +22,7 @@ const TAMANHOS_CAMISA = ["PP", "P", "M", "G", "GG", "XG", "XXG", "INFANTIL"];
 interface ShirtSelection {
   tamanho: string;
   quantidadeTotal: number;
+  ajustePreco: number;
 }
 
 const emptyAttachment: Partial<Attachment> = {
@@ -50,7 +51,7 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
     if (existingIndex >= 0) {
       setSelectedSizes(prev => prev.filter((_, i) => i !== existingIndex));
     } else {
-      setSelectedSizes(prev => [...prev, { tamanho: size, quantidadeTotal: 0 }]);
+      setSelectedSizes(prev => [...prev, { tamanho: size, quantidadeTotal: 0, ajustePreco: 0 }]);
     }
   };
 
@@ -60,10 +61,16 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
     ));
   };
 
+  const updateSizeAjustePreco = (size: string, ajuste: number) => {
+    setSelectedSizes(prev => prev.map(s => 
+      s.tamanho === size ? { ...s, ajustePreco: ajuste } : s
+    ));
+  };
+
   const addCustomSize = () => {
     const trimmed = customSizeInput.trim().toUpperCase();
     if (trimmed && !selectedSizes.find(s => s.tamanho === trimmed) && !usedSizes.includes(trimmed)) {
-      setSelectedSizes(prev => [...prev, { tamanho: trimmed, quantidadeTotal: 0 }]);
+      setSelectedSizes(prev => [...prev, { tamanho: trimmed, quantidadeTotal: 0, ajustePreco: 0 }]);
       setCustomSizeInput("");
     }
   };
@@ -80,7 +87,8 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
         ...validShirts.map(s => ({
           tamanho: s.tamanho,
           quantidadeTotal: s.quantidadeTotal,
-          quantidadeDisponivel: s.quantidadeTotal
+          quantidadeDisponivel: s.quantidadeTotal,
+          ajustePreco: String(s.ajustePreco || 0)
         }))
       ];
       updateFormData({ shirts: newShirts });
@@ -250,23 +258,37 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
 
                 {selectedSizes.length > 0 && (
                   <div className="space-y-3 pt-2 border-t">
-                    <Label>Quantidades</Label>
+                    <Label>Quantidades e Ajuste de Preco</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Use ajuste negativo para desconto (ex: -25 para R$ 25 de desconto)
+                    </p>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {selectedSizes.map((selection) => (
                         <div 
                           key={selection.tamanho} 
-                          className="flex items-center gap-3 p-2 rounded-md bg-muted/50"
+                          className="flex items-center gap-2 p-2 rounded-md bg-muted/50"
                         >
                           <span className="font-medium min-w-16">{selection.tamanho}</span>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={selection.quantidadeTotal || ""}
-                            onChange={(e) => updateSizeQuantity(selection.tamanho, parseInt(e.target.value) || 0)}
-                            placeholder="Quantidade"
-                            className="flex-1"
-                            data-testid={`input-quantity-${selection.tamanho}`}
-                          />
+                          <div className="flex-1">
+                            <Input
+                              type="number"
+                              min="1"
+                              value={selection.quantidadeTotal || ""}
+                              onChange={(e) => updateSizeQuantity(selection.tamanho, parseInt(e.target.value) || 0)}
+                              placeholder="Qtd"
+                              data-testid={`input-quantity-${selection.tamanho}`}
+                            />
+                          </div>
+                          <div className="w-28">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={selection.ajustePreco || ""}
+                              onChange={(e) => updateSizeAjustePreco(selection.tamanho, parseFloat(e.target.value) || 0)}
+                              placeholder="Ajuste R$"
+                              data-testid={`input-ajuste-${selection.tamanho}`}
+                            />
+                          </div>
                           <Button
                             type="button"
                             variant="ghost"
@@ -309,28 +331,36 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-              {formData.shirts.map((shirt, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 rounded-lg border"
-                  data-testid={`card-shirt-${index}`}
-                >
-                  <div>
-                    <span className="font-bold text-lg">{shirt.tamanho}</span>
-                    <p className="text-sm text-muted-foreground">
-                      {shirt.quantidadeTotal} unidades
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteShirt(index)}
-                    data-testid={`button-delete-shirt-${index}`}
+              {formData.shirts.map((shirt, index) => {
+                const ajuste = parseFloat(String(shirt.ajustePreco || 0));
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                    data-testid={`card-shirt-${index}`}
                   >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
+                    <div>
+                      <span className="font-bold text-lg">{shirt.tamanho}</span>
+                      <p className="text-sm text-muted-foreground">
+                        {shirt.quantidadeTotal} unidades
+                      </p>
+                      {ajuste !== 0 && (
+                        <p className={`text-xs ${ajuste < 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                          {ajuste < 0 ? `Desconto: R$ ${Math.abs(ajuste).toFixed(2)}` : `Acrescimo: R$ ${ajuste.toFixed(2)}`}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteShirt(index)}
+                      data-testid={`button-delete-shirt-${index}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>

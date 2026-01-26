@@ -96,9 +96,10 @@ export const shirtSizes = pgTable("shirt_sizes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   eventId: varchar("event_id").notNull().references(() => events.id),
   modalityId: varchar("modality_id").references(() => modalities.id),
-  tamanho: varchar("tamanho", { length: 10 }).notNull(),
+  tamanho: varchar("tamanho", { length: 20 }).notNull(),
   quantidadeTotal: integer("quantidade_total").notNull(),
   quantidadeDisponivel: integer("quantidade_disponivel").notNull(),
+  ajustePreco: decimal("ajuste_preco", { precision: 10, scale: 2 }).default("0").notNull(),
 });
 
 export const registrationBatches = pgTable("registration_batches", {

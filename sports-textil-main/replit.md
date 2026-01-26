@@ -98,3 +98,15 @@ Complete audit trail system for all status changes:
   - `confirmPaymentAtomic`: Logs when payments are confirmed and registrations are activated
   - `admin/events.ts`: Logs manual status changes by administrators
 - **Debugging benefit**: Full audit trail helps identify why events/orders/registrations changed status unexpectedly
+
+### Shirt Size Price Adjustment (January 2026)
+Flexible pricing based on shirt size selection:
+
+- **Price Adjustment Field**: Each shirt size now has an `ajustePreco` field that can be positive (surcharge for special sizes) or negative (discount for "sem camisa")
+- **Dynamic UI Display**: Inscription page shows price adjustments next to each size button (green for discounts, orange for surcharges)
+- **Real-time Total Calculation**: Total price updates instantly when user selects different sizes
+- **Backend Calculation**: `registration-service` applies the size adjustment when calculating the registration unit price, ensuring final value is never negative (Math.max(0, basePrice + adjustment))
+- **Use Cases**: 
+  - "Sem camisa" with -R$25 discount for athletes who don't want a shirt
+  - "GG", "EG", "EGG" with +R$10 surcharge for special sizes
+- **Documentation**: Full implementation details in `docs/IMPLEMENTACAO_SEM_CAMISA.md`

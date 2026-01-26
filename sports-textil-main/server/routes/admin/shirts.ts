@@ -9,7 +9,8 @@ const shirtSizeSchema = z.object({
   modalityId: z.string().optional().nullable(),
   tamanho: z.string().min(1, "Tamanho e obrigatorio"),
   quantidadeTotal: z.number().int().positive("Quantidade deve ser positiva"),
-  quantidadeDisponivel: z.number().int().min(0, "Quantidade disponivel nao pode ser negativa").optional()
+  quantidadeDisponivel: z.number().int().min(0, "Quantidade disponivel nao pode ser negativa").optional(),
+  ajustePreco: z.number().optional().default(0)
 });
 
 router.get("/", requireAuth, async (req, res) => {
@@ -100,7 +101,8 @@ router.post("/", requireAuth, requireRole("superadmin", "admin"), async (req, re
       modalityId: validation.data.modalityId ?? null,
       tamanho: validation.data.tamanho,
       quantidadeTotal: validation.data.quantidadeTotal,
-      quantidadeDisponivel: validation.data.quantidadeDisponivel ?? validation.data.quantidadeTotal
+      quantidadeDisponivel: validation.data.quantidadeDisponivel ?? validation.data.quantidadeTotal,
+      ajustePreco: String(validation.data.ajustePreco ?? 0)
     });
 
     res.status(201).json({ success: true, data: shirtSize });
@@ -134,7 +136,8 @@ router.patch("/:id", requireAuth, requireRole("superadmin", "admin"), async (req
 
     const updateSchema = z.object({
       quantidadeTotal: z.number().int().positive().optional(),
-      quantidadeDisponivel: z.number().int().min(0).optional()
+      quantidadeDisponivel: z.number().int().min(0).optional(),
+      ajustePreco: z.number().optional()
     });
 
     const validation = updateSchema.safeParse(req.body);
@@ -145,7 +148,11 @@ router.patch("/:id", requireAuth, requireRole("superadmin", "admin"), async (req
       });
     }
 
-    const updated = await storage.updateShirtSize(req.params.id, validation.data);
+    const updateData: any = { ...validation.data };
+    if (updateData.ajustePreco !== undefined) {
+      updateData.ajustePreco = String(updateData.ajustePreco);
+    }
+    const updated = await storage.updateShirtSize(req.params.id, updateData);
     res.json({ success: true, data: updated });
   } catch (error) {
     console.error("Update shirt size error:", error);

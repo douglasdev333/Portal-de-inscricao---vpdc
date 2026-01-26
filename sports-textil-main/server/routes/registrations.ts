@@ -141,7 +141,8 @@ router.get("/events/:slug/registration-info", async (req, res) => {
           sizes: sizes.map(s => ({
             id: s.id,
             tamanho: s.tamanho,
-            disponivel: s.quantidadeDisponivel
+            disponivel: s.quantidadeDisponivel,
+            ajustePreco: s.ajustePreco || '0'
           }))
         });
       }
@@ -153,7 +154,8 @@ router.get("/events/:slug/registration-info", async (req, res) => {
         data: sizes.map(s => ({
           id: s.id,
           tamanho: s.tamanho,
-          disponivel: s.quantidadeDisponivel
+          disponivel: s.quantidadeDisponivel,
+          ajustePreco: s.ajustePreco || '0'
         }))
       };
     }

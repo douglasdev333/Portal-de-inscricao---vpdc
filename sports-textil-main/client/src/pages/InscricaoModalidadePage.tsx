@@ -38,6 +38,7 @@ interface ShirtSize {
   id: string;
   tamanho: string;
   disponivel: number;
+  ajustePreco?: string;
 }
 
 interface RegistrationInfo {
@@ -278,7 +279,10 @@ export default function InscricaoModalidadePage() {
 
   const taxaComodidadeValor = selectedModality?.taxaComodidade ?? 0;
   const valorModalidade = selectedModality?.preco ?? 0;
-  const valorTotal = valorModalidade + taxaComodidadeValor;
+  const selectedSize = availableSizes.find(s => s.tamanho === tamanhoSelecionado);
+  const ajustePrecoTamanho = selectedSize ? parseFloat(selectedSize.ajustePreco || '0') : 0;
+  const valorComAjuste = Math.max(0, valorModalidade + ajustePrecoTamanho);
+  const valorTotal = valorComAjuste + taxaComodidadeValor;
 
   const requiresCode = selectedModality?.tipoAcesso === "voucher";
   const requiresApproval = selectedModality?.tipoAcesso === "aprovacao_manual" || selectedModality?.tipoAcesso === "pcd";
@@ -521,20 +525,27 @@ export default function InscricaoModalidadePage() {
                 <CardTitle className="text-lg">Tamanho da Camisa</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {availableSizes.map((size, idx) => {
                     const isUnavailable = size.disponivel <= 0;
+                    const ajuste = parseFloat(size.ajustePreco || '0');
+                    const precoFinal = Math.max(0, valorModalidade + ajuste);
                     return (
                       <Button
                         key={size.id}
                         variant={tamanhoSelecionado === size.tamanho ? "default" : "outline"}
                         onClick={() => !isUnavailable && setTamanhoSelecionado(size.tamanho)}
-                        className={`font-semibold ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`font-semibold h-auto py-2 flex flex-col items-center ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={isUnavailable}
                         data-testid={`button-tamanho-${size.tamanho}`}
                       >
-                        {size.tamanho}
-                        {isUnavailable && " (Esgotado)"}
+                        <span>{size.tamanho}</span>
+                        {!isUnavailable && ajuste !== 0 && (
+                          <span className={`text-xs ${ajuste < 0 ? 'text-green-600 dark:text-green-400' : 'text-orange-600'}`}>
+                            {ajuste < 0 ? `-R$ ${Math.abs(ajuste).toFixed(0)}` : `+R$ ${ajuste.toFixed(0)}`}
+                          </span>
+                        )}
+                        {isUnavailable && <span className="text-xs">(Esgotado)</span>}
                       </Button>
                     );
                   })}
@@ -553,7 +564,12 @@ export default function InscricaoModalidadePage() {
                   {valorTotal > 0 ? (
                     <>
                       <p className="text-xs text-muted-foreground">
-                        {formatPrice(valorModalidade)} + Taxa R$ {taxaComodidadeValor.toFixed(2).replace('.', ',')}
+                        {formatPrice(valorComAjuste)} + Taxa R$ {taxaComodidadeValor.toFixed(2).replace('.', ',')}
+                        {ajustePrecoTamanho !== 0 && (
+                          <span className={ajustePrecoTamanho < 0 ? 'text-green-600' : 'text-orange-600'}>
+                            {` (${ajustePrecoTamanho < 0 ? 'desc.' : 'acresc.'} camisa)`}
+                          </span>
+                        )}
                       </p>
                       <p className="text-lg md:text-xl font-bold text-foreground">
                         Total: R$ {valorTotal.toFixed(2).replace('.', ',')}
