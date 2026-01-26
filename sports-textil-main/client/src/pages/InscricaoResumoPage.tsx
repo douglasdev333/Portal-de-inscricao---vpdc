@@ -24,6 +24,13 @@ interface ModalityInfo {
   taxaComodidade: number;
 }
 
+interface ShirtSizeInfo {
+  id: string;
+  tamanho: string;
+  disponivel: number;
+  ajustePreco: string;
+}
+
 interface RegistrationInfo {
   event: {
     id: string;
@@ -34,6 +41,10 @@ interface RegistrationInfo {
     estado: string;
   };
   modalities: ModalityInfo[];
+  shirtSizes: {
+    byModality: boolean;
+    data: ShirtSizeInfo[] | { modalityId: string; sizes: ShirtSizeInfo[] }[];
+  };
   registrationStatus?: 'not_started' | 'open' | 'closed' | 'sold_out';
   registrationMessage?: string | null;
 }
@@ -191,8 +202,22 @@ export default function InscricaoResumoPage() {
     );
   }
 
-  const { event, modalities } = data.data;
+  const { event, modalities, shirtSizes } = data.data;
   const selectedModality = modalities.find(m => m.id === modalidadeId);
+
+  let ajustePrecoTamanho = 0;
+  if (tamanho && shirtSizes) {
+    let availableSizes: ShirtSizeInfo[] = [];
+    if (shirtSizes.byModality && modalidadeId) {
+      const modalitySizes = (shirtSizes.data as { modalityId: string; sizes: ShirtSizeInfo[] }[])
+        .find(s => s.modalityId === modalidadeId);
+      availableSizes = modalitySizes?.sizes || [];
+    } else if (!shirtSizes.byModality) {
+      availableSizes = shirtSizes.data as ShirtSizeInfo[];
+    }
+    const selectedSize = availableSizes.find(s => s.tamanho === tamanho);
+    ajustePrecoTamanho = selectedSize ? parseFloat(selectedSize.ajustePreco || '0') : 0;
+  }
   
   if (!selectedModality) {
     return (
@@ -214,7 +239,8 @@ export default function InscricaoResumoPage() {
 
   const valorModalidade = selectedModality.preco;
   const taxaComodidade = selectedModality.taxaComodidade;
-  const valorTotal = valorModalidade + taxaComodidade;
+  const valorComAjuste = Math.max(0, valorModalidade + ajustePrecoTamanho);
+  const valorTotal = valorComAjuste + taxaComodidade;
   const isGratuita = selectedModality.tipoAcesso === "gratuita" || valorTotal === 0;
 
   const formatCpf = (cpf: string) => {
@@ -290,7 +316,7 @@ export default function InscricaoResumoPage() {
                         {selectedModality.nome} ({selectedModality.distancia} {selectedModality.unidadeDistancia})
                       </p>
                       <p className="text-lg font-bold text-foreground">
-                        {formatPrice(valorModalidade)}
+                        {formatPrice(valorComAjuste)}
                       </p>
                     </div>
                     {taxaComodidade > 0 && (
@@ -309,9 +335,16 @@ export default function InscricaoResumoPage() {
                 <div className="border-t pt-4">
                   <div className="flex items-start gap-2">
                     <Shirt className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm text-muted-foreground mb-1">Tamanho da Camisa</p>
-                      <p className="font-semibold text-foreground">{tamanho}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-foreground">{tamanho}</p>
+                        {ajustePrecoTamanho !== 0 && (
+                          <p className={`text-sm font-medium ${ajustePrecoTamanho < 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                            {ajustePrecoTamanho < 0 ? `-R$ ${Math.abs(ajustePrecoTamanho).toFixed(2).replace('.', ',')}` : `+R$ ${ajustePrecoTamanho.toFixed(2).replace('.', ',')}`}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -354,7 +387,12 @@ export default function InscricaoResumoPage() {
               ) : (
                 <>
                   <p className="text-xs text-muted-foreground">
-                    R$ {valorModalidade.toFixed(2).replace('.', ',')} + Taxa R$ {taxaComodidade.toFixed(2).replace('.', ',')}
+                    R$ {valorComAjuste.toFixed(2).replace('.', ',')} + Taxa R$ {taxaComodidade.toFixed(2).replace('.', ',')}
+                    {ajustePrecoTamanho !== 0 && (
+                      <span className={ajustePrecoTamanho < 0 ? 'text-green-600' : 'text-orange-600'}>
+                        {` (${ajustePrecoTamanho < 0 ? 'desc.' : 'acresc.'} camisa)`}
+                      </span>
+                    )}
                   </p>
                   <p className="text-lg md:text-xl font-bold text-foreground">
                     Total: R$ {valorTotal.toFixed(2).replace('.', ',')}

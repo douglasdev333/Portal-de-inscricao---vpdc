@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Plus, Trash2, Shirt, FileText, AlertCircle, Package, X, Upload, Loader2 } from "lucide-react";
+import { Plus, Trash2, Shirt, FileText, AlertCircle, Package, X, Upload, Loader2, Pencil } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import type { EventFormData } from "../EventWizard";
@@ -35,6 +35,9 @@ const emptyAttachment: Partial<Attachment> = {
 export function EventFinishStep({ formData, updateFormData }: EventFinishStepProps) {
   const { toast } = useToast();
   const [shirtDialogOpen, setShirtDialogOpen] = useState(false);
+  const [editShirtDialogOpen, setEditShirtDialogOpen] = useState(false);
+  const [editingShirtIndex, setEditingShirtIndex] = useState<number | null>(null);
+  const [editingShirtData, setEditingShirtData] = useState<ShirtSelection | null>(null);
   const [attachmentDialogOpen, setAttachmentDialogOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<ShirtSelection[]>([]);
   const [customSizeInput, setCustomSizeInput] = useState("");
@@ -100,6 +103,40 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
   const handleDeleteShirt = (index: number) => {
     const newShirts = formData.shirts.filter((_, i) => i !== index);
     updateFormData({ shirts: newShirts });
+  };
+
+  const handleEditShirt = (index: number) => {
+    const shirt = formData.shirts[index];
+    setEditingShirtIndex(index);
+    setEditingShirtData({
+      tamanho: shirt.tamanho || '',
+      quantidadeTotal: shirt.quantidadeTotal || 0,
+      ajustePreco: parseFloat(String(shirt.ajustePreco || 0))
+    });
+    setEditShirtDialogOpen(true);
+  };
+
+  const handleSaveEditShirt = () => {
+    if (editingShirtIndex !== null && editingShirtData) {
+      const newShirts = [...formData.shirts];
+      const currentShirt = newShirts[editingShirtIndex];
+      const oldTotal = currentShirt.quantidadeTotal || 0;
+      const oldDisponivel = currentShirt.quantidadeDisponivel ?? oldTotal;
+      const usedStock = oldTotal - oldDisponivel;
+      const newDisponivel = Math.max(0, editingShirtData.quantidadeTotal - usedStock);
+      
+      newShirts[editingShirtIndex] = {
+        ...currentShirt,
+        tamanho: editingShirtData.tamanho,
+        quantidadeTotal: editingShirtData.quantidadeTotal,
+        quantidadeDisponivel: newDisponivel,
+        ajustePreco: String(editingShirtData.ajustePreco || 0)
+      };
+      updateFormData({ shirts: newShirts });
+      setEditShirtDialogOpen(false);
+      setEditingShirtIndex(null);
+      setEditingShirtData(null);
+    }
   };
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -350,14 +387,24 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
                         </p>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteShirt(index)}
-                      data-testid={`button-delete-shirt-${index}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditShirt(index)}
+                        data-testid={`button-edit-shirt-${index}`}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteShirt(index)}
+                        data-testid={`button-delete-shirt-${index}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
@@ -365,6 +412,65 @@ export function EventFinishStep({ formData, updateFormData }: EventFinishStepPro
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={editShirtDialogOpen} onOpenChange={(open) => {
+        setEditShirtDialogOpen(open);
+        if (!open) {
+          setEditingShirtIndex(null);
+          setEditingShirtData(null);
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Tamanho de Camisa</DialogTitle>
+          </DialogHeader>
+          {editingShirtData && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Tamanho</Label>
+                <Input
+                  value={editingShirtData.tamanho}
+                  onChange={(e) => setEditingShirtData({ ...editingShirtData, tamanho: e.target.value.toUpperCase() })}
+                  placeholder="Ex: M, G, GG"
+                  data-testid="input-edit-shirt-tamanho"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Quantidade Total</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={editingShirtData.quantidadeTotal}
+                  onChange={(e) => setEditingShirtData({ ...editingShirtData, quantidadeTotal: parseInt(e.target.value) || 0 })}
+                  data-testid="input-edit-shirt-quantidade"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Ajuste de Preco (R$)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={editingShirtData.ajustePreco}
+                  onChange={(e) => setEditingShirtData({ ...editingShirtData, ajustePreco: parseFloat(e.target.value) || 0 })}
+                  placeholder="Ex: -25 para desconto, 10 para acrescimo"
+                  data-testid="input-edit-shirt-ajuste"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Use valores negativos para desconto e positivos para acrescimo
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DialogClose>
+            <Button onClick={handleSaveEditShirt} disabled={!editingShirtData?.quantidadeTotal}>
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
