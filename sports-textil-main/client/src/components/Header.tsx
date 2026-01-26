@@ -30,11 +30,11 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-primary border-b border-primary-border">
+    <header className="sticky top-0 z-50 w-full bg-background border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2 hover-elevate rounded-md px-3 py-2">
-            <div className="text-primary-foreground font-bold text-xl tracking-tight">
+          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity rounded-md px-3 py-2">
+            <div className="text-primary font-bold text-xl tracking-tight">
               KitRunner
             </div>
           </Link>
@@ -44,8 +44,8 @@ export default function Header() {
               <Link key={item.path} href={item.path}>
                 <Button
                   variant="ghost"
-                  className={`text-primary-foreground ${
-                    isActive(item.path) ? "bg-primary-foreground/10" : ""
+                  className={`text-foreground hover:text-primary hover:bg-primary/5 ${
+                    isActive(item.path) ? "text-primary bg-primary/5" : ""
                   }`}
                   data-testid={`link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                 >
@@ -60,7 +60,7 @@ export default function Header() {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="text-primary-foreground"
+                    className="text-foreground hover:text-primary hover:bg-primary/5"
                     data-testid="button-user-menu"
                   >
                     <User className="h-5 w-5" />
@@ -109,7 +109,7 @@ export default function Header() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-primary-foreground"
+                    className="text-foreground hover:text-primary"
                     data-testid="button-login"
                   >
                     <LogIn className="h-4 w-4 mr-2" />
@@ -118,7 +118,7 @@ export default function Header() {
                 </Link>
                 <Link href="/cadastro">
                   <Button
-                    variant="secondary"
+                    variant="default"
                     size="sm"
                     data-testid="button-cadastro"
                   >
@@ -133,7 +133,7 @@ export default function Header() {
           <Button
             size="icon"
             variant="ghost"
-            className="md:hidden text-primary-foreground"
+            className="md:hidden text-foreground hover:text-primary"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             data-testid="button-mobile-menu"
           >
@@ -142,13 +142,13 @@ export default function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <div className="md:hidden pb-4 space-y-2 border-t border-border pt-4">
             {navItems.map((item) => (
               <Link key={item.path} href={item.path}>
                 <Button
                   variant="ghost"
-                  className={`w-full justify-start text-primary-foreground ${
-                    isActive(item.path) ? "bg-primary-foreground/10" : ""
+                  className={`w-full justify-start text-foreground hover:text-primary hover:bg-primary/5 ${
+                    isActive(item.path) ? "text-primary bg-primary/5" : ""
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                   data-testid={`link-mobile-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
@@ -160,15 +160,15 @@ export default function Header() {
             
             {!isLoading && athlete ? (
               <>
-                <div className="border-t border-primary-foreground/20 pt-2 mt-2">
-                  <div className="px-4 py-2 text-primary-foreground/70 text-sm">
+                <div className="border-t border-border pt-2 mt-2">
+                  <div className="px-4 py-2 text-muted-foreground text-sm">
                     {athlete.nome}
                   </div>
                 </div>
                 <Link href="/minha-conta">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-primary-foreground"
+                    className="w-full justify-start text-foreground hover:text-primary hover:bg-primary/5"
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid="link-mobile-minha-conta"
                   >
@@ -178,7 +178,7 @@ export default function Header() {
                 </Link>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-primary-foreground"
+                  className="w-full justify-start text-destructive hover:bg-destructive/5"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     handleLogout();
@@ -191,11 +191,11 @@ export default function Header() {
               </>
             ) : !isLoading ? (
               <>
-                <div className="border-t border-primary-foreground/20 pt-2 mt-2" />
+                <div className="border-t border-border pt-2 mt-2" />
                 <Link href="/login">
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-primary-foreground"
+                    className="w-full justify-start text-foreground hover:text-primary hover:bg-primary/5"
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid="button-mobile-login"
                   >
@@ -205,8 +205,8 @@ export default function Header() {
                 </Link>
                 <Link href="/cadastro">
                   <Button
-                    variant="ghost"
-                    className="w-full justify-start text-primary-foreground"
+                    variant="default"
+                    className="w-full justify-start"
                     onClick={() => setMobileMenuOpen(false)}
                     data-testid="button-mobile-cadastro"
                   >
