@@ -236,7 +236,7 @@ export default function MinhaContaPage() {
 
   useEffect(() => {
     if (!isLoading && !athlete) {
-      setLocation("/login");
+      setLocation("/login?redirect=" + encodeURIComponent("/minha-conta"));
     }
   }, [isLoading, athlete, setLocation]);
 

@@ -249,7 +249,7 @@ export default function MinhasInscricoesPage() {
 
   useEffect(() => {
     if (!isAuthLoading && !athlete) {
-      setLocation("/login");
+      setLocation("/login?redirect=" + encodeURIComponent("/minhas-inscricoes"));
     }
   }, [isAuthLoading, athlete, setLocation]);
 
