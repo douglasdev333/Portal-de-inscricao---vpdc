@@ -335,7 +335,7 @@ export default function EventosPage() {
                 Sua próxima conquista começa aqui
               </h1>
               <p className="text-lg md:text-xl text-white/90">
-                Descubra e inscreva-se nos melhores eventos de corrida do Brasil
+                Descubra e inscreva-se nos melhores eventos de corrida.
               </p>
             </div>
           </div>
