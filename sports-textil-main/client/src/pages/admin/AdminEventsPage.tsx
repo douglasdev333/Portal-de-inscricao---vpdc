@@ -171,7 +171,7 @@ export default function AdminEventsPage() {
                     <TableRow key={event.id} data-testid={`row-event-${event.id}`}>
                       <TableCell className="font-medium">
                         <Link href={`/admin/eventos/${event.id}/gerenciar`}>
-                          <span className="hover:underline cursor-pointer text-primary" data-testid={`link-event-name-${event.id}`}>
+                          <span className="hover:underline cursor-pointer text-[#1f2025]" data-testid={`link-event-name-${event.id}`}>
                             {event.nome}
                           </span>
                         </Link>
