@@ -36,6 +36,7 @@ interface RegistrationDetail {
   equipe: string | null;
   dataInscricao: string;
   valorPago: number;
+  ajustePrecoTamanho?: number;
   participanteNome: string;
   participanteCpf: string | null;
   participanteDataNascimento: string | null;
@@ -379,6 +380,13 @@ export default function InscricaoDetailPage() {
                       <div>
                         <p className="text-sm text-muted-foreground">Camisa</p>
                         <p className="font-medium text-foreground">{registration.tamanhoCamisa}</p>
+                        {registration.ajustePrecoTamanho !== undefined && registration.ajustePrecoTamanho !== 0 && (
+                          <p className={`text-xs ${registration.ajustePrecoTamanho < 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                            {registration.ajustePrecoTamanho < 0 
+                              ? `Desconto: -R$ ${Math.abs(registration.ajustePrecoTamanho).toFixed(2).replace('.', ',')}` 
+                              : `Acréscimo: +R$ ${registration.ajustePrecoTamanho.toFixed(2).replace('.', ',')}`}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}

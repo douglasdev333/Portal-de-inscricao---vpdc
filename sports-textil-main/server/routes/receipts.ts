@@ -137,7 +137,27 @@ router.get("/:registrationId", async (req, res) => {
     }
 
     if (registration.tamanhoCamisa) {
-      inscricaoData.push({ label: "Tamanho da Camisa", value: registration.tamanhoCamisa });
+      let camisaValue = registration.tamanhoCamisa;
+      
+      const usarGradePorModalidade = event.usarGradePorModalidade || false;
+      let shirtSizes;
+      if (usarGradePorModalidade) {
+        shirtSizes = await storage.getShirtSizesByModality(registration.modalityId);
+      } else {
+        shirtSizes = await storage.getShirtSizesByEvent(event.id);
+      }
+      const selectedSize = shirtSizes.find(s => s.tamanho === registration.tamanhoCamisa);
+      if (selectedSize) {
+        const ajustePreco = parseFloat(selectedSize.ajustePreco || '0');
+        if (ajustePreco !== 0) {
+          const ajusteText = ajustePreco < 0 
+            ? `(Desconto: -R$ ${Math.abs(ajustePreco).toFixed(2).replace('.', ',')})`
+            : `(Acréscimo: +R$ ${ajustePreco.toFixed(2).replace('.', ',')})`;
+          camisaValue = `${registration.tamanhoCamisa} ${ajusteText}`;
+        }
+      }
+      
+      inscricaoData.push({ label: "Tamanho da Camisa", value: camisaValue });
     }
 
     if (registration.equipe) {
