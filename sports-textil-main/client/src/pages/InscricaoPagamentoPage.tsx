@@ -59,6 +59,7 @@ interface OrderData {
     equipe: string | null;
     valorUnitario: number;
     taxaComodidade: number;
+    ajustePrecoTamanho?: number;
     modalidade: {
       id: string;
       nome: string;
@@ -874,7 +875,16 @@ export default function InscricaoPagamentoPage() {
                           <Shirt className="h-4 w-4" />
                           Tamanho da Camisa
                         </span>
-                        <span className="font-medium text-foreground">{registration.tamanhoCamisa}</span>
+                        <div className="text-right">
+                          <span className="font-medium text-foreground">{registration.tamanhoCamisa}</span>
+                          {registration.ajustePrecoTamanho !== undefined && registration.ajustePrecoTamanho !== 0 && (
+                            <p className={`text-sm ${registration.ajustePrecoTamanho < 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                              {registration.ajustePrecoTamanho < 0 
+                                ? `Desconto: -R$ ${Math.abs(registration.ajustePrecoTamanho).toFixed(2).replace('.', ',')}` 
+                                : `Acréscimo: +R$ ${registration.ajustePrecoTamanho.toFixed(2).replace('.', ',')}`}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )}
                     {registration.equipe && (

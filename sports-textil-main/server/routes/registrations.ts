@@ -614,6 +614,22 @@ router.get("/orders/:orderId", async (req, res) => {
     const registrationsWithDetails = await Promise.all(
       registrations.map(async (reg) => {
         const modality = await storage.getModality(reg.modalityId);
+        
+        let ajustePrecoTamanho = 0;
+        if (reg.tamanhoCamisa && event) {
+          const usarGradePorModalidade = event.usarGradePorModalidade || false;
+          let shirtSizes;
+          if (usarGradePorModalidade) {
+            shirtSizes = await storage.getShirtSizesByModality(reg.modalityId);
+          } else {
+            shirtSizes = await storage.getShirtSizesByEvent(event.id);
+          }
+          const selectedSize = shirtSizes.find(s => s.tamanho === reg.tamanhoCamisa);
+          if (selectedSize) {
+            ajustePrecoTamanho = parseFloat(selectedSize.ajustePreco || '0');
+          }
+        }
+        
         return {
           id: reg.id,
           numeroInscricao: reg.numeroInscricao,
@@ -621,6 +637,7 @@ router.get("/orders/:orderId", async (req, res) => {
           equipe: reg.equipe,
           valorUnitario: parseFloat(reg.valorUnitario),
           taxaComodidade: parseFloat(reg.taxaComodidade),
+          ajustePrecoTamanho,
           modalidade: modality ? {
             id: modality.id,
             nome: modality.nome,
@@ -681,6 +698,21 @@ router.get("/my-registrations", async (req, res) => {
         
         const athlete = await storage.getAthlete(reg.athleteId);
         
+        let ajustePrecoTamanho = 0;
+        if (reg.tamanhoCamisa && event) {
+          const usarGradePorModalidade = event.usarGradePorModalidade || false;
+          let shirtSizes;
+          if (usarGradePorModalidade) {
+            shirtSizes = await storage.getShirtSizesByModality(reg.modalityId);
+          } else {
+            shirtSizes = await storage.getShirtSizesByEvent(event.id);
+          }
+          const selectedSize = shirtSizes.find(s => s.tamanho === reg.tamanhoCamisa);
+          if (selectedSize) {
+            ajustePrecoTamanho = parseFloat(selectedSize.ajustePreco || '0');
+          }
+        }
+        
         return {
           id: reg.id,
           numeroInscricao: reg.numeroInscricao,
@@ -689,6 +721,7 @@ router.get("/my-registrations", async (req, res) => {
           equipe: reg.equipe,
           dataInscricao: reg.dataInscricao,
           valorPago: parseFloat(reg.valorUnitario) + parseFloat(reg.taxaComodidade),
+          ajustePrecoTamanho,
           participanteNome: reg.nomeCompleto || athlete?.nome || "Participante",
           participanteCpf: reg.cpf || athlete?.cpf || null,
           participanteDataNascimento: reg.dataNascimento || athlete?.dataNascimento || null,
@@ -745,6 +778,21 @@ router.get("/my-orders", async (req, res) => {
             const modality = await storage.getModality(reg.modalityId);
             const athlete = await storage.getAthlete(reg.athleteId);
             
+            let ajustePrecoTamanho = 0;
+            if (reg.tamanhoCamisa && event) {
+              const usarGradePorModalidade = event.usarGradePorModalidade || false;
+              let shirtSizes;
+              if (usarGradePorModalidade) {
+                shirtSizes = await storage.getShirtSizesByModality(reg.modalityId);
+              } else {
+                shirtSizes = await storage.getShirtSizesByEvent(event.id);
+              }
+              const selectedSize = shirtSizes.find(s => s.tamanho === reg.tamanhoCamisa);
+              if (selectedSize) {
+                ajustePrecoTamanho = parseFloat(selectedSize.ajustePreco || '0');
+              }
+            }
+            
             return {
               id: reg.id,
               numeroInscricao: reg.numeroInscricao,
@@ -757,6 +805,7 @@ router.get("/my-orders", async (req, res) => {
               participanteSexo: reg.sexo || athlete?.sexo || null,
               valorUnitario: parseFloat(reg.valorUnitario),
               taxaComodidade: parseFloat(reg.taxaComodidade),
+              ajustePrecoTamanho,
               modalidade: modality ? {
                 id: modality.id,
                 nome: modality.nome,
