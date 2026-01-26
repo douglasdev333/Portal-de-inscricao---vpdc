@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">
-            Visão geral do sistema ST Eventos
+            Visao geral do sistema KitRunner
           </p>
         </div>
 

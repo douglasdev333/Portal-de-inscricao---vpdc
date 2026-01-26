@@ -9,7 +9,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">ST Eventos</h3>
+            <h3 className="text-xl font-bold mb-4">KitRunner</h3>
             <p className="text-primary-foreground/80 text-sm leading-relaxed">
               A plataforma de inscrições para os melhores eventos esportivos do Brasil. 
               Encontre sua próxima corrida e supere seus limites.
@@ -58,7 +58,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-primary-foreground/80">
                 <Mail className="h-4 w-4" />
-                <span>contato@steventos.com.br</span>
+                <span>contato@kitrunner.com.br</span>
               </li>
               <li className="flex items-center gap-2 text-sm text-primary-foreground/80">
                 <Phone className="h-4 w-4" />
@@ -94,7 +94,7 @@ export default function Footer() {
 
         <div className="border-t border-primary-foreground/20 mt-8 pt-8 text-center">
           <p className="text-sm text-primary-foreground/60">
-            {currentYear} ST Eventos. Todos os direitos reservados.
+            {currentYear} KitRunner. Todos os direitos reservados.
           </p>
         </div>
       </div>

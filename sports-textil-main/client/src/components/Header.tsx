@@ -35,7 +35,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center space-x-2 hover-elevate rounded-md px-3 py-2">
             <div className="text-primary-foreground font-bold text-xl tracking-tight">
-              ST Eventos
+              KitRunner
             </div>
           </Link>
 

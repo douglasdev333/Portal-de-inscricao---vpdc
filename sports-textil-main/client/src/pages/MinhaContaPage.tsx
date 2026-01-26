@@ -844,7 +844,7 @@ export default function MinhaContaPage() {
               <div>
                 <p className="text-sm text-muted-foreground">E-mail</p>
                 <p className="font-medium text-foreground" data-testid="text-suporte-email">
-                  suporte@steventos.com.br
+                  suporte@kitrunner.com.br
                 </p>
               </div>
             </div>

@@ -1,8 +1,8 @@
-# ST Eventos - Portal de Inscrições
+# KitRunner - Portal de Inscrições
 
 ## Overview
 
-ST Eventos is a Brazilian sports event registration platform specializing in running events (marathons, trail runs, road races). The system enables athletes to discover events, register for races, select kit sizes, and complete payments. It includes a complete administrative panel for event organizers to manage events, modalities, registration batches, pricing, and attendee data.
+KitRunner is a Brazilian sports event registration platform specializing in running events (marathons, trail runs, road races). The system enables athletes to discover events, register for races, select kit sizes, and complete payments. It includes a complete administrative panel for event organizers to manage events, modalities, registration batches, pricing, and attendee data.
 
 ## User Preferences
 

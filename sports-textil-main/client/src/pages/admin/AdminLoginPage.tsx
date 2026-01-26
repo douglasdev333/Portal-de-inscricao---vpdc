@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
           </div>
           <CardTitle className="text-2xl">Painel Admin</CardTitle>
           <CardDescription>
-            ST Eventos - Acesso Administrativo
+            KitRunner - Acesso Administrativo
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,7 +105,7 @@ export default function AdminLoginPage() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="admin@steventos.com"
+                        placeholder="admin@kitrunner.com"
                         autoComplete="email"
                         data-testid="input-email"
                         {...field}
