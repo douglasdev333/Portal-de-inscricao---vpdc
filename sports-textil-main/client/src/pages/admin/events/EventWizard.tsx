@@ -260,8 +260,10 @@ export default function EventWizard({ mode, eventId, initialData }: EventWizardP
         if (shirt.id) {
           // Update existing shirt
           await apiRequest("PATCH", `/api/admin/events/${createdEventId}/shirts/${shirt.id}`, {
+            tamanho: shirt.tamanho,
             quantidadeTotal: shirt.quantidadeTotal,
-            quantidadeDisponivel: shirt.quantidadeDisponivel
+            quantidadeDisponivel: shirt.quantidadeDisponivel,
+            ajustePreco: shirt.ajustePreco
           });
         } else {
           // Create new shirt

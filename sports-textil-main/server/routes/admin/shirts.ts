@@ -138,9 +138,13 @@ router.patch("/:id", requireAuth, requireRole("superadmin", "admin"), async (req
     }
 
     const updateSchema = z.object({
+      tamanho: z.string().min(1).optional(),
       quantidadeTotal: z.number().int().positive().optional(),
       quantidadeDisponivel: z.number().int().min(0).optional(),
-      ajustePreco: z.number().optional()
+      ajustePreco: z.union([z.number(), z.string()]).transform(val => {
+        const num = typeof val === 'string' ? parseFloat(val) : val;
+        return isNaN(num) ? 0 : num;
+      }).optional()
     });
 
     const validation = updateSchema.safeParse(req.body);
