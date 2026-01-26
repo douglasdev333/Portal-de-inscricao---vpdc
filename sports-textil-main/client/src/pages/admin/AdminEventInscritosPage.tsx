@@ -70,7 +70,10 @@ import {
   Mail,
   Layers,
   History,
-  ShoppingCart
+  ShoppingCart,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react";
 import { formatDateOnlyBrazil, formatDateTimeBrazil } from "@/lib/timezone";
 import { useToast } from "@/hooks/use-toast";
@@ -199,6 +202,8 @@ export default function AdminEventInscritosPage() {
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [modalityFilter, setModalityFilter] = useState<string>("todos");
   const [selectedRegistration, setSelectedRegistration] = useState<EnrichedRegistration | null>(null);
+  const [sortColumn, setSortColumn] = useState<"numero" | "nome" | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
   // Status change states
   const [newRegistrationStatus, setNewRegistrationStatus] = useState<string>("");
@@ -328,6 +333,37 @@ export default function AdminEventInscritosPage() {
     const matchesModality = modalityFilter === "todos" || reg.modalityId === modalityFilter;
     return matchesSearch && matchesStatus && matchesModality;
   });
+
+  const sortedRegistrations = [...filteredRegistrations].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    let comparison = 0;
+    if (sortColumn === "numero") {
+      comparison = a.numeroInscricao - b.numeroInscricao;
+    } else if (sortColumn === "nome") {
+      const nameA = (a.nomeCompleto || a.athleteName).toLowerCase();
+      const nameB = (b.nomeCompleto || b.athleteName).toLowerCase();
+      comparison = nameA.localeCompare(nameB, 'pt-BR');
+    }
+    
+    return sortDirection === "desc" ? -comparison : comparison;
+  });
+
+  const handleSort = (column: "numero" | "nome") => {
+    if (sortColumn === column) {
+      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("desc");
+    }
+  };
+
+  const getSortIcon = (column: "numero" | "nome") => {
+    if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4 ml-1" />;
+    return sortDirection === "desc" 
+      ? <ArrowDown className="h-4 w-4 ml-1" /> 
+      : <ArrowUp className="h-4 w-4 ml-1" />;
+  };
 
   const getExportData = () => {
     const headers = [
@@ -586,8 +622,24 @@ export default function AdminEventInscritosPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Numero</TableHead>
-                      <TableHead>Nome</TableHead>
+                      <TableHead>
+                        <button 
+                          onClick={() => handleSort("numero")}
+                          className="flex items-center hover:text-foreground transition-colors"
+                        >
+                          Numero
+                          {getSortIcon("numero")}
+                        </button>
+                      </TableHead>
+                      <TableHead>
+                        <button 
+                          onClick={() => handleSort("nome")}
+                          className="flex items-center hover:text-foreground transition-colors"
+                        >
+                          Nome
+                          {getSortIcon("nome")}
+                        </button>
+                      </TableHead>
                       <TableHead>CPF</TableHead>
                       <TableHead>Nascimento</TableHead>
                       <TableHead>Modalidade</TableHead>
@@ -598,7 +650,7 @@ export default function AdminEventInscritosPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredRegistrations.map((reg) => (
+                    {sortedRegistrations.map((reg) => (
                       <TableRow key={reg.id} data-testid={`row-inscrito-${reg.id}`}>
                         <TableCell className="font-medium">
                           #{reg.numeroInscricao}
