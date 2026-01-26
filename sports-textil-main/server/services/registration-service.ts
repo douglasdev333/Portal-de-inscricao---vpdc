@@ -358,35 +358,8 @@ export async function registerForEventAtomic(
       };
     }
 
-    // 3.1. APPLY SHIRT SIZE PRICE ADJUSTMENT
-    if (registrationData.tamanhoCamisa) {
-      const usarGradePorModalidade = event.usar_grade_por_modalidade || false;
-      
-      let shirtSizeAjusteResult;
-      if (usarGradePorModalidade) {
-        shirtSizeAjusteResult = await client.query(
-          `SELECT ajuste_preco FROM shirt_sizes 
-           WHERE modality_id = $1 AND tamanho = $2`,
-          [registrationData.modalityId, registrationData.tamanhoCamisa]
-        );
-      } else {
-        shirtSizeAjusteResult = await client.query(
-          `SELECT ajuste_preco FROM shirt_sizes 
-           WHERE event_id = $1 AND modality_id IS NULL AND tamanho = $2`,
-          [registrationData.eventId, registrationData.tamanhoCamisa]
-        );
-      }
-      
-      if (shirtSizeAjusteResult.rows.length > 0) {
-        const ajustePreco = parseFloat(shirtSizeAjusteResult.rows[0].ajuste_preco || '0');
-        if (ajustePreco !== 0) {
-          const valorAtual = parseFloat(valorUnitario);
-          const novoValor = Math.max(0, valorAtual + ajustePreco);
-          valorUnitario = novoValor.toFixed(2);
-          console.log(`[registration-service] Ajuste de preco aplicado: ${ajustePreco}, novo valor: ${valorUnitario}`);
-        }
-      }
-    }
+    // NOTE: Shirt size price adjustment is now applied in the route before calling this service
+    // This ensures the valorTotal in the order already includes the adjustment
     
     // 4. CHECK DUPLICATE REGISTRATION
     if (!event.permitir_multiplas_modalidades) {

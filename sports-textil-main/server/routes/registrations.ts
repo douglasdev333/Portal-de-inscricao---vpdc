@@ -470,7 +470,25 @@ router.post("/", async (req, res) => {
       }
     }
     
-    const valorInscricao = price ? parseFloat(price.valor) : 0;
+    let valorInscricao = price ? parseFloat(price.valor) : 0;
+    
+    // Aplicar ajuste de preço do tamanho de camisa
+    let ajustePrecoTamanho = 0;
+    if (tamanhoCamisa) {
+      const usarGradePorModalidade = event.usarGradePorModalidade || false;
+      let shirtSizes;
+      if (usarGradePorModalidade) {
+        shirtSizes = await storage.getShirtSizesByModality(modalityId);
+      } else {
+        shirtSizes = await storage.getShirtSizesByEvent(eventId);
+      }
+      const selectedSize = shirtSizes.find(s => s.tamanho === tamanhoCamisa);
+      if (selectedSize) {
+        ajustePrecoTamanho = parseFloat(selectedSize.ajustePreco || '0');
+        valorInscricao = Math.max(0, valorInscricao + ajustePrecoTamanho);
+      }
+    }
+    
     const valorTotal = valorInscricao + taxaComodidade;
 
     // isGratuita is true for:
