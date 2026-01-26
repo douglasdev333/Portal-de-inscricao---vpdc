@@ -438,7 +438,7 @@ export async function registerForEventAtomic(
         batchId,
         registrationData.athleteId,
         registrationData.tamanhoCamisa,
-        valorUnitario,
+        registrationData.valorUnitario,
         registrationData.taxaComodidade,
         registrationData.status,
         registrationData.equipe,
@@ -545,7 +545,7 @@ export async function registerForEventAtomic(
         numeroInscricao: registration.numero_inscricao,
         status: registration.status,
         batchId: batchId,
-        valorUnitario: parseFloat(valorUnitario)
+        valorUnitario: parseFloat(registrationData.valorUnitario)
       }
     };
     

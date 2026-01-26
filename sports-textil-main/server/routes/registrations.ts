@@ -482,10 +482,15 @@ router.post("/", async (req, res) => {
       } else {
         shirtSizes = await storage.getShirtSizesByEvent(eventId);
       }
+      console.log(`[registrations] Buscando ajuste de preco para camisa "${tamanhoCamisa}", usarGradePorModalidade=${usarGradePorModalidade}, tamanhos encontrados:`, shirtSizes.map(s => ({ tamanho: s.tamanho, ajustePreco: s.ajustePreco })));
       const selectedSize = shirtSizes.find(s => s.tamanho === tamanhoCamisa);
       if (selectedSize) {
         ajustePrecoTamanho = parseFloat(selectedSize.ajustePreco || '0');
+        const valorOriginal = valorInscricao;
         valorInscricao = Math.max(0, valorInscricao + ajustePrecoTamanho);
+        console.log(`[registrations] Ajuste aplicado: original=${valorOriginal}, ajuste=${ajustePrecoTamanho}, novo=${valorInscricao}`);
+      } else {
+        console.log(`[registrations] Tamanho "${tamanhoCamisa}" nao encontrado na grade`);
       }
     }
     
