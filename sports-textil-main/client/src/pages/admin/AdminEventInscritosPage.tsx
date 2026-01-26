@@ -10,13 +10,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -201,6 +206,8 @@ export default function AdminEventInscritosPage() {
   const [statusChangeReason, setStatusChangeReason] = useState<string>("");
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [statusChangeType, setStatusChangeType] = useState<"registration" | "order" | null>(null);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<"csv" | "excel" | "pdf">("csv");
 
   const { data: eventData, isLoading: eventLoading } = useQuery<{ success: boolean; data: Event }>({
     queryKey: ["/api/admin/events", id],
@@ -322,7 +329,7 @@ export default function AdminEventInscritosPage() {
     return matchesSearch && matchesStatus && matchesModality;
   });
 
-  const exportToExcel = () => {
+  const getExportData = () => {
     const headers = [
       "Numero",
       "Nome",
@@ -357,6 +364,11 @@ export default function AdminEventInscritosPage() {
       formatDateOnlyBrazil(reg.dataInscricao),
     ]);
 
+    return { headers, rows };
+  };
+
+  const exportToCSV = () => {
+    const { headers, rows } = getExportData();
     const csvContent = [
       headers.join(";"),
       ...rows.map((row) => row.map(cell => `"${cell}"`).join(";")),
@@ -370,6 +382,82 @@ export default function AdminEventInscritosPage() {
     link.download = `inscritos_${event?.slug || id}_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = () => {
+    const { headers, rows } = getExportData();
+    const wsData = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    const colWidths = headers.map((_, i) => {
+      const maxLen = Math.max(
+        headers[i].length,
+        ...rows.map(row => String(row[i]).length)
+      );
+      return { wch: Math.min(maxLen + 2, 40) };
+    });
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Inscritos");
+    XLSX.writeFile(wb, `inscritos_${event?.slug || id}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
+
+  const exportToPDF = () => {
+    const { headers, rows } = getExportData();
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    
+    doc.setFontSize(16);
+    doc.text(`Inscritos - ${event?.nome || "Evento"}`, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Exportado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 22);
+    doc.text(`Total de inscritos: ${filteredRegistrations.length}`, 14, 28);
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      startY: 35,
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      columnStyles: {
+        0: { cellWidth: 12 },
+        1: { cellWidth: 30 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 35 },
+        4: { cellWidth: 22 },
+        5: { cellWidth: 10 },
+        6: { cellWidth: 18 },
+        7: { cellWidth: 25 },
+        8: { cellWidth: 15 },
+        9: { cellWidth: 20 },
+        10: { cellWidth: 15 },
+        11: { cellWidth: 12 },
+        12: { cellWidth: 18 },
+        13: { cellWidth: 18 },
+      },
+    });
+
+    doc.save(`inscritos_${event?.slug || id}_${new Date().toISOString().split("T")[0]}.pdf`);
+  };
+
+  const handleExport = () => {
+    switch (exportFormat) {
+      case "csv":
+        exportToCSV();
+        break;
+      case "excel":
+        exportToExcel();
+        break;
+      case "pdf":
+        exportToPDF();
+        break;
+    }
+    setExportModalOpen(false);
+    toast({
+      title: "Exportacao concluida",
+      description: `Arquivo ${exportFormat.toUpperCase()} gerado com sucesso.`,
+    });
   };
 
   if (isLoading) {
@@ -431,12 +519,12 @@ export default function AdminEventInscritosPage() {
           <div className="flex gap-2 flex-wrap">
             <Button 
               variant="outline" 
-              onClick={exportToExcel}
+              onClick={() => setExportModalOpen(true)}
               disabled={filteredRegistrations.length === 0}
-              data-testid="button-export-excel"
+              data-testid="button-export"
             >
               <Download className="mr-2 h-4 w-4" />
-              Exportar Excel
+              Exportar
             </Button>
             <Link href={`/admin/eventos/${id}/gerenciar`}>
               <Button variant="outline" data-testid="button-manage-event">
@@ -891,6 +979,51 @@ export default function AdminEventInscritosPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="modal-export">
+          <DialogHeader>
+            <DialogTitle>Exportar Inscritos</DialogTitle>
+            <DialogDescription>
+              Escolha o formato de exportacao desejado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup value={exportFormat} onValueChange={(value) => setExportFormat(value as "csv" | "excel" | "pdf")}>
+              <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer" data-testid="radio-csv">
+                <RadioGroupItem value="csv" id="csv" />
+                <Label htmlFor="csv" className="flex-1 cursor-pointer">
+                  <div className="font-medium">CSV (separado por ponto e virgula)</div>
+                  <div className="text-sm text-muted-foreground">Compativel com Excel, Google Sheets e outros</div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer mt-2" data-testid="radio-excel">
+                <RadioGroupItem value="excel" id="excel" />
+                <Label htmlFor="excel" className="flex-1 cursor-pointer">
+                  <div className="font-medium">Excel (.xlsx)</div>
+                  <div className="text-sm text-muted-foreground">Planilha nativa do Microsoft Excel</div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50 cursor-pointer mt-2" data-testid="radio-pdf">
+                <RadioGroupItem value="pdf" id="pdf" />
+                <Label htmlFor="pdf" className="flex-1 cursor-pointer">
+                  <div className="font-medium">PDF (paisagem)</div>
+                  <div className="text-sm text-muted-foreground">Documento em formato A4 paisagem para impressao</div>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExportModalOpen(false)} data-testid="button-cancel-export">
+              Cancelar
+            </Button>
+            <Button onClick={handleExport} data-testid="button-confirm-export">
+              <Download className="mr-2 h-4 w-4" />
+              Exportar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
