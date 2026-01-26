@@ -202,7 +202,7 @@ export default function AdminEventInscritosPage() {
   const [statusFilter, setStatusFilter] = useState<string>("todos");
   const [modalityFilter, setModalityFilter] = useState<string>("todos");
   const [selectedRegistration, setSelectedRegistration] = useState<EnrichedRegistration | null>(null);
-  const [sortColumn, setSortColumn] = useState<"numero" | "nome" | null>(null);
+  const [sortColumn, setSortColumn] = useState<"numero" | "nome" | "status" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   
   // Status change states
@@ -344,12 +344,14 @@ export default function AdminEventInscritosPage() {
       const nameA = (a.nomeCompleto || a.athleteName).toLowerCase();
       const nameB = (b.nomeCompleto || b.athleteName).toLowerCase();
       comparison = nameA.localeCompare(nameB, 'pt-BR');
+    } else if (sortColumn === "status") {
+      comparison = a.status.localeCompare(b.status, 'pt-BR');
     }
     
     return sortDirection === "desc" ? -comparison : comparison;
   });
 
-  const handleSort = (column: "numero" | "nome") => {
+  const handleSort = (column: "numero" | "nome" | "status") => {
     if (sortColumn === column) {
       setSortDirection(prev => prev === "asc" ? "desc" : "asc");
     } else {
@@ -358,7 +360,7 @@ export default function AdminEventInscritosPage() {
     }
   };
 
-  const getSortIcon = (column: "numero" | "nome") => {
+  const getSortIcon = (column: "numero" | "nome" | "status") => {
     if (sortColumn !== column) return <ArrowUpDown className="h-4 w-4 ml-1" />;
     return sortDirection === "desc" 
       ? <ArrowDown className="h-4 w-4 ml-1" /> 
@@ -645,7 +647,15 @@ export default function AdminEventInscritosPage() {
                       <TableHead>Modalidade</TableHead>
                       <TableHead>Sexo</TableHead>
                       <TableHead>Camisa</TableHead>
-                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">
+                        <button 
+                          onClick={() => handleSort("status")}
+                          className="flex items-center justify-center w-full hover:text-foreground transition-colors"
+                        >
+                          Status
+                          {getSortIcon("status")}
+                        </button>
+                      </TableHead>
                       <TableHead>Data</TableHead>
                     </TableRow>
                   </TableHeader>
