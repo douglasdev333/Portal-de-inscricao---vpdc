@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock, Link2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { EventFormData } from "../EventWizard";
@@ -25,7 +25,16 @@ const TIPOS_ACESSO = [
   { value: "aprovacao_manual", label: "Aprovacao Manual" },
 ];
 
-const emptyModality: Partial<Modality> = {
+interface LinkPercurso {
+  nome: string;
+  url: string;
+}
+
+type ModalityFormData = Partial<Modality> & { 
+  linksPercurso?: LinkPercurso[] | null;
+};
+
+const emptyModality: ModalityFormData = {
   nome: "",
   distancia: "0",
   unidadeDistancia: "km",
@@ -34,12 +43,13 @@ const emptyModality: Partial<Modality> = {
   tipoAcesso: "paga",
   taxaComodidade: "0",
   ordem: 0,
+  linksPercurso: [],
 };
 
 export function EventModalitiesStep({ formData, updateFormData }: EventModalitiesStepProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [currentModality, setCurrentModality] = useState<Partial<Modality>>(emptyModality);
+  const [currentModality, setCurrentModality] = useState<ModalityFormData>(emptyModality);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const { toast } = useToast();
@@ -57,7 +67,9 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
   };
 
   const openEditDialog = (index: number) => {
-    setCurrentModality({ ...formData.modalities[index] });
+    const modality = formData.modalities[index];
+    const linksPercurso = Array.isArray(modality.linksPercurso) ? modality.linksPercurso : [];
+    setCurrentModality({ ...modality, linksPercurso });
     setEditingIndex(index);
     resetDialogState();
     setDialogOpen(true);
@@ -74,13 +86,20 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
     const newModalities = [...formData.modalities];
     let newPrices = [...formData.prices];
     
+    const normalizedModality = {
+      ...currentModality,
+      linksPercurso: Array.isArray(currentModality.linksPercurso) 
+        ? currentModality.linksPercurso.filter(link => link.nome && link.url) 
+        : null
+    };
+    
     if (editingIndex !== null) {
-      newModalities[editingIndex] = currentModality;
-      if (currentModality.tipoAcesso === "gratuita") {
+      newModalities[editingIndex] = normalizedModality;
+      if (normalizedModality.tipoAcesso === "gratuita") {
         newPrices = newPrices.filter(p => p.modalityIndex !== editingIndex);
       }
     } else {
-      newModalities.push(currentModality);
+      newModalities.push(normalizedModality);
     }
     
     updateFormData({ modalities: newModalities, prices: newPrices });
@@ -378,19 +397,77 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="mod-mapa">URL do Mapa do Percurso</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Link do Google Maps, Strava ou outro app de corrida
-                  </p>
-                  <Input
-                    id="mod-mapa"
-                    type="url"
-                    value={currentModality.mapaPercursoUrl || ""}
-                    onChange={(e) => updateCurrentModality("mapaPercursoUrl", e.target.value)}
-                    placeholder="https://..."
-                    data-testid="input-modality-map"
-                  />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label>Links do Percurso</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Adicione links do Google Maps, Strava ou outros apps
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const links = currentModality.linksPercurso || [];
+                        updateCurrentModality("linksPercurso", [...links, { nome: "", url: "" }]);
+                      }}
+                      data-testid="button-add-percurso-link"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Adicionar Link
+                    </Button>
+                  </div>
+                  
+                  {(currentModality.linksPercurso || []).length > 0 ? (
+                    <div className="space-y-2">
+                      {(currentModality.linksPercurso || []).map((link, idx) => (
+                        <div key={idx} className="flex items-center gap-2 p-3 border rounded-lg bg-muted/30">
+                          <Link2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <Input
+                            placeholder="Nome (ex: Strava, Google Maps)"
+                            value={link.nome}
+                            onChange={(e) => {
+                              const links = [...(currentModality.linksPercurso || [])];
+                              links[idx] = { ...links[idx], nome: e.target.value };
+                              updateCurrentModality("linksPercurso", links);
+                            }}
+                            className="max-w-[180px]"
+                            data-testid={`input-link-nome-${idx}`}
+                          />
+                          <Input
+                            placeholder="https://..."
+                            type="url"
+                            value={link.url}
+                            onChange={(e) => {
+                              const links = [...(currentModality.linksPercurso || [])];
+                              links[idx] = { ...links[idx], url: e.target.value };
+                              updateCurrentModality("linksPercurso", links);
+                            }}
+                            className="flex-1"
+                            data-testid={`input-link-url-${idx}`}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              const links = (currentModality.linksPercurso || []).filter((_, i) => i !== idx);
+                              updateCurrentModality("linksPercurso", links);
+                            }}
+                            data-testid={`button-remove-link-${idx}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-sm text-muted-foreground border border-dashed rounded-lg">
+                      Nenhum link adicionado
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

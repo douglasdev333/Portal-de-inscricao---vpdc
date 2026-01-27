@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, MapPin, Award, Info, FileText, Download, Package, AlertCircle, XCircle, CalendarClock, Trophy, CheckCircle, Tag, Users, Timer } from "lucide-react";
+import { Calendar, MapPin, Award, Info, FileText, Download, Package, AlertCircle, XCircle, CalendarClock, Trophy, CheckCircle, Tag, Users, Timer, Map, ExternalLink, Link2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import heroImage from '@assets/generated_images/Marathon_runners_landscape_hero_b439e181.png';
 import { formatDateOnlyLong } from "@/lib/timezone";
 import type { Event, Modality, RegistrationBatch, Price, Attachment } from "@shared/schema";
@@ -507,6 +508,92 @@ export default function EventoDetailPage() {
                         </div>
                       );
                     })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Percursos Section - Modalidades com imagem ou links de percurso */}
+            {modalities.some(mod => mod.imagemUrl || mod.mapaPercursoUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0)) && (
+              <Card className="mb-6 md:mb-8">
+                <CardHeader className="p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Map className="h-4 w-4 md:h-5 md:w-5" />
+                    Percursos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                    {modalities
+                      .filter(mod => mod.imagemUrl || mod.mapaPercursoUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0))
+                      .map((mod) => {
+                        const linksFromJson = Array.isArray(mod.linksPercurso) ? mod.linksPercurso : [];
+                        const legacyLink = mod.mapaPercursoUrl ? [{ nome: 'Ver Percurso', url: mod.mapaPercursoUrl }] : [];
+                        const links = [...linksFromJson, ...legacyLink];
+                        const hasImage = !!mod.imagemUrl;
+                        const hasLinks = links.length > 0;
+                        
+                        return (
+                          <Card key={mod.id} className="overflow-hidden">
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Award className="h-4 w-4 text-primary" />
+                                <h4 className="font-semibold text-sm md:text-base">{mod.nome}</h4>
+                                <Badge variant="secondary" className="text-xs ml-auto">
+                                  {mod.distancia} {mod.unidadeDistancia}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                {hasImage && (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="w-full justify-start gap-2"
+                                        data-testid={`button-view-percurso-image-${mod.id}`}
+                                      >
+                                        <Map className="h-4 w-4" />
+                                        Ver Mapa do Percurso
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-4xl max-h-[90vh]">
+                                      <DialogHeader>
+                                        <DialogTitle>Percurso - {mod.nome}</DialogTitle>
+                                      </DialogHeader>
+                                      <div className="overflow-auto">
+                                        <img 
+                                          src={mod.imagemUrl!} 
+                                          alt={`Percurso ${mod.nome}`}
+                                          className="w-full h-auto rounded-lg"
+                                        />
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+                                
+                                {hasLinks && links.map((link, idx) => (
+                                  <a
+                                    key={idx}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 p-2 border rounded-lg hover:bg-muted/50 transition-colors text-sm"
+                                    data-testid={`link-percurso-${mod.id}-${idx}`}
+                                  >
+                                    <Link2 className="h-4 w-4 text-muted-foreground" />
+                                    <span className="flex-1 font-medium truncate">
+                                      {link.nome || 'Ver no App'}
+                                    </span>
+                                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </a>
+                                ))}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                   </div>
                 </CardContent>
               </Card>
