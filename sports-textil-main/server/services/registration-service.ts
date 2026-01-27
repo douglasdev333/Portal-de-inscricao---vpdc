@@ -717,7 +717,7 @@ export async function confirmPaymentAtomic(
     
     // 1. Get and lock the order
     const orderResult = await client.query(
-      `SELECT id, event_id, status FROM orders WHERE id = $1 FOR UPDATE`,
+      `SELECT id, event_id, status, cupom_id, comprador_id, valor_desconto FROM orders WHERE id = $1 FOR UPDATE`,
       [orderId]
     );
     
@@ -743,6 +743,24 @@ export async function confirmPaymentAtomic(
       `UPDATE orders SET status = 'pago', metodo_pagamento = $1, data_pagamento = NOW() WHERE id = $2`,
       [metodoPagamento, orderId]
     );
+    
+    // 2.1. Register coupon usage if a coupon was applied
+    if (order.cupom_id && order.comprador_id) {
+      // Increment coupon global usage counter
+      await client.query(
+        `UPDATE event_coupons SET current_uses = current_uses + 1 WHERE id = $1`,
+        [order.cupom_id]
+      );
+      
+      // Create coupon usage record for user tracking
+      await client.query(
+        `INSERT INTO coupon_usages (id, coupon_id, user_id, order_id, discount_applied)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4)`,
+        [order.cupom_id, order.comprador_id, orderId, order.valor_desconto || '0']
+      );
+      
+      console.log(`[confirmPaymentAtomic] Cupom ${order.cupom_id} uso registrado para pedido ${orderId}`);
+    }
     
     // 3. Get all registrations for this order
     const registrationsResult = await client.query(
