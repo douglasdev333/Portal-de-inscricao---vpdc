@@ -43,12 +43,25 @@ router.post("/mercadopago", async (req, res) => {
       }
 
       console.log(`[webhook] Status do pagamento ${paymentId}: ${paymentResult.status}`);
+      console.log(`[webhook] External reference: ${paymentResult.externalReference}`);
 
-      const ordersResult = await storage.getOrdersByPaymentId(paymentId);
-      const order = ordersResult;
+      // Primeiro tenta buscar pelo ID do pagamento
+      let order = await storage.getOrdersByPaymentId(paymentId);
+      
+      // Se não encontrar, usa o external_reference (orderId) como fallback
+      if (!order && paymentResult.externalReference) {
+        console.log(`[webhook] Buscando pedido pelo external_reference: ${paymentResult.externalReference}`);
+        order = await storage.getOrder(paymentResult.externalReference);
+        
+        // Atualiza o ID do pagamento no pedido se encontrado
+        if (order) {
+          console.log(`[webhook] Pedido encontrado via external_reference, atualizando payment ID`);
+          await storage.updateOrder(order.id, { idPagamentoGateway: paymentId });
+        }
+      }
 
       if (!order) {
-        console.warn(`[webhook] Pedido não encontrado para pagamento ${paymentId}`);
+        console.warn(`[webhook] Pedido não encontrado para pagamento ${paymentId} (external_ref: ${paymentResult.externalReference})`);
         return res.status(200).json({ received: true });
       }
 

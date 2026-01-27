@@ -39,6 +39,7 @@ export interface PaymentStatusResult {
   status?: string;
   statusDetail?: string;
   dateApproved?: string;
+  externalReference?: string;
   error?: string;
 }
 
@@ -314,7 +315,8 @@ export async function getPaymentStatus(paymentId: string): Promise<PaymentStatus
       paymentId: payment.id?.toString(),
       status: payment.status || undefined,
       statusDetail: payment.status_detail || undefined,
-      dateApproved: payment.date_approved || undefined
+      dateApproved: payment.date_approved || undefined,
+      externalReference: payment.external_reference || undefined
     };
   } catch (error: any) {
     console.error('[mercadopago-service] Erro ao consultar status do pagamento:', error);
