@@ -445,6 +445,38 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ success: false, error: "Atleta não encontrado" });
     }
 
+    // Validação de idade mínima
+    // A modalidade pode ter sua própria idade mínima (ex: modalidade kids)
+    // Se não tiver, usa a idade mínima do evento
+    const idadeMinimaAplicavel = modality.idadeMinima !== null ? modality.idadeMinima : event.idadeMinimaEvento;
+    
+    if (idadeMinimaAplicavel > 0 && athlete.dataNascimento) {
+      const hoje = new Date();
+      const dataNasc = new Date(athlete.dataNascimento);
+      let idadeAtleta = hoje.getFullYear() - dataNasc.getFullYear();
+      const mesAtual = hoje.getMonth();
+      const mesNasc = dataNasc.getMonth();
+      
+      // Ajusta se ainda não fez aniversário este ano
+      if (mesAtual < mesNasc || (mesAtual === mesNasc && hoje.getDate() < dataNasc.getDate())) {
+        idadeAtleta--;
+      }
+      
+      if (idadeAtleta < idadeMinimaAplicavel) {
+        const origem = modality.idadeMinima !== null ? "modalidade" : "evento";
+        return res.status(400).json({ 
+          success: false, 
+          error: `Idade mínima para esta ${origem === "modalidade" ? "modalidade" : "inscrição"} é ${idadeMinimaAplicavel} anos. Idade do atleta: ${idadeAtleta} anos.`,
+          errorCode: "MINIMUM_AGE_NOT_MET",
+          details: {
+            idadeMinima: idadeMinimaAplicavel,
+            idadeAtleta,
+            origem
+          }
+        });
+      }
+    }
+
     const price = await storage.getPrice(modalityId, activeBatch.id);
     const taxaComodidade = parseFloat(modality.taxaComodidade) || 0;
     
