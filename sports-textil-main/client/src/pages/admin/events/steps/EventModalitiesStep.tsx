@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock, Link2, ExternalLink, EyeOff } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock, Link2, ExternalLink, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
@@ -117,6 +117,38 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
         ...p,
         modalityIndex: p.modalityIndex > index ? p.modalityIndex - 1 : p.modalityIndex
       }));
+    updateFormData({ modalities: newModalities, prices: newPrices });
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    const newModalities = [...formData.modalities];
+    const temp = newModalities[index - 1];
+    newModalities[index - 1] = { ...newModalities[index], ordem: index - 1 };
+    newModalities[index] = { ...temp, ordem: index };
+    
+    const newPrices = formData.prices.map(p => {
+      if (p.modalityIndex === index) return { ...p, modalityIndex: index - 1 };
+      if (p.modalityIndex === index - 1) return { ...p, modalityIndex: index };
+      return p;
+    });
+    
+    updateFormData({ modalities: newModalities, prices: newPrices });
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index >= formData.modalities.length - 1) return;
+    const newModalities = [...formData.modalities];
+    const temp = newModalities[index + 1];
+    newModalities[index + 1] = { ...newModalities[index], ordem: index + 1 };
+    newModalities[index] = { ...temp, ordem: index };
+    
+    const newPrices = formData.prices.map(p => {
+      if (p.modalityIndex === index) return { ...p, modalityIndex: index + 1 };
+      if (p.modalityIndex === index + 1) return { ...p, modalityIndex: index };
+      return p;
+    });
+    
     updateFormData({ modalities: newModalities, prices: newPrices });
   };
 
@@ -575,6 +607,26 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0}
+                        title="Mover para cima"
+                        data-testid={`button-move-up-${index}`}
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === formData.modalities.length - 1}
+                        title="Mover para baixo"
+                        data-testid={`button-move-down-${index}`}
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
