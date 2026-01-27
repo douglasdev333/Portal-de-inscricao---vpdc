@@ -34,12 +34,12 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET || "st-eventos-dev-secret-change-in-production",
-  resave: false,
+  resave: true,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
   }
 }));

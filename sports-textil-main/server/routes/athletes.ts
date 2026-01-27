@@ -55,19 +55,26 @@ router.post("/login", async (req, res) => {
 
     (req.session as any).athleteId = athlete.id;
 
-    res.json({ 
-      success: true, 
-      data: {
-        id: athlete.id,
-        nome: athlete.nome,
-        cpf: athlete.cpf,
-        email: athlete.email,
-        telefone: athlete.telefone,
-        cidade: athlete.cidade,
-        estado: athlete.estado,
-        dataNascimento: athlete.dataNascimento,
-        sexo: athlete.sexo
+    req.session.save((err) => {
+      if (err) {
+        console.error("Erro ao salvar sessão:", err);
+        return res.status(500).json({ success: false, error: "Erro ao criar sessão" });
       }
+      
+      res.json({ 
+        success: true, 
+        data: {
+          id: athlete.id,
+          nome: athlete.nome,
+          cpf: athlete.cpf,
+          email: athlete.email,
+          telefone: athlete.telefone,
+          cidade: athlete.cidade,
+          estado: athlete.estado,
+          dataNascimento: athlete.dataNascimento,
+          sexo: athlete.sexo
+        }
+      });
     });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
