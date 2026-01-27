@@ -75,7 +75,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const events = await storage.getEvents();
       // Show published, sold-out and finalized events
       const publicEvents = events.filter(e => e.status === "publicado" || e.status === "esgotado" || e.status === "finalizado");
-      res.json({ success: true, data: publicEvents.map(formatEventForResponse) });
+      
+      // Get banners for each event if bannerUrl is not set
+      const eventsWithBanners = await Promise.all(
+        publicEvents.map(async (event) => {
+          let bannerUrl = event.bannerUrl;
+          if (!bannerUrl) {
+            const banners = await storage.getEventBannersByEvent(event.id);
+            if (banners.length > 0) {
+              bannerUrl = banners[0].imagemUrl;
+            }
+          }
+          return { ...formatEventForResponse(event), bannerUrl };
+        })
+      );
+      
+      res.json({ success: true, data: eventsWithBanners });
     } catch (error) {
       console.error("Get public events error:", error);
       res.status(500).json({
@@ -114,11 +129,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         modalitiesAvailability = null;
       }
 
-      const [modalities, batches, prices, attachments] = await Promise.all([
+      const [modalities, batches, prices, attachments, banners] = await Promise.all([
         storage.getModalitiesByEvent(event.id),
         storage.getBatchesByEvent(event.id),
         storage.getPricesByEvent(event.id),
-        storage.getAttachmentsByEvent(event.id)
+        storage.getAttachmentsByEvent(event.id),
+        storage.getEventBannersByEvent(event.id)
       ]);
 
       // Refresh event status after recalculation
@@ -162,10 +178,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         registrationMessage = 'Inscrições encerradas';
       }
 
+      // Get banner URL from event or from banners table
+      let bannerUrl = currentEvent.bannerUrl;
+      if (!bannerUrl && banners.length > 0) {
+        bannerUrl = banners[0].imagemUrl;
+      }
+
       res.json({
         success: true,
         data: {
           ...formatEventForResponse(currentEvent),
+          bannerUrl,
           eventSoldOut: modalitiesAvailability?.eventSoldOut ?? (currentEvent.status === 'esgotado'),
           registrationStatus,
           registrationMessage,
@@ -173,7 +196,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           activeBatch: activeBatch ? formatBatchForResponse(activeBatch) : null,
           activeBatches: activeBatches.map(formatBatchForResponse),
           prices: prices.filter(p => p.batchId === activeBatch?.id),
-          attachments
+          attachments,
+          banners
         }
       });
     } catch (error) {
