@@ -200,22 +200,24 @@ export default function EventoDetailPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      <div className="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
         {/* Banner with 16:9 aspect ratio */}
-        <div className="relative rounded-lg overflow-hidden mb-8">
+        <div className="relative rounded-lg overflow-hidden mb-4 md:mb-8">
           <div className="aspect-[16/9]">
             <img
               src={event.bannerUrl || heroImage}
               alt={event.nome}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+            {/* Overlay only on desktop */}
+            <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+          {/* Info inside banner - desktop only */}
+          <div className="hidden md:block absolute bottom-0 left-0 right-0 p-8">
             <div className="flex flex-wrap items-center gap-3 mb-3">
               {getStatusBadge()}
             </div>
-            <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
               {event.nome}
             </h1>
             <div className="flex flex-wrap gap-2">
@@ -228,93 +230,110 @@ export default function EventoDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Info below banner - mobile only */}
+        <div className="md:hidden mb-4">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {getStatusBadge()}
+          </div>
+          <h1 className="text-xl font-bold text-foreground mb-2">
+            {event.nome}
+          </h1>
+          <div className="flex flex-wrap gap-1.5">
+            {uniqueDistances.map((distance) => (
+              <Badge key={distance} variant="secondary" className="text-xs">
+                {distance}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           <div className="lg:col-span-2 pb-24 md:pb-0">
             {/* Event Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Data do Evento
+            <div className="grid grid-cols-2 gap-2 md:gap-4 mb-4 md:mb-8">
+              <Card className="p-3 md:p-0">
+                <CardHeader className="p-0 md:p-6 pb-1 md:pb-3">
+                  <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1.5 md:gap-2">
+                    <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    Data
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="font-semibold text-foreground text-lg">{formattedDate}</p>
+                <CardContent className="p-0 md:p-6 md:pt-0">
+                  <p className="font-semibold text-foreground text-sm md:text-lg">{formattedDate}</p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+              <Card className="p-3 md:p-0">
+                <CardHeader className="p-0 md:p-6 pb-1 md:pb-3">
+                  <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground flex items-center gap-1.5 md:gap-2">
+                    <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4" />
                     Local
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="font-semibold text-foreground">{event.endereco}</p>
-                  <p className="text-sm text-muted-foreground">{event.cidade}, {event.estado}</p>
+                <CardContent className="p-0 md:p-6 md:pt-0">
+                  <p className="font-semibold text-foreground text-sm md:text-base">{event.endereco}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">{event.cidade}, {event.estado}</p>
                 </CardContent>
               </Card>
             </div>
 
             {/* Tabs - Sobre, Kit, Documentos */}
-            <Tabs defaultValue="sobre" className="space-y-4 md:space-y-6 mb-8">
-              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <Tabs defaultValue="sobre" className="space-y-3 md:space-y-6 mb-6 md:mb-8">
+              <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
                 <TabsList className="inline-flex w-auto min-w-full md:grid md:w-full md:grid-cols-3 gap-1">
-                  <TabsTrigger value="sobre" data-testid="tab-sobre" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">
-                    <Info className="h-3.5 w-3.5 md:hidden mr-1.5" />
+                  <TabsTrigger value="sobre" data-testid="tab-sobre" className="flex-shrink-0 text-xs md:text-sm px-2.5 md:px-4">
+                    <Info className="h-3 w-3 md:hidden mr-1" />
                     <span>Sobre</span>
                   </TabsTrigger>
-                  <TabsTrigger value="retirada" data-testid="tab-retirada" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">
-                    <Package className="h-3.5 w-3.5 md:hidden mr-1.5" />
+                  <TabsTrigger value="retirada" data-testid="tab-retirada" className="flex-shrink-0 text-xs md:text-sm px-2.5 md:px-4">
+                    <Package className="h-3 w-3 md:hidden mr-1" />
                     <span className="hidden md:inline">Retirada Kit</span>
-                    <span className="md:hidden">Retirada de Kit</span>
+                    <span className="md:hidden">Kit</span>
                   </TabsTrigger>
-                  <TabsTrigger value="documentos" data-testid="tab-documentos" className="flex-shrink-0 text-xs md:text-sm px-3 md:px-4">
-                    <FileText className="h-3.5 w-3.5 md:hidden mr-1.5" />
+                  <TabsTrigger value="documentos" data-testid="tab-documentos" className="flex-shrink-0 text-xs md:text-sm px-2.5 md:px-4">
+                    <FileText className="h-3 w-3 md:hidden mr-1" />
                     <span className="hidden md:inline">Documentos</span>
                     <span className="md:hidden">Docs</span>
                   </TabsTrigger>
                 </TabsList>
               </div>
 
-              <TabsContent value="sobre" className="space-y-6">
+              <TabsContent value="sobre" className="space-y-4 md:space-y-6">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5" />
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <Info className="h-4 w-4 md:h-5 md:w-5" />
                       Sobre o Evento
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
+                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {event.descricao}
                     </p>
                   </CardContent>
                 </Card>
               </TabsContent>
 
-              <TabsContent value="retirada" className="space-y-6">
+              <TabsContent value="retirada" className="space-y-4 md:space-y-6">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Package className="h-5 w-5" />
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <Package className="h-4 w-4 md:h-5 md:w-5" />
                       Retirada de Kit
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                     {event.informacoesRetiradaKit ? (
-                      <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
                         {event.informacoesRetiradaKit}
                       </p>
                     ) : (
-                      <div className="text-center py-8">
-                        <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                        <p className="text-muted-foreground font-medium mb-2">
+                      <div className="text-center py-6 md:py-8">
+                        <Package className="h-10 w-10 md:h-12 md:w-12 mx-auto text-muted-foreground mb-3 md:mb-4" />
+                        <p className="text-sm md:text-base text-muted-foreground font-medium mb-1 md:mb-2">
                           Informações em breve
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs md:text-sm text-muted-foreground">
                           As informações sobre retirada de kit serão divulgadas em breve.
                         </p>
                       </div>
@@ -323,26 +342,26 @@ export default function EventoDetailPage() {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="documentos" className="space-y-6">
+              <TabsContent value="documentos" className="space-y-4 md:space-y-6">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
+                  <CardHeader className="p-4 md:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                      <FileText className="h-4 w-4 md:h-5 md:w-5" />
                       Documentos do Evento
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                     {attachments.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2 md:space-y-3">
                         {attachments.map((doc, idx) => (
                           <div
                             key={doc.id}
-                            className="flex items-center justify-between p-4 border rounded-lg hover-elevate transition-all"
+                            className="flex items-center justify-between p-3 md:p-4 border rounded-lg hover-elevate transition-all"
                           >
-                            <div className="flex items-center gap-3">
-                              <FileText className="h-5 w-5 text-muted-foreground" />
+                            <div className="flex items-center gap-2 md:gap-3">
+                              <FileText className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
                               <div>
-                                <p className="font-medium text-foreground">{doc.nome}</p>
+                                <p className="font-medium text-foreground text-sm md:text-base">{doc.nome}</p>
                                 {doc.obrigatorioAceitar && (
                                   <span className="text-xs text-destructive">Aceite obrigatório</span>
                                 )}
@@ -353,15 +372,16 @@ export default function EventoDetailPage() {
                               size="sm"
                               onClick={() => handleDownload(doc.url, doc.nome)}
                               data-testid={`button-download-${idx}`}
+                              className="text-xs md:text-sm"
                             >
-                              <Download className="h-4 w-4 mr-2" />
+                              <Download className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2" />
                               Baixar
                             </Button>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-center py-8 text-muted-foreground">
+                      <p className="text-center py-6 md:py-8 text-sm md:text-base text-muted-foreground">
                         Nenhum documento cadastrado
                       </p>
                     )}
@@ -371,51 +391,51 @@ export default function EventoDetailPage() {
             </Tabs>
 
             {/* Modalidades Section - Separate from tabs */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
+            <Card className="mb-6 md:mb-8">
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <Award className="h-4 w-4 md:h-5 md:w-5" />
                   Modalidades {eventSoldOut ? '' : 'Disponíveis'}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                 {modalities.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-3 md:gap-4">
                     {modalities.map((mod) => {
                       const isSoldOut = eventSoldOut || mod.isSoldOut;
                       return (
                         <div 
                           key={mod.id} 
-                          className={`p-4 border rounded-lg ${isSoldOut ? 'opacity-60 bg-muted/30' : ''}`}
+                          className={`p-3 md:p-4 border rounded-lg ${isSoldOut ? 'opacity-60 bg-muted/30' : ''}`}
                           data-testid={`modality-item-${mod.id}`}
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 md:gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-lg">{mod.nome}</h3>
+                                <h3 className="font-semibold text-sm md:text-lg">{mod.nome}</h3>
                                 {isSoldOut && (
                                   <Badge variant="destructive" className="text-xs">
                                     Esgotado
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <Award className="h-4 w-4" />
+                                  <Award className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                   {mod.distancia} {mod.unidadeDistancia}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <Timer className="h-4 w-4" />
+                                  <Timer className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                   Largada: {mod.horarioLargada}
                                 </span>
                               </div>
                               {mod.descricao && (
-                                <p className="text-sm text-muted-foreground mt-2">{mod.descricao}</p>
+                                <p className="text-xs md:text-sm text-muted-foreground mt-1.5 md:mt-2">{mod.descricao}</p>
                               )}
                             </div>
                             <div className="text-right">
                               {!isSoldOut && (
-                                <span className="text-xl font-bold text-primary">{getPrice(mod.id)}</span>
+                                <span className="text-lg md:text-xl font-bold text-primary">{getPrice(mod.id)}</span>
                               )}
                             </div>
                           </div>
@@ -424,7 +444,7 @@ export default function EventoDetailPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-center py-8 text-muted-foreground">
+                  <p className="text-center py-6 md:py-8 text-sm md:text-base text-muted-foreground">
                     Nenhuma modalidade cadastrada
                   </p>
                 )}
@@ -433,14 +453,14 @@ export default function EventoDetailPage() {
 
             {/* Batches Card - At the end */}
             {activeBatches.length > 0 && (
-              <Card className="mb-8">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Tag className="h-5 w-5" />
+              <Card className="mb-6 md:mb-8">
+                <CardHeader className="p-4 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Tag className="h-4 w-4 md:h-5 md:w-5" />
                     Lotes de Inscrição
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                   <div className="space-y-3">
                     {activeBatches.map((batch, index) => {
                       const isCurrentBatch = event.activeBatch?.id === batch.id;
