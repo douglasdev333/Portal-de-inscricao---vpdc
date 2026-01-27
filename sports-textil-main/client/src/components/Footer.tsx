@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Calendar, MapPin, Mail, Phone, Instagram, Facebook } from "lucide-react";
+import { Calendar, MapPin, Mail, Phone, Facebook, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -50,9 +50,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-muted-foreground text-sm">
+                <a 
+                  href="https://wa.me/5583981302961?text=Olá! Gostaria de cadastrar meu evento no KitRunner." 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary text-sm transition-colors"
+                >
                   Cadastre seu evento
-                </span>
+                </a>
               </li>
             </ul>
           </div>
@@ -75,13 +80,13 @@ export default function Footer() {
             </ul>
             <div className="flex gap-4 mt-4">
               <a 
-                href="https://instagram.com" 
+                href="https://wa.me/5583981302961" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
-                aria-label="Instagram"
+                aria-label="WhatsApp"
               >
-                <Instagram className="h-5 w-5" />
+                <MessageCircle className="h-5 w-5" />
               </a>
               <a 
                 href="https://facebook.com" 
