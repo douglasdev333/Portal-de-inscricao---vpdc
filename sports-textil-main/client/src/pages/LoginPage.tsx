@@ -121,17 +121,17 @@ export default function LoginPage() {
       
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-16">
         <div className="grid md:grid-cols-2 gap-8 items-start">
-          <div className="hidden md:block space-y-6">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
+          <div className="md:block space-y-6">
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2 md:mb-3">
                 Acesse sua Conta
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Entre para gerenciar suas inscrições, acompanhar eventos e manter seus dados atualizados.
+              <p className="text-sm md:text-lg text-muted-foreground">
+                Gerencie suas inscrições e acompanhe eventos
               </p>
             </div>
 
-            <div className="space-y-4 pt-4">
+            <div className="hidden md:block space-y-4 pt-4">
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center">
                   <LogIn className="h-5 w-5 text-primary" />
