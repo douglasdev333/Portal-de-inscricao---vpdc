@@ -288,7 +288,7 @@ export default function EventoDetailPage() {
                   <TabsTrigger value="retirada" data-testid="tab-retirada" className="flex-shrink-0 text-xs md:text-sm px-2.5 md:px-4">
                     <Package className="h-3 w-3 md:hidden mr-1" />
                     <span className="hidden md:inline">Retirada Kit</span>
-                    <span className="md:hidden">Kit</span>
+                    <span className="md:hidden">Retirada de Kit</span>
                   </TabsTrigger>
                   <TabsTrigger value="documentos" data-testid="tab-documentos" className="flex-shrink-0 text-xs md:text-sm px-2.5 md:px-4">
                     <FileText className="h-3 w-3 md:hidden mr-1" />
