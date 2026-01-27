@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, date, integer, timestamp, boolean, decimal, pgEnum, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, date, integer, timestamp, boolean, decimal, pgEnum, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -84,6 +84,7 @@ export const modalities = pgTable("modalities", {
   descricao: text("descricao"),
   imagemUrl: text("imagem_url"),
   mapaPercursoUrl: text("mapa_percurso_url"),
+  linksPercurso: jsonb("links_percurso").$type<Array<{ nome: string; url: string }>>(),
   limiteVagas: integer("limite_vagas"),
   vagasOcupadas: integer("vagas_ocupadas").default(0).notNull(),
   tipoAcesso: modalityAccessEnum("tipo_acesso").default("paga").notNull(),
