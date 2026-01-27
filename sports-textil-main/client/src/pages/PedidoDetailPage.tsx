@@ -457,9 +457,16 @@ export default function PedidoDetailPage() {
     }
   }, [data?.data?.pixQrCode, toast]);
 
-  const handleRefreshStatus = useCallback(() => {
+  const handleRefreshStatus = useCallback(async () => {
+    try {
+      // Primeiro verifica o status no Mercado Pago (pode confirmar pagamento automaticamente)
+      await apiRequest("GET", `/api/payments/status/${orderId}`);
+    } catch (error) {
+      console.log("Erro ao verificar status do pagamento:", error);
+    }
+    // Depois atualiza os dados do pedido
     refetch();
-  }, [refetch]);
+  }, [orderId, refetch]);
 
   if (authLoading || isLoading) {
     return (
