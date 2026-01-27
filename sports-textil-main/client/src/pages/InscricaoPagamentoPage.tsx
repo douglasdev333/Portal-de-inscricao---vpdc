@@ -1044,7 +1044,7 @@ export default function InscricaoPagamentoPage() {
                     <div className="flex-1">
                       <Label htmlFor="credit_card" className="font-medium cursor-pointer">Cartão de Crédito</Label>
                       <p className="text-sm text-muted-foreground">
-                        Pague em até 12x
+                        Pagamento seguro e instantâneo
                       </p>
                     </div>
                   </div>
