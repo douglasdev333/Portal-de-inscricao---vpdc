@@ -50,8 +50,13 @@ router.post("/mercadopago", async (req, res) => {
       
       // Se não encontrar, usa o external_reference (orderId) como fallback
       if (!order && paymentResult.externalReference) {
-        console.log(`[webhook] Buscando pedido pelo external_reference: ${paymentResult.externalReference}`);
-        order = await storage.getOrder(paymentResult.externalReference);
+        // Remove o prefixo "order_" se existir
+        let orderId = paymentResult.externalReference;
+        if (orderId.startsWith("order_")) {
+          orderId = orderId.replace("order_", "");
+        }
+        console.log(`[webhook] Buscando pedido pelo external_reference: ${paymentResult.externalReference} -> orderId: ${orderId}`);
+        order = await storage.getOrder(orderId);
         
         // Atualiza o ID do pagamento no pedido se encontrado
         if (order) {
