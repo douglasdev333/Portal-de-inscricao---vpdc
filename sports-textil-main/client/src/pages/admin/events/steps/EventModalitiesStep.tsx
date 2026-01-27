@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock, Link2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Upload, X, ImageIcon, Loader2, DollarSign, Users, Clock, Link2, ExternalLink, EyeOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import type { EventFormData } from "../EventWizard";
 import type { Modality } from "@shared/schema";
@@ -44,6 +45,7 @@ const emptyModality: ModalityFormData = {
   taxaComodidade: "0",
   ordem: 0,
   linksPercurso: [],
+  ativo: true,
 };
 
 export function EventModalitiesStep({ formData, updateFormData }: EventModalitiesStepProps) {
@@ -470,6 +472,21 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
                   )}
                 </div>
               </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+                <div className="space-y-0.5">
+                  <Label htmlFor="mod-ativo" className="text-base font-medium">Modalidade Ativa</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Modalidades inativas não aparecem no fluxo de inscrição
+                  </p>
+                </div>
+                <Switch
+                  id="mod-ativo"
+                  checked={currentModality.ativo !== false}
+                  onCheckedChange={(checked) => updateCurrentModality("ativo", checked)}
+                  data-testid="switch-modality-active"
+                />
+              </div>
             </div>
 
             <DialogFooter>
@@ -523,6 +540,16 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
                           >
                             {tipoAcessoLabel}
                           </Badge>
+                          {modality.ativo === false && (
+                            <Badge 
+                              variant="outline"
+                              className="text-xs text-muted-foreground border-muted-foreground/50"
+                              data-testid={`badge-inactive-${index}`}
+                            >
+                              <EyeOff className="h-3 w-3 mr-1" />
+                              Inativa
+                            </Badge>
+                          )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                           <span className="flex items-center gap-1">

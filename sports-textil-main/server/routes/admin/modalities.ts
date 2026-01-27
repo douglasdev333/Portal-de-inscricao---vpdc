@@ -23,7 +23,8 @@ const modalitySchema = z.object({
   tipoAcesso: z.enum(["gratuita", "paga", "voucher", "pcd", "aprovacao_manual"]).optional(),
   taxaComodidade: z.string().optional(),
   idadeMinima: z.number().int().min(0).max(100).optional().nullable(),
-  ordem: z.number().int().optional()
+  ordem: z.number().int().optional(),
+  ativo: z.boolean().optional()
 });
 
 router.get("/", requireAuth, async (req, res) => {

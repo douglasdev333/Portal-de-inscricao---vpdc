@@ -91,6 +91,7 @@ export const modalities = pgTable("modalities", {
   taxaComodidade: decimal("taxa_comodidade", { precision: 10, scale: 2 }).default("0").notNull(),
   idadeMinima: integer("idade_minima"),
   ordem: integer("ordem").default(0).notNull(),
+  ativo: boolean("ativo").default(true).notNull(),
 });
 
 export const shirtSizes = pgTable("shirt_sizes", {

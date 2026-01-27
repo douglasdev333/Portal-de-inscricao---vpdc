@@ -288,7 +288,7 @@ export default function EventoDetailPage() {
     return `R$ ${minPrice.toFixed(2).replace('.', ',')}`;
   };
 
-  const modalities = event.modalities || [];
+  const modalities = (event.modalities || []).filter(mod => mod.ativo !== false);
   const attachments = event.attachments || [];
   const activeBatches = event.activeBatches || [];
   const eventSoldOut = event.eventSoldOut || event.status === 'esgotado';

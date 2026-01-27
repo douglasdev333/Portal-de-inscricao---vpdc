@@ -28,6 +28,7 @@ interface ModalityInfo {
   vagasDisponiveis: number | null;
   idadeMinima: number | null;
   ordem: number;
+  ativo?: boolean;
   isSoldOut?: boolean;
   isAvailable?: boolean;
   inscricaoBloqueada?: boolean;
@@ -263,7 +264,8 @@ export default function InscricaoModalidadePage() {
     );
   }
 
-  const { modalities, shirtSizes, activeBatch, eventSoldOut, registrationStatus, registrationMessage } = data.data;
+  const { modalities: allModalities, shirtSizes, activeBatch, eventSoldOut, registrationStatus, registrationMessage } = data.data;
+  const modalities = allModalities.filter(m => m.ativo !== false);
   const isEventSoldOut = eventSoldOut || data.data?.event?.status === 'esgotado' || registrationStatus === 'sold_out';
   const cannotRegister = registrationStatus !== 'open' && registrationStatus !== undefined;
   const selectedModality = modalities.find(m => m.id === modalidadeSelecionada);
