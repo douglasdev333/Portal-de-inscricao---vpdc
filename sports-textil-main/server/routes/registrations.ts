@@ -238,6 +238,7 @@ router.get("/events/:slug/registration-info", async (req, res) => {
         vagasDisponiveis: vagasModalidade,
         idadeMinima: mod.idadeMinima ?? currentEvent.idadeMinimaEvento,
         ordem: mod.ordem,
+        ativo: mod.ativo,
         inscricaoBloqueada,
         motivoBloqueio,
         isSoldOut,

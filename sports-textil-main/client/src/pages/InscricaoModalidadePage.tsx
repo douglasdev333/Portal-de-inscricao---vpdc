@@ -265,7 +265,9 @@ export default function InscricaoModalidadePage() {
   }
 
   const { modalities: allModalities, shirtSizes, activeBatch, eventSoldOut, registrationStatus, registrationMessage } = data.data;
-  const modalities = allModalities.filter(m => m.ativo !== false);
+  const modalities = allModalities
+    .filter(m => m.ativo !== false)
+    .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
   const isEventSoldOut = eventSoldOut || data.data?.event?.status === 'esgotado' || registrationStatus === 'sold_out';
   const cannotRegister = registrationStatus !== 'open' && registrationStatus !== undefined;
   const selectedModality = modalities.find(m => m.id === modalidadeSelecionada);
