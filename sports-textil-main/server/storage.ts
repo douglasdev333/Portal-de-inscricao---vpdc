@@ -306,6 +306,17 @@ export class DbStorage implements IStorage {
   }
 
   async deleteModality(id: string): Promise<boolean> {
+    // Apagar registros dependentes primeiro (em cascata)
+    // 1. Preços vinculados à modalidade
+    await db.delete(prices).where(eq(prices.modalityId, id));
+    
+    // 2. Lotes vinculados à modalidade
+    await db.delete(registrationBatches).where(eq(registrationBatches.modalityId, id));
+    
+    // 3. Tamanhos de camisa vinculados à modalidade
+    await db.delete(shirtSizes).where(eq(shirtSizes.modalityId, id));
+    
+    // 4. Finalmente apagar a modalidade
     const result = await db.delete(modalities).where(eq(modalities.id, id)).returning();
     return result.length > 0;
   }
