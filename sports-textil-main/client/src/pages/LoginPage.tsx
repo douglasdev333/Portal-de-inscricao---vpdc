@@ -19,10 +19,15 @@ export default function LoginPage() {
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
-  const redirectTo = searchParams.get("redirect") || "/";
+  
+  // Priorizar: 1) query param redirect, 2) sessionStorage (salvo quando sessão expira), 3) home
+  const savedRedirect = sessionStorage.getItem("redirectAfterLogin");
+  const redirectTo = searchParams.get("redirect") || savedRedirect || "/";
 
   useEffect(() => {
     if (athlete) {
+      // Limpar o redirect salvo após usar
+      sessionStorage.removeItem("redirectAfterLogin");
       setLocation(redirectTo);
     }
   }, [athlete, redirectTo, setLocation]);
