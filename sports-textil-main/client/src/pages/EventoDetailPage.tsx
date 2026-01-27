@@ -514,7 +514,7 @@ export default function EventoDetailPage() {
             )}
 
             {/* Percursos Section - Modalidades com imagem ou links de percurso */}
-            {modalities.some(mod => mod.imagemUrl || mod.mapaPercursoUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0)) && (
+            {modalities.some(mod => mod.imagemUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0)) && (
               <Card className="mb-6 md:mb-8">
                 <CardHeader className="p-4 md:p-6">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
@@ -525,11 +525,9 @@ export default function EventoDetailPage() {
                 <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     {modalities
-                      .filter(mod => mod.imagemUrl || mod.mapaPercursoUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0))
+                      .filter(mod => mod.imagemUrl || (Array.isArray(mod.linksPercurso) && mod.linksPercurso.length > 0))
                       .map((mod) => {
-                        const linksFromJson = Array.isArray(mod.linksPercurso) ? mod.linksPercurso : [];
-                        const legacyLink = mod.mapaPercursoUrl ? [{ nome: 'Ver Percurso', url: mod.mapaPercursoUrl }] : [];
-                        const links = [...linksFromJson, ...legacyLink];
+                        const links = Array.isArray(mod.linksPercurso) ? mod.linksPercurso : [];
                         const hasImage = !!mod.imagemUrl;
                         const hasLinks = links.length > 0;
                         
@@ -558,16 +556,19 @@ export default function EventoDetailPage() {
                                         Ver Mapa do Percurso
                                       </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-4xl max-h-[90vh]">
-                                      <DialogHeader>
+                                    <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+                                      <DialogHeader className="p-4 pb-2">
                                         <DialogTitle>Percurso - {mod.nome}</DialogTitle>
                                       </DialogHeader>
-                                      <div className="overflow-auto">
-                                        <img 
-                                          src={mod.imagemUrl!} 
-                                          alt={`Percurso ${mod.nome}`}
-                                          className="w-full h-auto rounded-lg"
-                                        />
+                                      <div className="overflow-auto max-h-[calc(90vh-80px)] p-4 pt-0">
+                                        <div className="relative group cursor-zoom-in touch-pinch-zoom">
+                                          <img 
+                                            src={mod.imagemUrl!} 
+                                            alt={`Percurso ${mod.nome}`}
+                                            className="w-full h-auto rounded-lg object-contain max-h-[70vh] transition-transform duration-200 md:group-hover:scale-150 md:group-hover:cursor-zoom-out origin-center"
+                                            style={{ touchAction: 'pinch-zoom' }}
+                                          />
+                                        </div>
                                       </div>
                                     </DialogContent>
                                   </Dialog>
