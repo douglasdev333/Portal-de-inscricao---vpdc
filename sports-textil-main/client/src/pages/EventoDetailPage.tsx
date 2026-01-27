@@ -201,9 +201,9 @@ export default function EventoDetailPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        {/* Banner with 4:3 aspect ratio */}
+        {/* Banner with 16:9 aspect ratio */}
         <div className="relative rounded-lg overflow-hidden mb-8">
-          <div className="aspect-[4/3] md:aspect-[21/9]">
+          <div className="aspect-[16/9]">
             <img
               src={event.bannerUrl || heroImage}
               alt={event.nome}
