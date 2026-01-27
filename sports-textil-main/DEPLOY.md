@@ -1,156 +1,360 @@
 # Guia de Deploy - KitRunner
 
-Este guia explica como publicar o KitRunner em produção no Replit.
+Este guia explica como publicar o KitRunner em produção.
 
-## Pré-requisitos
+---
 
-Antes de fazer o deploy, certifique-se de que:
+## Parte 1: Deploy em Servidor Proprio (VPS/Cloud)
 
-1. **Banco de dados PostgreSQL** está configurado e funcionando
-2. **Variáveis de ambiente** estão configuradas (veja seção abaixo)
-3. **Mercado Pago** está configurado com credenciais de produção
+### Requisitos do Servidor
 
-## Variáveis de Ambiente Necessárias
+- **Sistema Operacional**: Ubuntu 20.04+ ou Debian 11+
+- **Node.js**: versão 20 ou superior
+- **PostgreSQL**: versão 14 ou superior
+- **RAM**: mínimo 1GB (recomendado 2GB)
+- **Armazenamento**: mínimo 10GB
 
-Configure as seguintes variáveis no ambiente de **produção**:
+### 1. Preparar o Servidor
 
-| Variável | Descrição | Exemplo |
-|----------|-----------|---------|
-| `DATABASE_URL` | URL de conexão do PostgreSQL | `postgresql://user:pass@host/db` |
-| `SESSION_SECRET` | Chave secreta para sessões (mín. 32 caracteres) | `sua-chave-secreta-segura-aqui` |
-| `MERCADOPAGO_ACCESS_TOKEN` | Token de acesso do Mercado Pago (produção) | `APP_USR-...` |
-| `NODE_ENV` | Ambiente de execução | `production` |
+#### Atualizar o sistema
+```bash
+sudo apt update && sudo apt upgrade -y
+```
 
-### Como Configurar
+#### Instalar Node.js 20
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+```
 
-1. Clique na aba **Secrets** (cadeado) no painel lateral
-2. Adicione cada variável com seu valor de produção
-3. Para o Mercado Pago, use as credenciais de **produção** (não sandbox)
+#### Verificar instalação
+```bash
+node --version  # deve mostrar v20.x.x
+npm --version
+```
 
-## Passo a Passo do Deploy
+### 2. Instalar e Configurar PostgreSQL
 
-### 1. Verificar se o projeto está funcionando
+#### Instalar PostgreSQL
+```bash
+sudo apt install -y postgresql postgresql-contrib
+```
 
-Antes do deploy, teste localmente:
-- Acesse a aplicação e faça um teste de inscrição
-- Verifique se o banco de dados está conectado
-- Confirme que não há erros no console
+#### Criar banco de dados e usuário
+```bash
+sudo -u postgres psql
+```
 
-### 2. Acessar o Painel de Publicação
+No console do PostgreSQL:
+```sql
+CREATE USER kitrunner WITH PASSWORD 'sua-senha-segura';
+CREATE DATABASE kitrunner_db OWNER kitrunner;
+GRANT ALL PRIVILEGES ON DATABASE kitrunner_db TO kitrunner;
+\q
+```
 
-1. Clique no botão **Publish** (Publicar) no canto superior direito
-2. Ou acesse através do menu de ferramentas
+### 3. Clonar e Configurar o Projeto
 
-### 3. Escolher Tipo de Deploy
+#### Criar pasta do projeto
+```bash
+sudo mkdir -p /var/www/kitrunner
+sudo chown $USER:$USER /var/www/kitrunner
+cd /var/www/kitrunner
+```
 
-Selecione **Autoscale** - recomendado para aplicações web:
-- Escala automaticamente com o tráfego
-- Reduz custos quando não há acessos
-- Ideal para sites com tráfego variável
+#### Copiar os arquivos do projeto
+Você pode usar SCP, SFTP, ou Git para transferir os arquivos:
 
-### 4. Configurar Recursos
+```bash
+# Opção 1: Via Git (se tiver repositório)
+git clone https://seu-repositorio.git .
 
-Configuração recomendada para início:
-- **CPU**: 0.5 vCPU
-- **RAM**: 512 MB
-- **Máquinas máximas**: 2-3
+# Opção 2: Via SCP (do seu computador)
+scp -r ./sports-textil-main/* usuario@seu-servidor:/var/www/kitrunner/
+```
 
-Você pode ajustar depois conforme a demanda.
+#### Instalar dependências
+```bash
+cd /var/www/kitrunner
+npm install
+```
 
-### 5. Configurar Comando de Build
+### 4. Configurar Variáveis de Ambiente
 
-O build é executado automaticamente:
+#### Criar arquivo .env
+```bash
+nano .env
+```
+
+Adicione as seguintes variáveis:
+```env
+# Banco de Dados
+DATABASE_URL=postgresql://kitrunner:sua-senha-segura@localhost:5432/kitrunner_db
+
+# Sessão (gere uma chave aleatória com: openssl rand -hex 32)
+SESSION_SECRET=sua-chave-secreta-com-pelo-menos-32-caracteres
+
+# Mercado Pago (credenciais de PRODUCAO)
+MERCADOPAGO_ACCESS_TOKEN=APP_USR-seu-token-de-producao
+MERCADOPAGO_PUBLIC_KEY=APP_USR-sua-public-key
+
+# Ambiente
+NODE_ENV=production
+PORT=5000
+```
+
+Salve com `Ctrl+X`, `Y`, `Enter`.
+
+### 5. Fazer o Build
+
 ```bash
 npm run build
 ```
 
-### 6. Configurar Comando de Execução
+Isso vai gerar a pasta `dist/` com o código compilado.
 
-O servidor é iniciado com:
+### 6. Executar as Migrações do Banco
+
+```bash
+npm run db:push
+```
+
+### 7. Testar a Aplicação
+
 ```bash
 node dist/index.js
 ```
 
-### 7. Publicar
+Acesse `http://seu-ip:5000` para verificar se está funcionando.
 
-1. Revise todas as configurações
-2. Clique em **Publish** para iniciar o deploy
-3. Aguarde o build e publicação (pode levar alguns minutos)
+### 8. Configurar PM2 (Gerenciador de Processos)
 
-## Após o Deploy
+O PM2 mantém a aplicação rodando e reinicia automaticamente se cair.
 
-### URL de Produção
-
-Após publicar, você receberá uma URL no formato:
-```
-https://seu-projeto.replit.app
+#### Instalar PM2
+```bash
+sudo npm install -g pm2
 ```
 
-### Configurar Domínio Personalizado (Opcional)
-
-1. Vá em **Settings** > **Domains**
-2. Adicione seu domínio personalizado
-3. Configure o DNS conforme instruções
-
-### Configurar Webhook do Mercado Pago
-
-Configure o webhook de pagamentos para a URL de produção:
+#### Iniciar a aplicação com PM2
+```bash
+cd /var/www/kitrunner
+pm2 start dist/index.js --name kitrunner
 ```
-https://seu-projeto.replit.app/api/payments/webhook
+
+#### Configurar para iniciar no boot
+```bash
+pm2 startup
+pm2 save
 ```
+
+#### Comandos úteis do PM2
+```bash
+pm2 status          # Ver status
+pm2 logs kitrunner  # Ver logs
+pm2 restart kitrunner  # Reiniciar
+pm2 stop kitrunner     # Parar
+```
+
+### 9. Configurar Nginx (Proxy Reverso)
+
+O Nginx serve como proxy reverso e permite usar HTTPS.
+
+#### Instalar Nginx
+```bash
+sudo apt install -y nginx
+```
+
+#### Criar configuração do site
+```bash
+sudo nano /etc/nginx/sites-available/kitrunner
+```
+
+Adicione:
+```nginx
+server {
+    listen 80;
+    server_name seu-dominio.com.br www.seu-dominio.com.br;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+        proxy_read_timeout 86400;
+    }
+}
+```
+
+#### Ativar o site
+```bash
+sudo ln -s /etc/nginx/sites-available/kitrunner /etc/nginx/sites-enabled/
+sudo nginx -t  # Testar configuração
+sudo systemctl restart nginx
+```
+
+### 10. Configurar HTTPS com Let's Encrypt
+
+#### Instalar Certbot
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+```
+
+#### Gerar certificado SSL
+```bash
+sudo certbot --nginx -d seu-dominio.com.br -d www.seu-dominio.com.br
+```
+
+Siga as instruções na tela. O Certbot configura automaticamente o Nginx para HTTPS.
+
+#### Renovação automática
+O Certbot configura renovação automática. Para testar:
+```bash
+sudo certbot renew --dry-run
+```
+
+### 11. Configurar Firewall
+
+```bash
+sudo ufw allow 22      # SSH
+sudo ufw allow 80      # HTTP
+sudo ufw allow 443     # HTTPS
+sudo ufw enable
+```
+
+### 12. Configurar Webhook do Mercado Pago
 
 No painel do Mercado Pago:
 1. Acesse **Suas integrações** > **Webhooks**
-2. Adicione a URL acima
+2. Adicione a URL: `https://seu-dominio.com.br/api/payments/webhook`
 3. Selecione eventos de **Pagamentos**
+
+---
+
+## Atualizando a Aplicação
+
+Para atualizar o código em produção:
+
+```bash
+cd /var/www/kitrunner
+
+# 1. Baixar novas alterações (se usar Git)
+git pull origin main
+
+# 2. Instalar novas dependências
+npm install
+
+# 3. Fazer novo build
+npm run build
+
+# 4. Reiniciar a aplicação
+pm2 restart kitrunner
+```
+
+---
+
+## Backup do Banco de Dados
+
+### Criar backup
+```bash
+pg_dump -U kitrunner kitrunner_db > backup_$(date +%Y%m%d).sql
+```
+
+### Restaurar backup
+```bash
+psql -U kitrunner kitrunner_db < backup_20250127.sql
+```
+
+### Automatizar backup diário
+```bash
+crontab -e
+```
+
+Adicione:
+```
+0 3 * * * pg_dump -U kitrunner kitrunner_db > /var/backups/kitrunner_$(date +\%Y\%m\%d).sql
+```
+
+---
 
 ## Monitoramento
 
-### Verificar Logs
+### Verificar logs da aplicação
+```bash
+pm2 logs kitrunner
+```
 
-- Acesse **Logs** no painel do Replit para ver logs em tempo real
-- Monitore erros e performance
+### Verificar logs do Nginx
+```bash
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+```
 
-### Verificar Status
+### Verificar uso de recursos
+```bash
+htop
+```
 
-- O Replit mostra o status do deploy no painel
-- Verde = funcionando
-- Amarelo = reiniciando
-- Vermelho = erro
+---
 
 ## Troubleshooting
 
-### Erro de Conexão com Banco
+### Aplicação não inicia
+```bash
+# Ver logs de erro
+pm2 logs kitrunner --err
 
-- Verifique se `DATABASE_URL` está configurada corretamente
-- Confirme que o banco está acessível externamente
+# Verificar se a porta está em uso
+sudo lsof -i :5000
+```
 
-### Erro 500 na Aplicação
+### Erro de conexão com banco
+```bash
+# Testar conexão
+psql -U kitrunner -h localhost kitrunner_db
 
-- Verifique os logs para identificar o erro
-- Confirme que todas as variáveis de ambiente estão configuradas
+# Verificar status do PostgreSQL
+sudo systemctl status postgresql
+```
 
-### Pagamentos Não Funcionam
+### Erro 502 Bad Gateway (Nginx)
+```bash
+# Verificar se a aplicação está rodando
+pm2 status
 
-- Verifique se está usando credenciais de **produção** do Mercado Pago
-- Confirme que o webhook está configurado corretamente
-- Teste com um pagamento real de valor baixo
+# Reiniciar aplicação
+pm2 restart kitrunner
+```
 
-## Atualizações
+### Certificado SSL expirado
+```bash
+sudo certbot renew
+sudo systemctl restart nginx
+```
 
-Para atualizar a aplicação em produção:
+---
 
-1. Faça as alterações no código
-2. Teste localmente
-3. Clique em **Publish** novamente
-4. O Replit fará o build e deploy automaticamente
+## Parte 2: Deploy no Replit
 
-## Custos
+### Passo a Passo
 
-O deploy no Replit usa **Cycles**:
-- Autoscale cobra por uso de CPU/RAM
-- Quando não há tráfego, escala para zero (sem custo)
-- Monitore seu uso no painel de billing
+1. Clique no botão **Publish** no canto superior direito
+2. Selecione **Autoscale** para aplicações web
+3. Configure recursos (0.5 vCPU, 512 MB RAM recomendado)
+4. Clique em **Publish**
+
+### Variáveis de Ambiente no Replit
+
+Configure na aba **Secrets**:
+- `DATABASE_URL`
+- `SESSION_SECRET`
+- `MERCADOPAGO_ACCESS_TOKEN`
+- `NODE_ENV=production`
 
 ---
 
