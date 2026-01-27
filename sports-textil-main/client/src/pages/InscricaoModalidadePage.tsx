@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ShieldCheck, AlertCircle, Loader2, CheckCircle, XCircle, CalendarClock, Ticket } from "lucide-react";
 import Header from "@/components/Header";
+import SimpleFooter from "@/components/SimpleFooter";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -607,6 +608,7 @@ export default function InscricaoModalidadePage() {
           </div>
         </div>
       </div>
+      <SimpleFooter />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -477,6 +478,7 @@ export default function MinhasInscricoesPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Link, useLocation, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { LogIn, UserPlus, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 
 export default function LoginPage() {
@@ -246,6 +247,7 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, Users, ArrowLeft, Loader2, CalendarCheck, MapPin, Calendar } from "lucide-react";
 import Header from "@/components/Header";
+import SimpleFooter from "@/components/SimpleFooter";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { useEffect } from "react";
 import type { Event } from "@shared/schema";
@@ -173,6 +174,7 @@ export default function InscricaoParticipantePage() {
           </button>
         </div>
       </div>
+      <SimpleFooter />
     </div>
   );
 }

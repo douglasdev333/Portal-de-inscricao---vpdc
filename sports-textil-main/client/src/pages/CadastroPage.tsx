@@ -13,6 +13,7 @@ import {
 import { Link, useLocation, useSearch } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { CalendarCheck } from "lucide-react";
 
@@ -554,6 +555,7 @@ export default function CadastroPage() {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }

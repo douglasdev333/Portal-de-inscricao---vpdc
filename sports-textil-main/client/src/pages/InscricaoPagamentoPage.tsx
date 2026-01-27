@@ -26,6 +26,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import Header from "@/components/Header";
+import SimpleFooter from "@/components/SimpleFooter";
 import { useToast } from "@/hooks/use-toast";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -1129,6 +1130,7 @@ export default function InscricaoPagamentoPage() {
           </div>
         </div>
       )}
+      <SimpleFooter />
     </div>
   );
 }

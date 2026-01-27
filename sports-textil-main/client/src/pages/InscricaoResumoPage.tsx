@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, User, Shirt, Award, Loader2, AlertCircle, CheckCircle, CalendarClock } from "lucide-react";
 import Header from "@/components/Header";
+import SimpleFooter from "@/components/SimpleFooter";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -421,6 +422,7 @@ export default function InscricaoResumoPage() {
           </div>
         </div>
       </div>
+      <SimpleFooter />
     </div>
   );
 }
