@@ -342,24 +342,32 @@ export default function InscricaoPagamentoPage() {
       const result = await response.json();
 
       if (result.success && result.data) {
+        // Invalidar cache para ter dados atualizados na página do pedido
+        queryClient.invalidateQueries({ queryKey: ["/api/registrations/orders", orderId] });
+        
         if (result.data.status === "approved") {
           setPaymentConfirmed(true);
-          queryClient.invalidateQueries({ queryKey: ["/api/registrations/orders", orderId] });
           toast({
             title: "Pagamento aprovado!",
             description: "Sua inscrição foi confirmada com sucesso.",
           });
+          // Redirecionar para página do pedido após pagamento aprovado
+          setLocation(`/pedido/${orderId}`);
         } else if (result.data.status === "in_process" || result.data.status === "pending") {
           toast({
             title: "Pagamento em processamento",
-            description: "Seu pagamento está sendo analisado. Você receberá uma confirmação em breve.",
+            description: "Seu pagamento está sendo analisado. Acompanhe o status na página do pedido.",
           });
+          // Redirecionar para página do pedido para acompanhar status
+          setLocation(`/pedido/${orderId}`);
         } else {
           toast({
             title: "Pagamento não aprovado",
             description: getCardErrorMessage(result.data.statusDetail),
             variant: "destructive",
           });
+          // Redirecionar para página do pedido para ver mensagem e tentar novamente
+          setLocation(`/pedido/${orderId}`);
         }
       } else {
         if (result.errorCode === "ORDER_EXPIRED") {
