@@ -514,12 +514,47 @@ router.get("/status/:orderId", async (req, res) => {
       });
     }
 
-    const result = await getPaymentStatus(order.idPagamentoGateway);
+    // Verificar pagamento atual
+    let result = await getPaymentStatus(order.idPagamentoGateway);
+    let paymentApproved = result.success && result.status === "approved";
+    let approvedPaymentId = order.idPagamentoGateway;
+    let approvedPaymentMethod = order.metodoPagamento || "pix";
+    
+    // Se não está aprovado, verificar PIX separado (pode ter sido substituído por cartão)
+    if (!paymentApproved && order.pixPaymentId && order.pixPaymentId !== order.idPagamentoGateway) {
+      console.log(`[payments] Verificando PIX alternativo ${order.pixPaymentId} para pedido ${order.id}`);
+      const pixResult = await getPaymentStatus(order.pixPaymentId);
+      
+      if (pixResult.success && pixResult.status === "approved") {
+        result = pixResult;
+        paymentApproved = true;
+        approvedPaymentId = order.pixPaymentId;
+        approvedPaymentMethod = "pix";
+        // Atualizar o idPagamentoGateway para o PIX que foi pago
+        await storage.updateOrder(order.id, { idPagamentoGateway: order.pixPaymentId });
+        console.log(`[payments] PIX ${order.pixPaymentId} aprovado! Atualizando pedido ${order.id}`);
+      }
+    }
 
-    if (result.success && result.status === "approved" && order.status === "pendente") {
-      const confirmResult = await confirmPaymentAtomic(order.id, order.metodoPagamento || "pix");
+    if (paymentApproved && order.status === "pendente") {
+      const confirmResult = await confirmPaymentAtomic(order.id, approvedPaymentMethod);
       if (!confirmResult.success) {
         console.error("[payments] Erro ao confirmar pagamento via status check:", confirmResult.error);
+      } else {
+        // Recarregar pedido para retornar status atualizado
+        const updatedOrder = await storage.getOrder(orderId);
+        return res.json({
+          success: true,
+          data: {
+            orderId: order.id,
+            orderStatus: updatedOrder?.status || "confirmado",
+            paymentCreated: true,
+            paymentId: approvedPaymentId,
+            paymentStatus: result.status,
+            paymentStatusDetail: result.statusDetail,
+            confirmed: true
+          }
+        });
       }
     }
 

@@ -22,18 +22,40 @@ export async function pollPayments(): Promise<{ processed: number; confirmed: nu
       processed++;
       
       try {
-        if (!order.idPagamentoGateway) continue;
-
-        const result = await getPaymentStatus(order.idPagamentoGateway);
+        // Verificar pagamento atual (idPagamentoGateway)
+        let paymentApproved = false;
+        let approvedPaymentMethod = order.metodoPagamento || "pix";
         
-        if (!result.success) {
-          console.error(`[payment-polling] Erro ao consultar pagamento ${order.idPagamentoGateway}:`, result.error);
-          errors++;
-          continue;
+        if (order.idPagamentoGateway) {
+          const result = await getPaymentStatus(order.idPagamentoGateway);
+          
+          if (result.success) {
+            if (result.status === 'approved') {
+              paymentApproved = true;
+            } else if (result.status === 'rejected' || result.status === 'cancelled') {
+              console.log(`[payment-polling] Pagamento ${order.idPagamentoGateway} rejeitado/cancelado - verificando PIX alternativo`);
+            }
+          }
         }
-
-        if (result.status === 'approved') {
-          const confirmResult = await confirmPaymentAtomic(order.id, order.metodoPagamento || "pix");
+        
+        // Se o pagamento atual não foi aprovado, verificar PIX separado (pode ter sido substituído por cartão)
+        if (!paymentApproved && (order as any).pixPaymentId && (order as any).pixPaymentId !== order.idPagamentoGateway) {
+          const pixPaymentId = (order as any).pixPaymentId;
+          console.log(`[payment-polling] Verificando PIX alternativo ${pixPaymentId} para pedido ${order.id}`);
+          
+          const pixResult = await getPaymentStatus(pixPaymentId);
+          
+          if (pixResult.success && pixResult.status === 'approved') {
+            paymentApproved = true;
+            approvedPaymentMethod = "pix";
+            // Atualizar o idPagamentoGateway para o PIX que foi pago
+            await storage.updateOrder(order.id, { idPagamentoGateway: pixPaymentId });
+            console.log(`[payment-polling] PIX ${pixPaymentId} aprovado! Atualizando pedido ${order.id}`);
+          }
+        }
+        
+        if (paymentApproved) {
+          const confirmResult = await confirmPaymentAtomic(order.id, approvedPaymentMethod);
           if (confirmResult.success) {
             console.log(`[payment-polling] Pedido ${order.id} confirmado via polling`);
             confirmed++;
@@ -41,8 +63,6 @@ export async function pollPayments(): Promise<{ processed: number; confirmed: nu
             console.error(`[payment-polling] Erro ao confirmar pedido ${order.id}:`, confirmResult.error);
             errors++;
           }
-        } else if (result.status === 'rejected' || result.status === 'cancelled') {
-          console.log(`[payment-polling] Pagamento ${order.idPagamentoGateway} rejeitado/cancelado - pedido ${order.id} permanece pendente`);
         }
       } catch (orderError) {
         console.error(`[payment-polling] Erro ao processar pedido ${order.id}:`, orderError);

@@ -760,8 +760,16 @@ export class DbStorage implements IStorage {
   }
 
   async getOrdersByPaymentId(paymentId: string): Promise<Order | undefined> {
-    const [order] = await db.select().from(orders)
+    // Primeiro tenta pelo idPagamentoGateway (pagamento atual)
+    let [order] = await db.select().from(orders)
       .where(eq(orders.idPagamentoGateway, paymentId));
+    
+    // Se não encontrar, tenta pelo pixPaymentId (PIX pode ter sido substituído por cartão)
+    if (!order) {
+      [order] = await db.select().from(orders)
+        .where(eq(orders.pixPaymentId, paymentId));
+    }
+    
     return order;
   }
 
