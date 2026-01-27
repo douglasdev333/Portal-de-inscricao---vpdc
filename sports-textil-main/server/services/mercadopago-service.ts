@@ -7,7 +7,12 @@ if (!accessToken) {
   console.warn('[mercadopago-service] MERCADOPAGO_ACCESS_TOKEN não configurado. Integração com Mercado Pago desabilitada.');
 }
 
-const client = accessToken ? new MercadoPagoConfig({ accessToken }) : null;
+const client = accessToken ? new MercadoPagoConfig({ 
+  accessToken,
+  options: {
+    timeout: 30000 // 30 segundos para evitar falhas de timeout
+  }
+}) : null;
 const paymentClient = client ? new Payment(client) : null;
 
 export interface PixPaymentResult {
@@ -125,6 +130,33 @@ export async function createCardPayment(
   }
 
   try {
+    // === VALIDAÇÕES ===
+    // Validar token do cartão
+    if (!token || token.length < 10) {
+      return {
+        success: false,
+        error: 'Token do cartão inválido ou muito curto'
+      };
+    }
+
+    // Validar CPF (11 dígitos)
+    const cleanCpf = payerIdentification?.number?.replace(/\D/g, '') || '';
+    if (cleanCpf.length !== 11) {
+      return {
+        success: false,
+        error: 'CPF inválido - deve ter exatamente 11 dígitos'
+      };
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(buyerEmail)) {
+      return {
+        success: false,
+        error: 'Email inválido'
+      };
+    }
+
     // Parse first_name and last_name from cardholderName
     let firstName = "";
     let lastName = "";
@@ -134,6 +166,14 @@ export async function createCardPayment(
       lastName = nameParts.slice(1).join(" ") || nameParts[0] || "";
     }
 
+    // Validar nome e sobrenome
+    if (firstName.length < 1 || lastName.length < 1) {
+      return {
+        success: false,
+        error: 'Nome e sobrenome são obrigatórios'
+      };
+    }
+
     const paymentBody: any = {
       transaction_amount: amount,
       token: token,
@@ -141,6 +181,7 @@ export async function createCardPayment(
       installments: installments,
       payment_method_id: paymentMethodId,
       statement_descriptor: "STEVENTOS",
+      binary_mode: false, // Permite análise adicional ao invés de rejeitar imediatamente
       payer: {
         email: buyerEmail,
         first_name: firstName,
