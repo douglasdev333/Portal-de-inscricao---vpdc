@@ -433,6 +433,21 @@ export default function MinhaContaPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <Label className="text-muted-foreground text-sm">Data de Nascimento</Label>
+                    <p className="text-foreground font-medium" data-testid="text-dataNascimento">
+                      {formData.dataNascimento || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-muted-foreground text-sm">Sexo</Label>
+                    <p className="text-foreground font-medium" data-testid="text-sexo">
+                      {formData.sexo === "masculino" ? "Masculino" : formData.sexo === "feminino" ? "Feminino" : formData.sexo || "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
                     <Label className="text-muted-foreground text-sm">Profissão</Label>
                     <p className="text-foreground font-medium" data-testid="text-profissao">
                       {formData.profissao || "-"}
