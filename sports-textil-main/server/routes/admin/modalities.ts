@@ -5,6 +5,11 @@ import { requireAuth, requireRole, checkEventOwnership } from "../../middleware/
 
 const router = Router({ mergeParams: true });
 
+const linkPercursoSchema = z.object({
+  nome: z.string(),
+  url: z.string().url()
+});
+
 const modalitySchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   distancia: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "Distancia deve ser um numero positivo"),
@@ -13,6 +18,7 @@ const modalitySchema = z.object({
   descricao: z.string().optional().nullable(),
   imagemUrl: z.string().url().optional().nullable(),
   mapaPercursoUrl: z.string().url().optional().nullable(),
+  linksPercurso: z.array(linkPercursoSchema).optional().nullable(),
   limiteVagas: z.number().int().positive().optional().nullable(),
   tipoAcesso: z.enum(["gratuita", "paga", "voucher", "pcd", "aprovacao_manual"]).optional(),
   taxaComodidade: z.string().optional(),
