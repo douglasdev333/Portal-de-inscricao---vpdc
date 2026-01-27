@@ -337,6 +337,23 @@ router.get("/order/:orderId", async (req, res) => {
     const pixExpired = order.pixExpiracao ? new Date(order.pixExpiracao) <= now : true;
     const orderExpired = order.dataExpiracao ? new Date(order.dataExpiracao) <= now : false;
 
+    // Verificar status do último pagamento se existir
+    let lastPaymentStatus: string | null = null;
+    let lastPaymentStatusDetail: string | null = null;
+    
+    if (order.idPagamentoGateway && order.status === "pendente") {
+      try {
+        const { getPaymentStatus } = await import("../services/mercadopago-service");
+        const paymentResult = await getPaymentStatus(order.idPagamentoGateway);
+        if (paymentResult.success) {
+          lastPaymentStatus = paymentResult.status || null;
+          lastPaymentStatusDetail = paymentResult.statusDetail || null;
+        }
+      } catch (e) {
+        console.log("[payments] Erro ao buscar status do pagamento:", e);
+      }
+    }
+
     return res.json({
       success: true,
       data: {
@@ -355,6 +372,8 @@ router.get("/order/:orderId", async (req, res) => {
         pixDataGeracao: order.pixDataGeracao,
         pixExpired,
         orderExpired,
+        lastPaymentStatus,
+        lastPaymentStatusDetail,
         evento: event ? {
           id: event.id,
           nome: event.nome,

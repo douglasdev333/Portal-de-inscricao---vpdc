@@ -81,6 +81,8 @@ interface OrderDetail {
   pixDataGeracao: string | null;
   pixExpired: boolean;
   orderExpired: boolean;
+  lastPaymentStatus: string | null;
+  lastPaymentStatusDetail: string | null;
   evento: Evento | null;
   comprador: { id: string; nome: string; email: string } | null;
   inscricoes: Inscricao[];
@@ -508,6 +510,10 @@ export default function PedidoDetailPage() {
   const hasPixExpired = isPending && order.pixExpiracao && order.pixExpired && !showPaymentOptions;
   const canPay = isPending && !order.orderExpired;
   const canRetryPayment = isFailed && !order.orderExpired;
+  const isPaymentRejected = isPending && order.lastPaymentStatus === "rejected";
+  const rejectedMessage = order.lastPaymentStatusDetail ? 
+    getFriendlyErrorMessage(undefined, undefined, order.lastPaymentStatusDetail) : 
+    "Pagamento não autorizado. Tente outra forma de pagamento.";
 
   return (
     <div className="min-h-screen bg-background">
@@ -557,6 +563,41 @@ export default function PedidoDetailPage() {
                     expirationDate={order.dataExpiracao}
                     onExpire={handleRefreshStatus}
                   />
+                </div>
+              </div>
+            )}
+
+            {isPaymentRejected && (
+              <div className="flex flex-col gap-3 p-4 bg-red-50 dark:bg-red-950/20 rounded-md mb-4 border border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-3">
+                  <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-red-800 dark:text-red-400">
+                      Pagamento não aprovado
+                    </p>
+                    <p className="text-sm text-red-700 dark:text-red-500 mt-1">
+                      {rejectedMessage}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowPaymentOptions(true)}
+                    className="border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    Tentar outra forma de pagamento
+                  </Button>
+                  <a 
+                    href="https://wa.me/5583981302961?text=Olá! Preciso de ajuda com meu pagamento rejeitado."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      Falar com suporte
+                    </Button>
+                  </a>
                 </div>
               </div>
             )}
