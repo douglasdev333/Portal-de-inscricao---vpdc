@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Calendar, MapPin, Mail, Phone, Facebook, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, Mail, Phone, Instagram, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -80,6 +80,15 @@ export default function Footer() {
             </ul>
             <div className="flex gap-4 mt-4">
               <a 
+                href="https://www.instagram.com/kitrunner_/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a 
                 href="https://wa.me/5583981302961" 
                 target="_blank" 
                 rel="noopener noreferrer"
@@ -87,15 +96,6 @@ export default function Footer() {
                 aria-label="WhatsApp"
               >
                 <MessageCircle className="h-5 w-5" />
-              </a>
-              <a 
-                href="https://facebook.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="h-5 w-5" />
               </a>
             </div>
           </div>
