@@ -33,10 +33,12 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full bg-background border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity rounded-md px-3 py-2">
-            <div className="text-primary font-bold text-xl tracking-tight">
-              KitRunner
-            </div>
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity rounded-md px-3 py-2">
+            <img 
+              src="/assets/logo.png" 
+              alt="KitRunner" 
+              className="h-8 md:h-10 w-auto"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">

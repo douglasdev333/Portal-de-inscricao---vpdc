@@ -9,7 +9,11 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-xl font-bold mb-4 text-primary">KitRunner</h3>
+            <img 
+              src="/assets/logo.png" 
+              alt="KitRunner" 
+              className="h-10 w-auto mb-4"
+            />
             <p className="text-muted-foreground text-sm leading-relaxed">
               A plataforma de inscrições para os melhores eventos esportivos do Brasil. 
               Encontre sua próxima corrida e supere seus limites.
