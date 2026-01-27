@@ -45,6 +45,14 @@ app.use(session({
 }));
 
 app.use((req, res, next) => {
+  // Debug log para sessão (remover em produção após resolver o problema)
+  if (req.path.startsWith("/api/athletes")) {
+    console.log(`[session-debug] ${req.method} ${req.path}`);
+    console.log(`[session-debug] Cookie header: ${req.headers.cookie || "(vazio)"}`);
+    console.log(`[session-debug] Session ID: ${req.sessionID || "(nenhum)"}`);
+    console.log(`[session-debug] Athlete ID na sessão: ${(req.session as any)?.athleteId || "(nenhum)"}`);
+  }
+  
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
