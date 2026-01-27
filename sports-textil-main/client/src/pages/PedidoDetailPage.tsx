@@ -779,7 +779,7 @@ export default function PedidoDetailPage() {
                       <CreditCard className="h-6 w-6 mr-3" />
                       <div className="text-left">
                         <p className="font-semibold">Cartão de Crédito</p>
-                        <p className="text-xs text-muted-foreground">Parcelamento disponível</p>
+                        <p className="text-xs text-muted-foreground">Pagamento seguro e instantâneo</p>
                       </div>
                     </Button>
                   </div>
@@ -859,7 +859,7 @@ export default function PedidoDetailPage() {
                       <CreditCard className="h-6 w-6 mr-3" />
                       <div className="text-left">
                         <p className="font-semibold">Cartão de Crédito</p>
-                        <p className="text-xs text-muted-foreground">Parcelamento disponível</p>
+                        <p className="text-xs text-muted-foreground">Pagamento seguro e instantâneo</p>
                       </div>
                     </Button>
                   </div>
