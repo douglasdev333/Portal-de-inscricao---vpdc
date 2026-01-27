@@ -1,13 +1,46 @@
 import { Link } from "wouter";
-import { Calendar, MapPin, Mail, Phone, Instagram, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Instagram, MessageCircle } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="bg-background border-t border-border">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="md:hidden px-4 py-6">
+        <div className="flex flex-col items-center gap-4">
+          <img 
+            src="/assets/logo.png" 
+            alt="KitRunner" 
+            className="h-8 w-auto"
+          />
+          <div className="flex gap-6">
+            <a 
+              href="https://www.instagram.com/kitrunner_/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Instagram"
+            >
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a 
+              href="https://wa.me/5583981302961" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors"
+              aria-label="WhatsApp"
+            >
+              <MessageCircle className="h-5 w-5" />
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground text-center">
+            {currentYear} KitRunner · CNPJ: 55.108.434/0001-00
+          </p>
+        </div>
+      </div>
+
+      <div className="hidden md:block max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           <div>
             <img 
               src="/assets/logo.png" 
@@ -103,7 +136,7 @@ export default function Footer() {
 
         <div className="border-t border-border mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            {currentYear} KitRunner. Todos os direitos reservados.
+            {currentYear} KitRunner. Todos os direitos reservados. · CNPJ: 55.108.434/0001-00
           </p>
         </div>
       </div>
