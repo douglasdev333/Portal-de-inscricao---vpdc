@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import EventCard from "@/components/EventCard";
+import ComingSoonCard from "@/components/ComingSoonCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -210,6 +211,11 @@ function EventsSection({
             isPast={isPast}
           />
         ))}
+        {!isPast && currentPage === 1 && paginatedEvents.length < 4 && 
+          Array.from({ length: 4 - paginatedEvents.length }).map((_, index) => (
+            <ComingSoonCard key={`coming-soon-${index}`} index={index} />
+          ))
+        }
       </div>
 
       <PaginationControls
