@@ -32,6 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Batch Management**: Registration batches with automatic transition when capacity or date limits are reached
 - **Status vs Visibility**: Batches use `status` field for business logic and `ativo` boolean for client visibility
 - **Voucher/Coupon System**: Support for access-controlled modalities requiring voucher codes
+- **Modality Activation**: Field `ativo` (boolean, default true) allows deactivating modalities without deleting historical data
 
 ### Timezone Handling
 - All timestamps stored in UTC in PostgreSQL (TIMESTAMPTZ)
