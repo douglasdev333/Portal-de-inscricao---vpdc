@@ -139,6 +139,26 @@ export default function EventWizard({ mode, eventId, initialData }: EventWizardP
         if (!eventResult.success) throw new Error(eventResult.error?.message || "Erro ao atualizar evento");
       }
 
+      if (mode === "edit" && createdEventId) {
+        const existingModalitiesResponse = await fetch(`/api/admin/events/${createdEventId}/modalities`, { credentials: "include" });
+        const existingModalitiesResult = await existingModalitiesResponse.json();
+        const existingModalities = existingModalitiesResult.data || [];
+        
+        const formModalityIds = formData.modalities.filter(m => m.id).map(m => m.id);
+        const modalitiesToDelete = existingModalities.filter((m: any) => !formModalityIds.includes(m.id));
+        
+        for (const modalityToDelete of modalitiesToDelete) {
+          const deleteResponse = await apiRequest("DELETE", `/api/admin/events/${createdEventId}/modalities/${modalityToDelete.id}`);
+          const deleteResult = await deleteResponse.json();
+          if (!deleteResult.success) {
+            if (deleteResult.error?.code === "HAS_REGISTRATIONS") {
+              throw new Error(`A modalidade "${modalityToDelete.nome}" já possui inscrições e não pode ser excluída.`);
+            }
+            throw new Error(deleteResult.error?.message || "Erro ao deletar modalidade");
+          }
+        }
+      }
+
       for (const modality of formData.modalities) {
         const modalityData = { ...modality, eventId: createdEventId };
         if (modality.id) {
