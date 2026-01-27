@@ -228,6 +228,23 @@ router.post("/create", async (req, res) => {
         ? (req.headers['x-forwarded-for'] as string).split(',')[0].trim()
         : req.socket.remoteAddress || undefined;
 
+      // Extrair telefone do atleta (formato: (XX) XXXXX-XXXX ou similar)
+      const phoneDigits = athlete.telefone?.replace(/\D/g, "") || "";
+      const payerPhone = phoneDigits.length >= 10 ? {
+        areaCode: phoneDigits.substring(0, 2),
+        number: phoneDigits.substring(2)
+      } : undefined;
+
+      // Extrair endereço do atleta
+      const payerAddress = athlete.cep ? {
+        zipCode: athlete.cep,
+        streetName: athlete.rua || undefined,
+        streetNumber: athlete.numero || undefined,
+        neighborhood: undefined,
+        city: athlete.cidade || undefined,
+        federalUnit: athlete.estado || undefined
+      } : undefined;
+
       const result = await createCardPayment(
         order.id,
         amount,
@@ -240,7 +257,9 @@ router.post("/create", async (req, res) => {
         cleanedPayerIdentification,
         cardholderName,
         description,
-        clientIp
+        clientIp,
+        payerPhone,
+        payerAddress
       );
 
       if (!result.success) {

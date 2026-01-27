@@ -87,6 +87,20 @@ export async function createPixPayment(
   }
 }
 
+export interface PayerAddressInfo {
+  zipCode?: string;
+  streetName?: string;
+  streetNumber?: string;
+  neighborhood?: string;
+  city?: string;
+  federalUnit?: string;
+}
+
+export interface PayerPhoneInfo {
+  areaCode?: string;
+  number?: string;
+}
+
 export async function createCardPayment(
   orderId: string,
   amount: number,
@@ -99,7 +113,9 @@ export async function createCardPayment(
   payerIdentification?: { type: string; number: string },
   cardholderName?: string,
   description?: string,
-  ipAddress?: string
+  ipAddress?: string,
+  payerPhone?: PayerPhoneInfo,
+  payerAddress?: PayerAddressInfo
 ): Promise<CardPaymentResult> {
   if (!paymentClient) {
     return {
@@ -157,6 +173,35 @@ export async function createCardPayment(
       };
     }
 
+    // Add payer phone (helps with anti-fraud analysis)
+    if (payerPhone?.areaCode && payerPhone?.number) {
+      paymentBody.payer.phone = {
+        area_code: payerPhone.areaCode,
+        number: payerPhone.number
+      };
+      paymentBody.additional_info.payer.phone = {
+        area_code: payerPhone.areaCode,
+        number: payerPhone.number
+      };
+    }
+
+    // Add payer address (critical for anti-fraud analysis)
+    if (payerAddress?.zipCode) {
+      paymentBody.payer.address = {
+        zip_code: payerAddress.zipCode.replace(/\D/g, ""),
+        street_name: payerAddress.streetName || "Não informado",
+        street_number: payerAddress.streetNumber || "S/N"
+      };
+      paymentBody.additional_info.payer.address = {
+        zip_code: payerAddress.zipCode.replace(/\D/g, ""),
+        street_name: payerAddress.streetName || "Não informado",
+        street_number: payerAddress.streetNumber || "S/N",
+        neighborhood: payerAddress.neighborhood || "",
+        city: payerAddress.city || "",
+        federal_unit: payerAddress.federalUnit || ""
+      };
+    }
+
     if (issuerId && issuerId.trim() !== "") {
       paymentBody.issuer_id = parseInt(issuerId, 10);
     }
@@ -177,6 +222,8 @@ export async function createCardPayment(
       issuer_id: paymentBody.issuer_id,
       has_token: !!paymentBody.token,
       has_identification: !!paymentBody.payer?.identification,
+      has_phone: !!paymentBody.payer?.phone,
+      has_address: !!paymentBody.payer?.address,
       payer_email: paymentBody.payer?.email,
       payer_first_name: paymentBody.payer?.first_name,
       payer_last_name: paymentBody.payer?.last_name,
