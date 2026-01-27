@@ -192,13 +192,11 @@ export async function createCardPayment(
         street_name: payerAddress.streetName || "Não informado",
         street_number: payerAddress.streetNumber || "S/N"
       };
+      // additional_info.payer.address only supports: zip_code, street_name, street_number
       paymentBody.additional_info.payer.address = {
         zip_code: payerAddress.zipCode.replace(/\D/g, ""),
         street_name: payerAddress.streetName || "Não informado",
-        street_number: payerAddress.streetNumber || "S/N",
-        neighborhood: payerAddress.neighborhood || "",
-        city: payerAddress.city || "",
-        federal_unit: payerAddress.federalUnit || ""
+        street_number: payerAddress.streetNumber || "S/N"
       };
     }
 
