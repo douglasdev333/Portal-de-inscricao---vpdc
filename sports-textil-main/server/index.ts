@@ -19,6 +19,11 @@ declare module "express-session" {
   }
 }
 
+// Confiar no proxy (Nginx) para que cookies/sessões funcionem com HTTPS
+if (process.env.NODE_ENV === "production") {
+  app.set('trust proxy', 1);
+}
+
 app.use(express.json({
   limit: '10mb',
   verify: (req, _res, buf) => {
@@ -34,7 +39,7 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
   }
 }));
