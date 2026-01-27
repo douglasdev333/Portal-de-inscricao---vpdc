@@ -511,6 +511,7 @@ export default function PedidoDetailPage() {
   const canPay = isPending && !order.orderExpired;
   const canRetryPayment = isFailed && !order.orderExpired;
   const isPaymentRejected = isPending && order.lastPaymentStatus === "rejected";
+  const isPaymentInProcess = isPending && order.lastPaymentStatus === "in_process";
   const rejectedMessage = order.lastPaymentStatusDetail ? 
     getFriendlyErrorMessage(undefined, undefined, order.lastPaymentStatusDetail) : 
     "Pagamento não autorizado. Tente outra forma de pagamento.";
@@ -591,6 +592,51 @@ export default function PedidoDetailPage() {
                   </Button>
                   <a 
                     href="https://wa.me/5583981302961?text=Olá! Preciso de ajuda com meu pagamento rejeitado."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="ghost" size="sm" className="text-muted-foreground">
+                      Falar com suporte
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {isPaymentInProcess && (
+              <div className="flex flex-col gap-3 p-4 bg-orange-50 dark:bg-orange-950/20 rounded-md mb-4 border border-orange-200 dark:border-orange-800">
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-orange-800 dark:text-orange-400">
+                      Pagamento em análise
+                    </p>
+                    <p className="text-sm text-orange-700 dark:text-orange-500 mt-1">
+                      Seu pagamento está sendo analisado pelo banco ou operadora. Isso pode levar algumas horas.
+                      Se não receber confirmação em até 24 horas, você pode tentar outra forma de pagamento.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleRefreshStatus()}
+                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Verificar status
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowPaymentOptions(true)}
+                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                  >
+                    Tentar outra forma de pagamento
+                  </Button>
+                  <a 
+                    href="https://wa.me/5583981302961?text=Olá! Meu pagamento está em análise há muito tempo."
                     target="_blank"
                     rel="noopener noreferrer"
                   >
