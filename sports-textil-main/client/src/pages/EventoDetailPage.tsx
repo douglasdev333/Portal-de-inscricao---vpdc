@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
@@ -6,11 +7,174 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, MapPin, Award, Info, FileText, Download, Package, AlertCircle, XCircle, CalendarClock, Trophy, CheckCircle, Tag, Users, Timer, Map, ExternalLink, Link2 } from "lucide-react";
+import { Calendar, MapPin, Award, Info, FileText, Download, Package, AlertCircle, XCircle, CalendarClock, Trophy, CheckCircle, Tag, Users, Timer, Map, ExternalLink, Link2, ZoomIn, ZoomOut } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import heroImage from '@assets/generated_images/Marathon_runners_landscape_hero_b439e181.png';
 import { formatDateOnlyLong } from "@/lib/timezone";
 import type { Event, Modality, RegistrationBatch, Price, Attachment } from "@shared/schema";
+
+function ZoomableImage({ src, alt }: { src: string; alt: string }) {
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const lastPosition = useRef({ x: 0, y: 0 });
+  const lastPinchDistance = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const clampPosition = useCallback((pos: { x: number; y: number }, currentScale: number) => {
+    if (currentScale <= 1) return { x: 0, y: 0 };
+    const maxOffset = (currentScale - 1) * 150;
+    return {
+      x: Math.max(-maxOffset, Math.min(maxOffset, pos.x)),
+      y: Math.max(-maxOffset, Math.min(maxOffset, pos.y))
+    };
+  }, []);
+
+  const handleZoomIn = useCallback(() => {
+    setScale(s => Math.min(s + 0.5, 4));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setScale(s => {
+      const newScale = Math.max(s - 0.5, 1);
+      if (newScale === 1) setPosition({ x: 0, y: 0 });
+      return newScale;
+    });
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (scale > 1) {
+      setIsDragging(true);
+      lastPosition.current = { x: e.clientX - position.x, y: e.clientY - position.y };
+    }
+  }, [scale, position]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging && scale > 1) {
+      const newPos = {
+        x: e.clientX - lastPosition.current.x,
+        y: e.clientY - lastPosition.current.y
+      };
+      setPosition(clampPosition(newPos, scale));
+    }
+  }, [isDragging, scale, clampPosition]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const getDistance = (touches: React.TouchList) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY
+    );
+  };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      lastPinchDistance.current = getDistance(e.touches);
+    } else if (e.touches.length === 1 && scale > 1) {
+      setIsDragging(true);
+      lastPosition.current = { 
+        x: e.touches[0].clientX - position.x, 
+        y: e.touches[0].clientY - position.y 
+      };
+    }
+  }, [scale, position]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastPinchDistance.current !== null) {
+      e.preventDefault();
+      const newDistance = getDistance(e.touches);
+      const scaleDelta = (newDistance - lastPinchDistance.current) * 0.01;
+      setScale(s => Math.max(1, Math.min(4, s + scaleDelta)));
+      lastPinchDistance.current = newDistance;
+    } else if (isDragging && e.touches.length === 1 && scale > 1) {
+      const newPos = {
+        x: e.touches[0].clientX - lastPosition.current.x,
+        y: e.touches[0].clientY - lastPosition.current.y
+      };
+      setPosition(clampPosition(newPos, scale));
+    }
+  }, [isDragging, scale, clampPosition]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      lastPinchDistance.current = null;
+    }
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+      if (scale < 1) {
+        setScale(1);
+        setPosition({ x: 0, y: 0 });
+      }
+    }
+  }, [scale]);
+
+  const handleDoubleClick = useCallback(() => {
+    if (scale === 1) {
+      setScale(2);
+    } else {
+      handleReset();
+    }
+  }, [scale, handleReset]);
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex items-center justify-center gap-2 p-2 border-b bg-muted/30">
+        <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={scale <= 1}>
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <span className="text-sm font-medium min-w-[60px] text-center">{Math.round(scale * 100)}%</span>
+        <Button variant="outline" size="sm" onClick={handleZoomIn} disabled={scale >= 4}>
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleReset} disabled={scale === 1}>
+          Resetar
+        </Button>
+      </div>
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-hidden cursor-grab active:cursor-grabbing bg-muted/10"
+        style={{ touchAction: 'none' }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onDoubleClick={handleDoubleClick}
+      >
+        <div 
+          className="w-full h-full flex items-center justify-center p-4 select-none"
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+            transition: isDragging || lastPinchDistance.current !== null ? 'none' : 'transform 0.2s ease-out',
+            transformOrigin: 'center center'
+          }}
+        >
+          <img 
+            src={src} 
+            alt={alt}
+            className="max-w-full max-h-[60vh] object-contain rounded-lg pointer-events-none"
+            draggable={false}
+          />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground text-center p-2 border-t">
+        <span className="hidden md:inline">Duplo clique para zoom | Arraste para mover</span>
+        <span className="md:hidden">Pinça para zoom | Arraste para mover</span>
+      </p>
+    </div>
+  );
+}
 
 interface ModalityWithAvailability extends Modality {
   isAvailable?: boolean;
@@ -556,19 +720,15 @@ export default function EventoDetailPage() {
                                         Ver Mapa do Percurso
                                       </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-[95vw] md:max-w-4xl max-h-[90vh] p-0 overflow-hidden">
-                                      <DialogHeader className="p-4 pb-2">
+                                    <DialogContent className="max-w-[95vw] md:max-w-4xl h-[85vh] p-0 flex flex-col overflow-hidden">
+                                      <DialogHeader className="p-4 pb-2 shrink-0">
                                         <DialogTitle>Percurso - {mod.nome}</DialogTitle>
                                       </DialogHeader>
-                                      <div className="overflow-auto max-h-[calc(90vh-80px)] p-4 pt-0">
-                                        <div className="relative group cursor-zoom-in touch-pinch-zoom">
-                                          <img 
-                                            src={mod.imagemUrl!} 
-                                            alt={`Percurso ${mod.nome}`}
-                                            className="w-full h-auto rounded-lg object-contain max-h-[70vh] transition-transform duration-200 md:group-hover:scale-150 md:group-hover:cursor-zoom-out origin-center"
-                                            style={{ touchAction: 'pinch-zoom' }}
-                                          />
-                                        </div>
+                                      <div className="flex-1 min-h-0">
+                                        <ZoomableImage 
+                                          src={mod.imagemUrl!} 
+                                          alt={`Percurso ${mod.nome}`}
+                                        />
                                       </div>
                                     </DialogContent>
                                   </Dialog>

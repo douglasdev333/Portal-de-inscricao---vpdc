@@ -146,11 +146,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all active batches (ativo = true) for display
       const activeBatches = batches.filter(b => b.ativo).sort((a, b) => a.ordem - b.ordem);
 
-      // Add availability info to modalities
+      // Add availability info to modalities and convert legacy mapaPercursoUrl
       const modalitiesWithAvailability = modalities.map(mod => {
         const availInfo = modalitiesAvailability?.modalities?.find(m => m.id === mod.id);
+        
+        // Fallback: convert legacy mapaPercursoUrl to linksPercurso format if needed
+        let linksPercurso = mod.linksPercurso;
+        if ((!linksPercurso || (Array.isArray(linksPercurso) && linksPercurso.length === 0)) && mod.mapaPercursoUrl) {
+          linksPercurso = [{ nome: 'Ver Percurso', url: mod.mapaPercursoUrl }];
+        }
+        
         return {
           ...mod,
+          linksPercurso,
           isAvailable: availInfo?.isAvailable ?? true,
           isSoldOut: availInfo?.isSoldOut ?? false
         };
