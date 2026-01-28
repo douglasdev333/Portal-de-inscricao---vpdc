@@ -170,20 +170,34 @@ export function EventModalitiesStep({ formData, updateFormData }: EventModalitie
     }
 
     setIsUploadingImage(true);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      updateCurrentModality("imagemUrl", e.target?.result as string);
-      setIsUploadingImage(false);
-    };
-    reader.onerror = () => {
+    
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      
+      const response = await fetch("/api/admin/uploads/modality-image", {
+        method: "POST",
+        credentials: "include",
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        updateCurrentModality("imagemUrl", result.data.imageUrl);
+      } else {
+        throw new Error(result.message || "Erro ao fazer upload");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
       toast({
         title: "Erro ao carregar imagem",
-        description: "Não foi possível carregar a imagem",
+        description: "Não foi possível fazer upload da imagem",
         variant: "destructive"
       });
+    } finally {
       setIsUploadingImage(false);
-    };
-    reader.readAsDataURL(file);
+    }
   }, [toast]);
 
   const handleImageRemove = () => {

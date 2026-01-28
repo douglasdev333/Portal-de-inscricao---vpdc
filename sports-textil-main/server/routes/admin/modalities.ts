@@ -11,7 +11,7 @@ const linkPercursoSchema = z.object({
 });
 
 const optionalUrl = z.string().transform(val => val === "" ? null : val).nullable().refine(
-  val => val === null || val === undefined || /^https?:\/\/.+/.test(val),
+  val => val === null || val === undefined || /^(https?:\/\/|\/uploads\/).+/.test(val),
   { message: "URL inválida" }
 ).optional();
 

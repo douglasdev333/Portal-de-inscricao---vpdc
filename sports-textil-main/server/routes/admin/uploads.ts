@@ -298,4 +298,50 @@ router.delete("/document/:filename", requireAuth, async (req, res) => {
   }
 });
 
+const uploadModality = multer({
+  storage: createStorage("modalities"),
+  fileFilter: imageFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
+
+router.post("/modality-image", requireAuth, uploadModality.single("image"), async (req, res) => {
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ success: false, message: "Nenhum arquivo enviado" });
+    }
+
+    const imageUrl = `/uploads/modalities/${file.filename}`;
+
+    res.json({ 
+      success: true, 
+      data: { 
+        imageUrl,
+        filename: file.filename
+      } 
+    });
+  } catch (error) {
+    console.error("Upload modality image error:", error);
+    res.status(500).json({ success: false, message: "Erro ao fazer upload da imagem da modalidade" });
+  }
+});
+
+router.delete("/modality-image/:filename", requireAuth, async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(UPLOAD_DIR, "modalities", filename);
+    
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      res.json({ success: true, message: "Imagem removida com sucesso" });
+    } else {
+      res.status(404).json({ success: false, message: "Imagem não encontrada" });
+    }
+  } catch (error) {
+    console.error("Delete modality image error:", error);
+    res.status(500).json({ success: false, message: "Erro ao remover imagem" });
+  }
+});
+
 export default router;
