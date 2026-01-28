@@ -904,15 +904,15 @@ export default function EventoDetailPage() {
               Inscrever-se
             </Button>
           ) : (
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0 overflow-hidden">
                 <div className="flex items-center gap-2">
                   {registrationStatus === 'not_started' ? (
-                    <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    <CalendarClock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-destructive" />
+                    <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
                   )}
-                  <span className={`text-sm font-medium ${registrationStatus === 'not_started' ? 'text-foreground' : 'text-destructive'}`}>
+                  <span className={`text-sm font-medium truncate ${registrationStatus === 'not_started' ? 'text-foreground' : 'text-destructive'}`}>
                     {registrationStatus === 'not_started' ? 'Inscrições em Breve' : 
                      registrationStatus === 'closed' ? 'Inscrições Encerradas' : 'Evento Esgotado'}
                   </span>
@@ -922,9 +922,9 @@ export default function EventoDetailPage() {
                 )}
               </div>
               <Button
-                size="lg"
+                size="default"
                 variant="secondary"
-                className="font-semibold"
+                className="font-semibold flex-shrink-0 whitespace-nowrap"
                 disabled
                 data-testid="button-inscricao-mobile-disabled"
               >
