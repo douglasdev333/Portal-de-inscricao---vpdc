@@ -172,18 +172,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let registrationStatus: 'not_started' | 'open' | 'closed' | 'sold_out' | 'finished' = 'open';
       let registrationMessage: string | null = null;
       
-      if (currentEvent.status === 'finalizado') {
-        registrationStatus = 'finished';
-        registrationMessage = 'Evento finalizado - confira os resultados';
-      } else if (currentEvent.status === 'esgotado' || modalitiesAvailability?.eventSoldOut) {
-        registrationStatus = 'sold_out';
-        registrationMessage = 'Evento esgotado - todas as vagas foram preenchidas';
-      } else if (now < abertura) {
+      // PRIORIDADE: Data de abertura futura = "em breve" (independente do status do evento)
+      if (now < abertura) {
         registrationStatus = 'not_started';
         registrationMessage = `Inscrições abrem em ${formatBrazilDateTime(abertura)}`;
+      } else if (currentEvent.status === 'finalizado') {
+        registrationStatus = 'finished';
+        registrationMessage = 'Evento finalizado - confira os resultados';
       } else if (now >= encerramento) {
         registrationStatus = 'closed';
         registrationMessage = 'Inscrições encerradas';
+      } else if (currentEvent.status === 'esgotado' || modalitiesAvailability?.eventSoldOut) {
+        registrationStatus = 'sold_out';
+        registrationMessage = 'Evento esgotado - todas as vagas foram preenchidas';
       }
 
       // Get banner URL from event or from banners table
