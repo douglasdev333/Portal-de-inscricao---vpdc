@@ -860,7 +860,7 @@ export default function MinhaContaPage() {
               <div>
                 <p className="text-sm text-muted-foreground">E-mail</p>
                 <p className="font-medium text-foreground" data-testid="text-suporte-email">
-                  suporte@kitrunner.com.br
+                  contato@kitrunner.com.br
                 </p>
               </div>
             </div>
@@ -871,7 +871,7 @@ export default function MinhaContaPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Telefone</p>
                 <p className="font-medium text-foreground" data-testid="text-suporte-telefone">
-                  (11) 99999-9999
+                  (83) 98130-2961
                 </p>
               </div>
             </div>
