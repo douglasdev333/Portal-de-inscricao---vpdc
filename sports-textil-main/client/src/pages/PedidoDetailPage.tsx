@@ -258,7 +258,7 @@ function InscricaoCard({ inscricao, showDetails = true }: { inscricao: Inscricao
               data-testid={`button-view-inscricao-${inscricao.id}`}
             >
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Ver Inscricao</span>
+              <span className="hidden sm:inline">Ver Inscrição</span>
               <span className="sm:hidden">Ver</span>
             </Button>
           </Link>

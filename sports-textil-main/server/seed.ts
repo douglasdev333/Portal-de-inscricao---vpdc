@@ -137,7 +137,7 @@ async function seed() {
       distancia: "5.00",
       unidadeDistancia: "km",
       horarioLargada: "08:00",
-      descricao: "Corrida de 5km aberta a todos. Inscricao gratuita!",
+      descricao: "Corrida de 5km aberta a todos. Inscrição gratuita!",
       tipoAcesso: "gratuita",
       taxaComodidade: "0",
       limiteVagas: 1500,

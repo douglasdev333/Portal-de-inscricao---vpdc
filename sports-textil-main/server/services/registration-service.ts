@@ -375,7 +375,7 @@ export async function registerForEventAtomic(
         await client.query('ROLLBACK');
         return {
           success: false,
-          error: 'Voce ja possui inscricao neste evento',
+          error: 'Voce ja possui inscrição neste evento',
           errorCode: 'JA_INSCRITO'
         };
       }
@@ -392,7 +392,7 @@ export async function registerForEventAtomic(
         await client.query('ROLLBACK');
         return {
           success: false,
-          error: 'Voce ja possui inscricao nesta modalidade',
+          error: 'Voce ja possui inscrição nesta modalidade',
           errorCode: 'JA_INSCRITO'
         };
       }

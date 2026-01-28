@@ -73,7 +73,7 @@ function StatusCard({ status }: { status: string }) {
       bgColor: "bg-green-50 dark:bg-green-950/20",
       textColor: "text-green-800 dark:text-green-400",
       subTextColor: "text-green-700 dark:text-green-500",
-      description: "Sua inscricao esta confirmada! Voce recebera um e-mail com mais informacoes sobre a retirada do kit."
+      description: "Sua inscrição esta confirmada! Voce receberá um e-mail com mais informaçoes sobre a retirada do kit."
     },
     pendente: {
       variant: "secondary" as const,
