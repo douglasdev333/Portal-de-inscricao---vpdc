@@ -10,14 +10,19 @@ const linkPercursoSchema = z.object({
   url: z.string().url()
 });
 
+const optionalUrl = z.string().transform(val => val === "" ? null : val).nullable().refine(
+  val => val === null || val === undefined || /^https?:\/\/.+/.test(val),
+  { message: "URL inválida" }
+).optional();
+
 const modalitySchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   distancia: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, "Distancia deve ser um numero positivo"),
   unidadeDistancia: z.enum(["km", "m"]).optional(),
   horarioLargada: z.string().min(1, "Horario de largada e obrigatorio"),
   descricao: z.string().optional().nullable(),
-  imagemUrl: z.string().url().optional().nullable(),
-  mapaPercursoUrl: z.string().url().optional().nullable(),
+  imagemUrl: optionalUrl,
+  mapaPercursoUrl: optionalUrl,
   linksPercurso: z.array(linkPercursoSchema).optional().nullable(),
   limiteVagas: z.number().int().positive().optional().nullable(),
   tipoAcesso: z.enum(["gratuita", "paga", "voucher", "pcd", "aprovacao_manual"]).optional(),
