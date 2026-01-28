@@ -1,0 +1,108 @@
+[payment-polling] Verificando 1 pedidos pendentes com pagamento criado
+[webhook] ========== WEBHOOK RECEBIDO ==========
+[webhook] Headers: {
+  "host": "127.0.0.1:5000",
+  "user-agent": "MercadoPago WebHook v1.0 payment",
+  "accept": "application/json",
+  "content-type": "application/json",
+  "referer": "https://mercadopago.com.ar",
+  "traceparent": "00-41f0d5ad24820f28d75cff0c6939c3e8-97e2f19df20b78bd-00",
+  "x-b3-parentspanid": "910ae55de8fb2032",
+  "x-b3-sampled": "0",
+  "x-b3-spanid": "97e2f19df20b78bd",
+  "x-b3-traceid": "41f0d5ad24820f28d75cff0c6939c3e8",
+  "x-request-id": "5ff35571-d445-4a65-b40e-84c40913a3fb",
+  "x-rest-pool-name": "pool_unknown",
+  "x-signature": "ts=1769561843,v1=efbafe7fd01c550a4b41c9f1f61aa6d3f0b9ea5a9c03a7c5c5608e82edbc8cf7",
+  "x-socket-timeout": "25000",
+  "x-trace-digest-70": "eru6JNcFphTC0hn6kECXEmH9KGnD2MJeGI42g1zfweEDTGwSVHq264Gr6MFspA+Gza96Jvhx/2eOkf6kg5WnjTrveGPjBibzaEPtIxEuZ39ea9wC2/lY9zPwoFgqT839PcljYvUYL8lHxQN9XhCiDVbH5vjtx3y4RKteiRLGoxY=",
+  "accept-encoding": "gzip",
+  "x-forwarded-for": "18.213.114.129",
+  "x-forwarded-host": "portal.kitrunner.com.br",
+  "x-forwarded-server": "443.KitRunnerPortal",
+  "content-length": "189",
+  "connection": "Keep-Alive"
+}
+[webhook] Body: {
+  "action": "payment.created",
+  "api_version": "v1",
+  "data": {
+    "id": "143775627692"
+  },
+  "date_created": "2026-01-28T00:57:23Z",
+  "id": 128580792458,
+  "live_mode": true,
+  "type": "payment",
+  "user_id": "2162906682"
+}
+[webhook] ========================================
+[webhook] Notificação recebida: type=payment, data.id=143775627692
+[payment-polling] Resultado: 1 processados, 0 confirmados, 0 erros
+[webhook] Status do pagamento 143775627692: pending
+[webhook] External reference: order_aaca0254-5384-4752-ab28-4b6e424c7bf6
+9:57:24 PM [express] POST /api/webhooks/mercadopago 200 in 400ms :: {"received":true}
+9:57:26 PM [express] POST /api/payments/change-method/aaca0254-5384-4752-ab28-4b6e424c7bf6 200 in 16…
+9:57:26 PM [express] GET /api/payments/order/aaca0254-5384-4752-ab28-4b6e424c7bf6 200 in 192ms :: {"…
+[mercadopago-service] Enviando pagamento cartão: {
+  transaction_amount: 82.9,
+  payment_method_id: 'master',
+  installments: 1,
+  issuer_id: 12531,
+  has_token: true,
+  has_identification: true,
+  has_phone: true,
+  has_address: true,
+  payer_email: 'Douglasdev222@gmail.com',
+  payer_first_name: 'DOUGLAS',
+  payer_last_name: 'SANTOS PEREIRA',
+  has_additional_info: true
+}
+[mercadopago-service] Resposta pagamento: {
+  id: 143776023272,
+  status: 'rejected',
+  status_detail: 'cc_rejected_high_risk'
+}
+9:57:51 PM [express] POST /api/payments/create 200 in 1988ms :: {"success":true,"data":{"paymentId":…
+9:57:51 PM [express] GET /api/payments/order/aaca0254-5384-4752-ab28-4b6e424c7bf6 200 in 228ms :: {"…
+[webhook] ========== WEBHOOK RECEBIDO ==========
+[webhook] Headers: {
+  "host": "127.0.0.1:5000",
+  "user-agent": "MercadoPago WebHook v1.0 payment",
+  "accept": "application/json",
+  "content-type": "application/json",
+  "referer": "https://mercadopago.com.ar",
+  "traceparent": "00-cacf189fc483fcab383cf05e7d322fdd-0dc33c5162d3c80c-00",
+  "x-b3-parentspanid": "b08799dd24e426a7",
+  "x-b3-sampled": "0",
+  "x-b3-spanid": "0dc33c5162d3c80c",
+  "x-b3-traceid": "cacf189fc483fcab383cf05e7d322fdd",
+  "x-request-id": "67ecdcb6-5f6d-42b7-a956-fc2a9c0d588d",
+  "x-rest-pool-name": "pool_unknown",
+  "x-signature": "ts=1769561871,v1=f928a5ad548d3a0df7947db1094664c698ec7054c36c3738650fbc8760542dfa",
+  "x-socket-timeout": "25000",
+  "x-trace-digest-41": "kC1tm0b5NYRtEVUW8/fDWl6t+4c1H2X9Nya7IiqaaJWYxEsnmk2194nw+zsTPaAQa1Q1NWjvCtxqHS1pBCnGMiXdfE/a9LH3DTz6KUmQdHA0JZzkfKLT+AKgXKoe7zkOwA4f1Idn83u+eT10p5GiDcEF3nEN/Oj/xbVAzlaIcls=",
+  "accept-encoding": "gzip",
+  "x-forwarded-for": "18.206.34.84",
+  "x-forwarded-host": "portal.kitrunner.com.br",
+  "x-forwarded-server": "443.KitRunnerPortal",
+  "content-length": "189",
+  "connection": "Keep-Alive"
+}
+[webhook] Body: {
+  "action": "payment.created",
+  "api_version": "v1",
+  "data": {
+    "id": "143776023272"
+  },
+  "date_created": "2026-01-28T00:57:50Z",
+  "id": 128580830226,
+  "live_mode": true,
+  "type": "payment",
+  "user_id": "2162906682"
+}
+[webhook] ========================================
+[webhook] Notificação recebida: type=payment, data.id=143776023272
+[webhook] Status do pagamento 143776023272: rejected
+[webhook] External reference: order_aaca0254-5384-4752-ab28-4b6e424c7bf6
+[webhook] Pagamento 143776023272 rejeitado/cancelado - pedido aaca0254-5384-4752-ab28-4b6e424c7bf6 permanece pendente
+9:57:52 PM [express] POST /api/webhooks/mercadopago 200 in 182ms :: {"received":true}

@@ -1,0 +1,63 @@
+[mercadopago-service] Enviando pagamento cartão: {
+  transaction_amount: 23,
+  payment_method_id: 'master',
+  installments: 1,
+  issuer_id: 24,
+  has_token: true,
+  has_identification: true,
+  has_phone: true,
+  has_address: true,
+  payer_email: 'Douglassan21554@gmail.com',
+  payer_first_name: 'ANA',
+  payer_last_name: 'GEOVANNA ARAÚJO AGUIAR',
+  has_additional_info: true
+}
+[mercadopago-service] Resposta pagamento: {
+  id: 143778548912,
+  status: 'rejected',
+  status_detail: 'cc_rejected_high_risk'
+}
+10:20:57 PM [express] POST /api/payments/create 200 in 1619ms :: {"success":true,"data":{"paymentId":…
+10:20:57 PM [express] GET /api/registrations/orders/583351a6-4cee-4fb7-bc4b-c26ec757dec0 200 in 34ms …
+10:20:57 PM [express] GET /api/payments/order/583351a6-4cee-4fb7-bc4b-c26ec757dec0 200 in 263ms :: {"…
+[webhook] ========== WEBHOOK RECEBIDO ==========
+[webhook] Headers: {
+  "host": "127.0.0.1:5000",
+  "user-agent": "MercadoPago WebHook v1.0 payment",
+  "accept": "application/json",
+  "content-type": "application/json",
+  "referer": "https://mercadopago.com.ar",
+  "traceparent": "00-4318a5c78e284d3a98227abbc64a05b8-6a6a9a455f9a0d59-00",
+  "x-b3-parentspanid": "3ff2b8848793253a",
+  "x-b3-sampled": "0",
+  "x-b3-spanid": "6a6a9a455f9a0d59",
+  "x-b3-traceid": "4318a5c78e284d3a98227abbc64a05b8",
+  "x-request-id": "cc5dd89d-a9e1-4c51-b769-40144f1e8c42",
+  "x-rest-pool-name": "pool_unknown",
+  "x-signature": "ts=1769563257,v1=9a59980eab3da243bed891af567aeaebc49f316c8c1484ed3ad8c12c4170a98b",
+  "x-socket-timeout": "25000",
+  "x-trace-digest-37": "pJH9m05s+45NOM57P1uMSNGbcKJZ8NJ0QbOURgOD1OVsf+kERQ65Wm7c1mpqVY8eZewNiL76M8Df5q8yx0/Stonw8fQy3WqkMnfRaBJ+wO5sEbq6C7gvhQjhOIpXegMskOCa2WMLcHlWmRDEvKyWNVxY7zzVaHE+AhXnin/kTeo=",
+  "accept-encoding": "gzip",
+  "x-forwarded-for": "18.215.140.160",
+  "x-forwarded-host": "portal.kitrunner.com.br",
+  "x-forwarded-server": "443.KitRunnerPortal",
+  "content-length": "189",
+  "connection": "Keep-Alive"
+}
+[webhook] Body: {
+  "action": "payment.created",
+  "api_version": "v1",
+  "data": {
+    "id": "143778548912"
+  },
+  "date_created": "2026-01-28T01:20:56Z",
+  "id": 128581275618,
+  "live_mode": true,
+  "type": "payment",
+  "user_id": "2162906682"
+}
+[webhook] ========================================
+[webhook] Notificação recebida: type=payment, data.id=143778548912
+[webhook] Status do pagamento 143778548912: rejected
+[webhook] External reference: order_583351a6-4cee-4fb7-bc4b-c26ec757dec0
+[webhook] Pagamento 143778548912 rejeitado/cancelado - pedido 583351a6-4cee-4fb7-bc4b-c26ec757dec0 permanece pendente
