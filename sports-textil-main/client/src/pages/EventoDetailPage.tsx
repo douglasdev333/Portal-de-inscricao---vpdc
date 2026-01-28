@@ -633,8 +633,9 @@ export default function EventoDetailPage() {
                   <div className="space-y-3">
                     {activeBatches.map((batch, index) => {
                       const isCurrentBatch = event.activeBatch?.id === batch.id;
-                      const isFuture = batch.status === 'future';
-                      const isClosed = batch.status === 'closed';
+                      const eventComingSoon = registrationStatus === 'not_started';
+                      const isFuture = batch.status === 'future' || eventComingSoon;
+                      const isClosed = batch.status === 'closed' && !eventComingSoon;
                       
                       return (
                         <div 
