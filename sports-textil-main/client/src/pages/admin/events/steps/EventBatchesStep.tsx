@@ -122,7 +122,7 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
       idx !== excludeIndex && batch.ordem === ordem
     );
     if (isDuplicate) {
-      setOrderError("Ja existe um lote com essa ordem. Use um numero diferente.");
+      setOrderError("Já existe um lote com essa ordem. Use um número diferente.");
       return false;
     }
     setOrderError(null);
@@ -668,19 +668,19 @@ export function EventBatchesStep({ formData, updateFormData }: EventBatchesStepP
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction?.type === "activate" && "Confirmar Ativacao de Lote"}
-              {confirmAction?.type === "setFuture" && "Nao e possivel marcar como futuro"}
+              {confirmAction?.type === "activate" && "Confirmar Ativação de Lote"}
+              {confirmAction?.type === "setFuture" && "Não é possível marcar como futuro"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction?.type === "activate" && (
                 <>
-                  Existe um lote ativo. Ao ativar este lote, o lote atual sera automaticamente fechado (status = 'closed').
+                  Existe um lote ativo. Ao ativar este lote, o lote atual será automaticamente fechado (status = 'closed').
                   Deseja continuar?
                 </>
               )}
               {confirmAction?.type === "setFuture" && (
                 <>
-                  Nao e possivel marcar um lote ativo como futuro. Feche-o primeiro ou ative outro lote.
+                  Não é possível marcar um lote ativo como futuro. Feche-o primeiro ou ative outro lote.
                 </>
               )}
             </AlertDialogDescription>

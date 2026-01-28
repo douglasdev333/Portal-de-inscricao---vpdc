@@ -261,8 +261,8 @@ export default function AdminEventManagePage() {
       setPendingDelete(null);
       if (error.hasRegistrations) {
         toast({ 
-          title: "Nao foi possivel excluir o lote", 
-          description: "Esse lote ja possui inscricoes e nao pode ser excluido. Considere apenas fecha-lo ou desativa-lo.", 
+          title: "Não foi possível excluir o lote", 
+          description: "Esse lote já possui inscrições e não pode ser excluído. Considere apenas fechá-lo ou desativá-lo.", 
           variant: "destructive" 
         });
       } else {
@@ -456,14 +456,14 @@ export default function AdminEventManagePage() {
   if (!event) {
     return (
       <AdminLayout
-        title="Evento nao encontrado"
+        title="Evento não encontrado"
         breadcrumbs={[
           { label: "Eventos", href: "/admin/eventos" },
-          { label: "Nao encontrado" },
+          { label: "Não encontrado" },
         ]}
       >
         <div className="text-center py-12">
-          <p className="text-muted-foreground">O evento solicitado nao foi encontrado.</p>
+          <p className="text-muted-foreground">O evento solicitado não foi encontrado.</p>
           <Link href="/admin/eventos">
             <Button className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1068,10 +1068,10 @@ export default function AdminEventManagePage() {
       }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusao de Lote</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar Exclusão de Lote</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja excluir o lote "{pendingDelete?.batchName}"?
-              Esta acao nao pode ser desfeita.
+              Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -73,7 +73,7 @@ function StatusCard({ status }: { status: string }) {
       bgColor: "bg-green-50 dark:bg-green-950/20",
       textColor: "text-green-800 dark:text-green-400",
       subTextColor: "text-green-700 dark:text-green-500",
-      description: "Sua inscrição esta confirmada! Voce receberá um e-mail com mais informaçoes sobre a retirada do kit."
+      description: "Sua inscrição está confirmada! Você receberá um e-mail com mais informações sobre a retirada do kit."
     },
     pendente: {
       variant: "secondary" as const,
@@ -82,7 +82,7 @@ function StatusCard({ status }: { status: string }) {
       bgColor: "bg-yellow-50 dark:bg-yellow-950/20",
       textColor: "text-yellow-800 dark:text-yellow-400",
       subTextColor: "text-yellow-700 dark:text-yellow-500",
-      description: "Estamos aguardando a confirmacao do pagamento. Isso pode levar ate 48 horas."
+      description: "Estamos aguardando a confirmação do pagamento. Isso pode levar até 48 horas."
     },
     cancelada: {
       variant: "destructive" as const,
@@ -91,7 +91,7 @@ function StatusCard({ status }: { status: string }) {
       bgColor: "bg-red-50 dark:bg-red-950/20",
       textColor: "text-red-800 dark:text-red-400",
       subTextColor: "text-red-700 dark:text-red-500",
-      description: "Esta inscricao foi cancelada."
+      description: "Esta inscrição foi cancelada."
     }
   };
 
@@ -214,12 +214,12 @@ export default function InscricaoDetailPage() {
         <Header />
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <AlertCircle className="h-16 w-16 mx-auto text-destructive mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Inscricao nao encontrada</h1>
+          <h1 className="text-2xl font-bold mb-2">Inscrição não encontrada</h1>
           <p className="text-muted-foreground mb-6">
-            A inscricao que voce esta procurando nao existe ou nao esta disponivel.
+            A inscrição que você está procurando não existe ou não está disponível.
           </p>
           <Button onClick={() => setLocation("/minhas-inscricoes")} data-testid="button-voltar-inscricoes">
-            Ver minhas inscricoes
+            Ver minhas inscrições
           </Button>
         </div>
       </div>
@@ -260,7 +260,7 @@ export default function InscricaoDetailPage() {
                 </div>
                 <div className="min-w-0">
                   <CardTitle className="text-xl" data-testid="text-inscricao-numero">
-                    Inscricao #{registration.numeroInscricao}
+                    Inscrição #{registration.numeroInscricao}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">{formattedInscricaoDate}</p>
                 </div>
@@ -277,10 +277,10 @@ export default function InscricaoDetailPage() {
                 <PartyPopper className="h-5 w-5 text-green-600 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-green-800 dark:text-green-400">
-                    Inscricao realizada com sucesso!
+                    Inscrição realizada com sucesso!
                   </p>
                   <p className="text-sm text-green-700 dark:text-green-500">
-                    Guarde o numero da inscricao para referencia.
+                    Guarde o número da inscrição para referência.
                   </p>
                 </div>
               </div>
@@ -402,7 +402,7 @@ export default function InscricaoDetailPage() {
                 </div>
               </>
             ) : (
-              <p className="text-muted-foreground">Modalidade nao informada</p>
+              <p className="text-muted-foreground">Modalidade não informada</p>
             )}
           </CardContent>
         </Card>

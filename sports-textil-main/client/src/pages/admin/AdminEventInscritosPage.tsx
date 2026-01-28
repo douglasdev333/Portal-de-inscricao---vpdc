@@ -518,14 +518,14 @@ export default function AdminEventInscritosPage() {
   if (!event) {
     return (
       <AdminLayout
-        title="Evento nao encontrado"
+        title="Evento não encontrado"
         breadcrumbs={[
           { label: "Eventos", href: "/admin/eventos" },
-          { label: "Nao encontrado" },
+          { label: "Não encontrado" },
         ]}
       >
         <div className="text-center py-12">
-          <p className="text-muted-foreground">O evento solicitado nao foi encontrado.</p>
+          <p className="text-muted-foreground">O evento solicitado não foi encontrado.</p>
           <Link href="/admin/eventos">
             <Button className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />

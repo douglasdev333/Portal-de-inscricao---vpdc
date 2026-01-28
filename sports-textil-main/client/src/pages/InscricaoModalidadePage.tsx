@@ -118,7 +118,7 @@ export default function InscricaoModalidadePage() {
             return { 
               valid: false, 
               error: result.error?.code || "invalid",
-              message: result.error?.message || "Voucher invalido"
+              message: result.error?.message || "Voucher inválido"
             };
           }
           // 5xx errors are server errors
@@ -153,7 +153,7 @@ export default function InscricaoModalidadePage() {
       setVoucherValidado({
         valid: false,
         error: "network_error",
-        message: "Erro de conexao. Verifique sua internet e tente novamente."
+        message: "Erro de conexão. Verifique sua internet e tente novamente."
       });
     }
   });
@@ -462,17 +462,17 @@ export default function InscricaoModalidadePage() {
                       </span>
                     ) : voucherHasError ? (
                       <span className="text-destructive font-medium">
-                        {voucherValidado?.message || 'Voucher invalido'}
+                        {voucherValidado?.message || 'Voucher inválido'}
                       </span>
                     ) : (
-                      'Esta modalidade requer um codigo de acesso. Insira o codigo fornecido e valide para continuar.'
+                      'Esta modalidade requer um código de acesso. Insira o código fornecido e valide para continuar.'
                     )}
                   </AlertDescription>
                   
                   <div className="mt-3 flex gap-2 items-end flex-wrap">
                     <div className="flex-1 min-w-[200px] max-w-xs">
                       <Label htmlFor="codigo-comprovacao" className="text-sm font-medium mb-2 block">
-                        Codigo de Acesso (Voucher)
+                        Código de Acesso (Voucher)
                       </Label>
                       <Input
                         id="codigo-comprovacao"

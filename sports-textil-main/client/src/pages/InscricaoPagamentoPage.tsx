@@ -542,14 +542,14 @@ export default function InscricaoPagamentoPage() {
 
   const getErrorMessage = (error: string | undefined): string => {
     const errorMessages: Record<string, string> = {
-      "Cupom nao encontrado para este evento": "Este cupom não existe ou não é válido para este evento.",
+      "Cupom não encontrado para este evento": "Este cupom não existe ou não é válido para este evento.",
       "Cupom inativo": "Este cupom está desativado e não pode ser utilizado.",
       "Cupom expirado": "Este cupom já expirou e não pode mais ser utilizado.",
       "Cupom esgotado": "Este cupom já atingiu o limite de utilizações.",
-      "Ja existe um cupom aplicado neste pedido. Remova-o antes de aplicar outro.": "Já existe um cupom aplicado. Remova-o antes de aplicar outro.",
-      "Cupom so pode ser aplicado em pedidos pendentes": "Cupom só pode ser aplicado em pedidos pendentes.",
-      "Pedido nao encontrado": "Pedido não encontrado.",
-      "Acesso nao autorizado": "Você não tem permissão para aplicar cupom neste pedido.",
+      "Já existe um cupom aplicado neste pedido. Remova-o antes de aplicar outro.": "Já existe um cupom aplicado. Remova-o antes de aplicar outro.",
+      "Cupom só pode ser aplicado em pedidos pendentes": "Cupom só pode ser aplicado em pedidos pendentes.",
+      "Pedido não encontrado": "Pedido não encontrado.",
+      "Acesso não autorizado": "Você não tem permissão para aplicar cupom neste pedido.",
     };
     return errorMessages[error || ""] || error || "O cupom informado não é válido.";
   };

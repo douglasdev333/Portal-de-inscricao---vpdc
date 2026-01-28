@@ -213,16 +213,16 @@ function isValidCpf(cpf: string): boolean {
 function getErrorMessage(error: Error): string {
   const message = error.message?.toLowerCase() || "";
   if (message.includes("cpf") && (message.includes("existe") || message.includes("duplicate") || message.includes("unique"))) {
-    return "Ja existe um atleta cadastrado com este CPF";
+    return "Já existe um atleta cadastrado com este CPF";
   }
   if (message.includes("email") && (message.includes("existe") || message.includes("duplicate") || message.includes("unique"))) {
-    return "Ja existe um atleta cadastrado com este email";
+    return "Já existe um atleta cadastrado com este email";
   }
   if (message.includes("cpf") && message.includes("invalid")) {
-    return "O CPF informado e invalido";
+    return "O CPF informado é inválido";
   }
   if (message.includes("network") || message.includes("fetch")) {
-    return "Erro de conexao. Verifique sua internet e tente novamente";
+    return "Erro de conexão. Verifique sua internet e tente novamente";
   }
   return error.message || "Ocorreu um erro inesperado. Tente novamente";
 }
@@ -307,7 +307,7 @@ export default function AdminAthletesPage() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Nao foi possivel criar o atleta",
+        title: "Não foi possível criar o atleta",
         description: getErrorMessage(error),
         variant: "destructive",
       });
@@ -326,13 +326,13 @@ export default function AdminAthletesPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/athletes"] });
-      toast({ title: "Atleta atualizado com sucesso", description: "As alteracoes foram salvas" });
+      toast({ title: "Atleta atualizado com sucesso", description: "As alterações foram salvas" });
       setEditingAthlete(null);
       form.reset();
     },
     onError: (error: Error) => {
       toast({
-        title: "Nao foi possivel atualizar o atleta",
+        title: "Não foi possível atualizar o atleta",
         description: getErrorMessage(error),
         variant: "destructive",
       });

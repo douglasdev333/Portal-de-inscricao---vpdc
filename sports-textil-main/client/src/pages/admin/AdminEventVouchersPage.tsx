@@ -521,14 +521,14 @@ export default function AdminEventVouchersPage() {
   if (!event) {
     return (
       <AdminLayout
-        title="Evento nao encontrado"
+        title="Evento não encontrado"
         breadcrumbs={[
           { label: "Eventos", href: "/admin/eventos" },
-          { label: "Nao encontrado" },
+          { label: "Não encontrado" },
         ]}
       >
         <div className="text-center py-12">
-          <p className="text-muted-foreground">O evento solicitado nao foi encontrado.</p>
+          <p className="text-muted-foreground">O evento solicitado não foi encontrado.</p>
           <Link href="/admin/eventos">
             <Button className="mt-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -1291,7 +1291,7 @@ export default function AdminEventVouchersPage() {
               <div>
                 <p className="font-medium">Status do Cupom</p>
                 <p className="text-sm text-muted-foreground">
-                  {editCouponForm.isActive ? "Cupom esta ativo e pode ser usado" : "Cupom esta inativo e nao pode ser usado"}
+                  {editCouponForm.isActive ? "Cupom está ativo e pode ser usado" : "Cupom está inativo e não pode ser usado"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1500,7 +1500,7 @@ export default function AdminEventVouchersPage() {
                 ) : (
                   <div className="text-center py-6 text-muted-foreground">
                     <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Este voucher ainda nao foi utilizado.</p>
+                    <p className="text-sm">Este voucher ainda não foi utilizado.</p>
                   </div>
                 )}
               </div>

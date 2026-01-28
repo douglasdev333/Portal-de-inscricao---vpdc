@@ -181,7 +181,7 @@ export default function EventWizard({ mode, eventId, initialData }: EventWizardP
           const deleteResult = await deleteResponse.json();
           if (!deleteResult.success) {
             if (deleteResult.error?.code === "BATCH_HAS_REGISTRATIONS") {
-              throw new Error("Este lote ja possui inscricoes vinculadas e nao pode ser excluido. Feche ou oculte o lote em vez de apaga-lo.");
+              throw new Error("Este lote já possui inscrições vinculadas e não pode ser excluído. Feche ou oculte o lote em vez de apagá-lo.");
             }
             throw new Error(deleteResult.error?.message || "Erro ao deletar lote");
           }
@@ -268,7 +268,7 @@ export default function EventWizard({ mode, eventId, initialData }: EventWizardP
           const deleteResult = await deleteResponse.json();
           if (!deleteResult.success) {
             if (deleteResult.error?.code === "HAS_USAGE") {
-              throw new Error(`O tamanho ${shirtToDelete.tamanho} ja foi utilizado em inscricoes e nao pode ser removido.`);
+              throw new Error(`O tamanho ${shirtToDelete.tamanho} já foi utilizado em inscrições e não pode ser removido.`);
             }
             throw new Error(deleteResult.error?.message || "Erro ao remover tamanho de camisa");
           }
