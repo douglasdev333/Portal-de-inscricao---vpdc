@@ -571,17 +571,18 @@ export default function EventoDetailPage() {
                   <div className="grid grid-cols-1 gap-3 md:gap-4">
                     {modalities.map((mod) => {
                       const isSoldOut = eventSoldOut || mod.isSoldOut;
+                      const showAsComingSoon = registrationStatus === 'not_started';
                       return (
                         <div 
                           key={mod.id} 
-                          className={`p-3 md:p-4 border rounded-lg ${isSoldOut ? 'opacity-60 bg-muted/30' : ''}`}
+                          className={`p-3 md:p-4 border rounded-lg ${isSoldOut && !showAsComingSoon ? 'opacity-60 bg-muted/30' : ''}`}
                           data-testid={`modality-item-${mod.id}`}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 md:gap-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
                                 <h3 className="font-semibold text-sm md:text-lg">{mod.nome}</h3>
-                                {isSoldOut && (
+                                {isSoldOut && !showAsComingSoon && (
                                   <Badge variant="destructive" className="text-xs">
                                     Esgotado
                                   </Badge>
@@ -832,19 +833,22 @@ export default function EventoDetailPage() {
                         <h4 className="text-sm font-medium text-muted-foreground mb-3">Modalidades</h4>
                         {modalities.map((mod) => {
                           const isSoldOut = eventSoldOut || mod.isSoldOut;
+                          const showAsComingSoon = registrationStatus === 'not_started';
                           return (
                             <div 
                               key={mod.id} 
-                              className={`flex items-center justify-between py-2 ${isSoldOut ? 'opacity-60' : ''}`}
+                              className={`flex items-center justify-between py-2 ${isSoldOut && !showAsComingSoon ? 'opacity-60' : ''}`}
                             >
                               <div className="flex items-center gap-2">
                                 <span className="text-sm">{mod.distancia} {mod.unidadeDistancia}</span>
                                 <span className="text-xs text-muted-foreground">- {mod.nome}</span>
                               </div>
-                              {isSoldOut ? (
+                              {isSoldOut && !showAsComingSoon ? (
                                 <Badge variant="destructive" className="text-xs">
                                   Esgotado
                                 </Badge>
+                              ) : showAsComingSoon ? (
+                                <span className="font-semibold text-sm text-muted-foreground">Em breve</span>
                               ) : (
                                 <span className="font-semibold text-sm">{getPrice(mod.id)}</span>
                               )}
