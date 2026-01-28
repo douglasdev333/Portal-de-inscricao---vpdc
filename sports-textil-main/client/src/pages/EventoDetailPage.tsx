@@ -299,6 +299,16 @@ export default function EventoDetailPage() {
   const registrationStatus = event.registrationStatus || (isFinished ? 'finished' : eventSoldOut ? 'sold_out' : 'open');
   const registrationMessage = event.registrationMessage;
   
+  const getMobileRegistrationMessage = () => {
+    if (!registrationMessage) return null;
+    const match = registrationMessage.match(/(\d{2}\/\d{2}\/\d{4})/);
+    if (match) {
+      return `Início ${match[1]}`;
+    }
+    return registrationMessage;
+  };
+  const mobileRegistrationMessage = getMobileRegistrationMessage();
+  
   const canRegister = registrationStatus === 'open';
 
   // Get unique distances
@@ -917,8 +927,8 @@ export default function EventoDetailPage() {
                      registrationStatus === 'closed' ? 'Inscrições Encerradas' : 'Evento Esgotado'}
                   </span>
                 </div>
-                {registrationMessage && (
-                  <p className="text-xs text-muted-foreground mt-1 truncate">{registrationMessage}</p>
+                {mobileRegistrationMessage && (
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{mobileRegistrationMessage}</p>
                 )}
               </div>
               <Button
