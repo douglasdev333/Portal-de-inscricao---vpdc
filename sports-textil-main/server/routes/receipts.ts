@@ -30,17 +30,21 @@ router.get("/:registrationId", async (req, res) => {
     const registration = await storage.getRegistration(registrationId);
 
     if (!registration) {
-      return res.status(404).json({ success: false, error: "Inscrição não encontrada" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Inscrição não encontrada" });
     }
 
     if (registration.athleteId !== athleteId) {
-      return res.status(403).json({ success: false, error: "Acesso não autorizado" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Acesso não autorizado" });
     }
 
     if (registration.status !== "confirmada") {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Comprovante disponível apenas para inscrições confirmadas" 
+      return res.status(400).json({
+        success: false,
+        error: "Comprovante disponível apenas para inscrições confirmadas",
       });
     }
 
@@ -49,87 +53,95 @@ router.get("/:registrationId", async (req, res) => {
       storage.getModality(registration.modalityId),
       storage.getAthlete(registration.athleteId),
       registration.orderId ? storage.getOrder(registration.orderId) : null,
-      registration.batchId ? storage.getBatch(registration.batchId) : null
+      registration.batchId ? storage.getBatch(registration.batchId) : null,
     ]);
 
     if (!event || !modality || !athlete) {
-      return res.status(404).json({ success: false, error: "Dados não encontrados" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Dados não encontrados" });
     }
 
-    const doc = new PDFDocument({ 
-      size: "A4", 
+    const doc = new PDFDocument({
+      size: "A4",
       margin: 50,
       info: {
         Title: `Comprovante de Inscrição - ${event.nome}`,
-        Author: "ST Eventos",
-        Subject: `Inscrição #${registration.numeroInscricao}`
-      }
+        Author: "KitRunner - Inscrições",
+        Subject: `Inscrição #${registration.numeroInscricao}`,
+      },
     });
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
-      "Content-Disposition", 
-      `attachment; filename=comprovante-inscricao-${registration.numeroInscricao}.pdf`
+      "Content-Disposition",
+      `attachment; filename=comprovante-inscricao-${registration.numeroInscricao}.pdf`,
     );
 
     doc.pipe(res);
 
-    doc.fontSize(24)
-       .font("Helvetica-Bold")
-       .fillColor("#1a365d")
-       .text("ST EVENTOS", { align: "center" });
+    doc
+      .fontSize(24)
+      .font("Helvetica-Bold")
+      .fillColor("#1a365d")
+      .text("KITRUNNER", { align: "center" });
 
     doc.moveDown(0.5);
-    doc.fontSize(16)
-       .font("Helvetica")
-       .fillColor("#333333")
-       .text("Comprovante de Inscrição", { align: "center" });
+    doc
+      .fontSize(16)
+      .font("Helvetica")
+      .fillColor("#333333")
+      .text("Comprovante de Inscrição", { align: "center" });
 
     doc.moveDown(2);
 
-    doc.moveTo(50, doc.y)
-       .lineTo(545, doc.y)
-       .strokeColor("#e2e8f0")
-       .stroke();
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
 
     doc.moveDown(1);
 
-    doc.fontSize(18)
-       .font("Helvetica-Bold")
-       .fillColor("#1a365d")
-       .text(event.nome);
+    doc
+      .fontSize(18)
+      .font("Helvetica-Bold")
+      .fillColor("#1a365d")
+      .text(event.nome);
 
     doc.moveDown(0.5);
-    doc.fontSize(11)
-       .font("Helvetica")
-       .fillColor("#4a5568")
-       .text(`Data do Evento: ${formatDate(event.dataEvento)}`)
-       .text(`Local: ${event.endereco}`)
-       .text(`${event.cidade} - ${event.estado}`);
+    doc
+      .fontSize(11)
+      .font("Helvetica")
+      .fillColor("#4a5568")
+      .text(`Data do Evento: ${formatDate(event.dataEvento)}`)
+      .text(`Local: ${event.endereco}`)
+      .text(`${event.cidade} - ${event.estado}`);
 
     doc.moveDown(1.5);
 
-    doc.fontSize(14)
-       .font("Helvetica-Bold")
-       .fillColor("#1a365d")
-       .text("Dados da Inscrição");
+    doc
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .fillColor("#1a365d")
+      .text("Dados da Inscrição");
 
     doc.moveDown(0.5);
-    doc.moveTo(50, doc.y)
-       .lineTo(545, doc.y)
-       .strokeColor("#e2e8f0")
-       .stroke();
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
 
     doc.moveDown(0.5);
-    doc.fontSize(11)
-       .font("Helvetica")
-       .fillColor("#333333");
+    doc.fontSize(11).font("Helvetica").fillColor("#333333");
 
     const inscricaoData = [
-      { label: "Número da Inscrição", value: `#${registration.numeroInscricao}` },
+      {
+        label: "Número da Inscrição",
+        value: `#${registration.numeroInscricao}`,
+      },
       { label: "Status", value: "CONFIRMADA" },
-      { label: "Modalidade", value: `${modality.nome} - ${modality.distancia} ${modality.unidadeDistancia}` },
-      { label: "Horário de Largada", value: modality.horarioLargada || "A confirmar" },
+      {
+        label: "Modalidade",
+        value: `${modality.nome} - ${modality.distancia} ${modality.unidadeDistancia}`,
+      },
+      {
+        label: "Horário de Largada",
+        value: modality.horarioLargada || "A confirmar",
+      },
     ];
 
     if (batch) {
@@ -138,25 +150,30 @@ router.get("/:registrationId", async (req, res) => {
 
     if (registration.tamanhoCamisa) {
       let camisaValue = registration.tamanhoCamisa;
-      
+
       const usarGradePorModalidade = event.usarGradePorModalidade || false;
       let shirtSizes;
       if (usarGradePorModalidade) {
-        shirtSizes = await storage.getShirtSizesByModality(registration.modalityId);
+        shirtSizes = await storage.getShirtSizesByModality(
+          registration.modalityId,
+        );
       } else {
         shirtSizes = await storage.getShirtSizesByEvent(event.id);
       }
-      const selectedSize = shirtSizes.find(s => s.tamanho === registration.tamanhoCamisa);
+      const selectedSize = shirtSizes.find(
+        (s) => s.tamanho === registration.tamanhoCamisa,
+      );
       if (selectedSize) {
-        const ajustePreco = parseFloat(selectedSize.ajustePreco || '0');
+        const ajustePreco = parseFloat(selectedSize.ajustePreco || "0");
         if (ajustePreco !== 0) {
-          const ajusteText = ajustePreco < 0 
-            ? `(Desconto: -R$ ${Math.abs(ajustePreco).toFixed(2).replace('.', ',')})`
-            : `(Acréscimo: +R$ ${ajustePreco.toFixed(2).replace('.', ',')})`;
+          const ajusteText =
+            ajustePreco < 0
+              ? `(Desconto: -R$ ${Math.abs(ajustePreco).toFixed(2).replace(".", ",")})`
+              : `(Acréscimo: +R$ ${ajustePreco.toFixed(2).replace(".", ",")})`;
           camisaValue = `${registration.tamanhoCamisa} ${ajusteText}`;
         }
       }
-      
+
       inscricaoData.push({ label: "Tamanho da Camisa", value: camisaValue });
     }
 
@@ -164,33 +181,29 @@ router.get("/:registrationId", async (req, res) => {
       inscricaoData.push({ label: "Equipe", value: registration.equipe });
     }
 
-    inscricaoData.push({ 
-      label: "Data da Inscrição", 
-      value: formatDate(registration.dataInscricao) 
+    inscricaoData.push({
+      label: "Data da Inscrição",
+      value: formatDate(registration.dataInscricao),
     });
 
-    inscricaoData.forEach(item => {
+    inscricaoData.forEach((item) => {
       doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
       doc.font("Helvetica").text(item.value);
     });
 
     doc.moveDown(1.5);
 
-    doc.fontSize(14)
-       .font("Helvetica-Bold")
-       .fillColor("#1a365d")
-       .text("Dados do Participante");
+    doc
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .fillColor("#1a365d")
+      .text("Dados do Participante");
 
     doc.moveDown(0.5);
-    doc.moveTo(50, doc.y)
-       .lineTo(545, doc.y)
-       .strokeColor("#e2e8f0")
-       .stroke();
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
 
     doc.moveDown(0.5);
-    doc.fontSize(11)
-       .font("Helvetica")
-       .fillColor("#333333");
+    doc.fontSize(11).font("Helvetica").fillColor("#333333");
 
     const participanteData = [
       { label: "Nome", value: registration.nomeCompleto || athlete.nome },
@@ -200,14 +213,20 @@ router.get("/:registrationId", async (req, res) => {
     ];
 
     if (athlete.dataNascimento) {
-      participanteData.push({ label: "Data de Nascimento", value: formatDate(athlete.dataNascimento) });
+      participanteData.push({
+        label: "Data de Nascimento",
+        value: formatDate(athlete.dataNascimento),
+      });
     }
 
     if (athlete.cidade && athlete.estado) {
-      participanteData.push({ label: "Cidade/Estado", value: `${athlete.cidade} - ${athlete.estado}` });
+      participanteData.push({
+        label: "Cidade/Estado",
+        value: `${athlete.cidade} - ${athlete.estado}`,
+      });
     }
 
-    participanteData.forEach(item => {
+    participanteData.forEach((item) => {
       doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
       doc.font("Helvetica").text(item.value);
     });
@@ -215,21 +234,17 @@ router.get("/:registrationId", async (req, res) => {
     if (order) {
       doc.moveDown(1.5);
 
-      doc.fontSize(14)
-         .font("Helvetica-Bold")
-         .fillColor("#1a365d")
-         .text("Dados do Pagamento");
+      doc
+        .fontSize(14)
+        .font("Helvetica-Bold")
+        .fillColor("#1a365d")
+        .text("Dados do Pagamento");
 
       doc.moveDown(0.5);
-      doc.moveTo(50, doc.y)
-         .lineTo(545, doc.y)
-         .strokeColor("#e2e8f0")
-         .stroke();
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
 
       doc.moveDown(0.5);
-      doc.fontSize(11)
-         .font("Helvetica")
-         .fillColor("#333333");
+      doc.fontSize(11).font("Helvetica").fillColor("#333333");
 
       const valorUnitario = parseFloat(registration.valorUnitario);
       const taxaComodidade = parseFloat(registration.taxaComodidade);
@@ -241,52 +256,72 @@ router.get("/:registrationId", async (req, res) => {
       ];
 
       if (taxaComodidade > 0) {
-        pagamentoData.push({ label: "Taxa de Comodidade", value: formatCurrency(taxaComodidade) });
+        pagamentoData.push({
+          label: "Taxa de Comodidade",
+          value: formatCurrency(taxaComodidade),
+        });
       }
 
       pagamentoData.push(
         { label: "Valor Total", value: formatCurrency(totalInscricao) },
-        { label: "Status do Pagamento", value: "PAGO" }
+        { label: "Status do Pagamento", value: "PAGO" },
       );
 
       if (order.dataPagamento) {
-        pagamentoData.push({ label: "Data do Pagamento", value: formatDate(order.dataPagamento) });
+        pagamentoData.push({
+          label: "Data do Pagamento",
+          value: formatDate(order.dataPagamento),
+        });
       }
 
       if (order.metodoPagamento) {
-        const metodoPagamentoLabel = order.metodoPagamento === "pix" ? "PIX" : 
-                                     order.metodoPagamento === "credit_card" ? "Cartão de Crédito" : 
-                                     order.metodoPagamento;
-        pagamentoData.push({ label: "Método de Pagamento", value: metodoPagamentoLabel });
+        const metodoPagamentoLabel =
+          order.metodoPagamento === "pix"
+            ? "PIX"
+            : order.metodoPagamento === "credit_card"
+              ? "Cartão de Crédito"
+              : order.metodoPagamento;
+        pagamentoData.push({
+          label: "Método de Pagamento",
+          value: metodoPagamentoLabel,
+        });
       }
 
       if (order.idPagamentoGateway) {
-        pagamentoData.push({ label: "ID da Transação", value: order.idPagamentoGateway });
+        pagamentoData.push({
+          label: "ID da Transação",
+          value: order.idPagamentoGateway,
+        });
       }
 
-      pagamentoData.forEach(item => {
+      pagamentoData.forEach((item) => {
         doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
         doc.font("Helvetica").text(item.value);
       });
     }
 
     doc.moveDown(3);
-    doc.moveTo(50, doc.y)
-       .lineTo(545, doc.y)
-       .strokeColor("#e2e8f0")
-       .stroke();
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
 
     doc.moveDown(1);
-    doc.fontSize(9)
-       .font("Helvetica")
-       .fillColor("#718096")
-       .text("Este documento é um comprovante de inscrição gerado eletronicamente.", { align: "center" })
-       .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR")}`, { align: "center" });
+    doc
+      .fontSize(9)
+      .font("Helvetica")
+      .fillColor("#718096")
+      .text(
+        "Este documento é um comprovante de inscrição gerado eletronicamente.",
+        { align: "center" },
+      )
+      .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR")}`, {
+        align: "center",
+      });
 
     doc.end();
   } catch (error) {
     console.error("[receipts] Erro ao gerar comprovante:", error);
-    return res.status(500).json({ success: false, error: "Erro ao gerar comprovante" });
+    return res
+      .status(500)
+      .json({ success: false, error: "Erro ao gerar comprovante" });
   }
 });
 
