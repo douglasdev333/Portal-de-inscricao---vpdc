@@ -181,20 +181,24 @@ export async function createCardPayment(
       description: description || `Pagamento pedido ${orderId}`,
       installments: installments,
       payment_method_id: paymentMethodId,
-      statement_descriptor: "STEVENTOS",
-      binary_mode: false, // Permite análise adicional ao invés de rejeitar imediatamente
+      statement_descriptor: "KITRUNNER",
+      binary_mode: false,
       payer: {
         email: buyerEmail,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        identification: {
+          type: "CPF",
+          number: cleanCpf
+        }
       },
-      external_reference: externalReference || orderId,
+      external_reference: externalReference || `order_${orderId}`,
       additional_info: {
         items: [
           {
-            id: orderId,
-            title: description || `Inscrição em evento esportivo`,
-            description: description || `Inscrição em evento esportivo`,
+            id: orderId.substring(0, 50),
+            title: (description || `Inscrição em evento esportivo`).substring(0, 255),
+            description: (description || `Inscrição em evento esportivo`).substring(0, 255),
             category_id: "services",
             quantity: 1,
             unit_price: amount
@@ -202,7 +206,8 @@ export async function createCardPayment(
         ],
         payer: {
           first_name: firstName,
-          last_name: lastName
+          last_name: lastName,
+          registration_date: new Date().toISOString()
         }
       }
     };
@@ -229,16 +234,30 @@ export async function createCardPayment(
 
     // Add payer address (critical for anti-fraud analysis)
     if (payerAddress?.zipCode) {
+      const cleanZipCode = payerAddress.zipCode.replace(/\D/g, "");
+      const streetNumber = parseInt(payerAddress.streetNumber || "0", 10) || 1;
+      
       paymentBody.payer.address = {
-        zip_code: payerAddress.zipCode.replace(/\D/g, ""),
+        zip_code: cleanZipCode,
         street_name: payerAddress.streetName || "Não informado",
-        street_number: payerAddress.streetNumber || "S/N"
+        street_number: streetNumber
       };
-      // additional_info.payer.address only supports: zip_code, street_name, street_number
+      
       paymentBody.additional_info.payer.address = {
-        zip_code: payerAddress.zipCode.replace(/\D/g, ""),
+        zip_code: cleanZipCode,
         street_name: payerAddress.streetName || "Não informado",
-        street_number: payerAddress.streetNumber || "S/N"
+        street_number: streetNumber
+      };
+      
+      // Shipments info helps with fraud prevention
+      paymentBody.additional_info.shipments = {
+        receiver_address: {
+          zip_code: cleanZipCode,
+          state_name: payerAddress.federalUnit || "",
+          city_name: payerAddress.city || "",
+          street_name: payerAddress.streetName || "Não informado",
+          street_number: streetNumber
+        }
       };
     }
 
@@ -255,6 +274,9 @@ export async function createCardPayment(
     // "optional" allows MP to decide when 3DS is needed
     paymentBody.three_d_secure_mode = "optional";
 
+    // Gerar chave de idempotência única para evitar duplicatas
+    const idempotencyKey = `${orderId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    
     console.log('[mercadopago-service] Enviando pagamento cartão:', {
       transaction_amount: paymentBody.transaction_amount,
       payment_method_id: paymentBody.payment_method_id,
@@ -262,16 +284,22 @@ export async function createCardPayment(
       issuer_id: paymentBody.issuer_id,
       has_token: !!paymentBody.token,
       has_identification: !!paymentBody.payer?.identification,
+      identification_number: paymentBody.payer?.identification?.number ? `***${paymentBody.payer.identification.number.slice(-4)}` : null,
       has_phone: !!paymentBody.payer?.phone,
       has_address: !!paymentBody.payer?.address,
+      has_shipments: !!paymentBody.additional_info?.shipments,
       payer_email: paymentBody.payer?.email,
       payer_first_name: paymentBody.payer?.first_name,
       payer_last_name: paymentBody.payer?.last_name,
-      has_additional_info: !!paymentBody.additional_info
+      three_d_secure: paymentBody.three_d_secure_mode,
+      idempotency_key: idempotencyKey
     });
 
     const payment = await paymentClient.create({
-      body: paymentBody
+      body: paymentBody,
+      requestOptions: {
+        idempotencyKey: idempotencyKey
+      }
     });
 
     console.log('[mercadopago-service] Resposta pagamento:', {
