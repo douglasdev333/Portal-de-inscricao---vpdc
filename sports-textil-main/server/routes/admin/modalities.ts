@@ -22,7 +22,6 @@ const modalitySchema = z.object({
   horarioLargada: z.string().min(1, "Horario de largada e obrigatorio"),
   descricao: z.string().optional().nullable(),
   imagemUrl: optionalUrl,
-  mapaPercursoUrl: optionalUrl,
   linksPercurso: z.array(linkPercursoSchema).optional().nullable(),
   limiteVagas: z.number().int().positive().optional().nullable(),
   tipoAcesso: z.enum(["gratuita", "paga", "voucher", "pcd", "aprovacao_manual"]).optional(),
