@@ -71,3 +71,25 @@ Preferred communication style: Simple, everyday language.
 ### Background Jobs
 - Order expiration job (30-minute payment timeout)
 - Payment polling job for Mercado Pago status sync
+
+## Portal do Organizador
+
+### Architecture
+- **Route**: `/organizadores/*` - Separate portal for event organizers (read-only)
+- **Auth**: Uses same admin auth system with role "organizador"
+- **Access Control**: Server-side filtering by organizerId in events endpoint (events.ts lines 52-59)
+
+### Pages
+- **OrganizerMeusEventosPage**: Lists all events belonging to the organizer
+- **OrganizerEventDashboardPage**: Detailed read-only dashboard for a specific event with 6 tabs:
+  1. Visão Geral - KPIs, vagas disponíveis, distribuição por gênero
+  2. Modalidades - Vagas por modalidade e lotes
+  3. Camisas - Estoque por tamanho com percentuais
+  4. Inscrições - Resumo e lista de inscritos
+  5. Financeiro - Faturamento, taxas, métodos de pagamento
+  6. Cupons - Lista de cupons utilizados
+
+### API Endpoints (Organizer-accessible)
+- `GET /api/admin/events` - Lists events (filtered by organizerId for organizers)
+- `GET /api/admin/events/:id/stats` - Event statistics (validated via checkEventOwnership)
+- `GET /api/admin/events/:id/voucher-stats` - Voucher usage statistics
