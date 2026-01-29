@@ -39,8 +39,7 @@ import { AthleteAuthProvider } from "@/contexts/AthleteAuthContext";
 import OrganizerLoginPage from "@/pages/organizador/OrganizerLoginPage";
 import OrganizerMeusEventosPage from "@/pages/organizador/OrganizerMeusEventosPage";
 import OrganizerEventDashboardPage from "@/pages/organizador/OrganizerEventDashboardPage";
-import OrganizerInscritosPage from "@/pages/organizador/OrganizerInscritosPage";
-import OrganizerRelatoriosPage from "@/pages/organizador/OrganizerRelatoriosPage";
+import OrganizerEventInscritosPage from "@/pages/organizador/OrganizerEventInscritosPage";
 import OrganizerNotFound from "@/pages/organizador/OrganizerNotFound";
 import ProtectedOrganizerRoute from "@/pages/organizador/ProtectedOrganizerRoute";
 
@@ -136,19 +135,14 @@ function OrganizerRoutes() {
     <OrganizerAuthProvider>
       <Switch>
         <Route path="/organizadores/login" component={OrganizerLoginPage} />
+        <Route path="/organizadores/evento/:id/inscritos">
+          <ProtectedOrganizerRoute>
+            <OrganizerEventInscritosPage />
+          </ProtectedOrganizerRoute>
+        </Route>
         <Route path="/organizadores/evento/:id">
           <ProtectedOrganizerRoute>
             <OrganizerEventDashboardPage />
-          </ProtectedOrganizerRoute>
-        </Route>
-        <Route path="/organizadores/inscritos">
-          <ProtectedOrganizerRoute>
-            <OrganizerInscritosPage />
-          </ProtectedOrganizerRoute>
-        </Route>
-        <Route path="/organizadores/relatorios">
-          <ProtectedOrganizerRoute>
-            <OrganizerRelatoriosPage />
           </ProtectedOrganizerRoute>
         </Route>
         <Route path="/organizadores">

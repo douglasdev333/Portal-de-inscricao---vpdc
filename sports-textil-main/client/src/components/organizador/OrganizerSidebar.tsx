@@ -17,9 +17,7 @@ import {
   LayoutDashboard, 
   Users, 
   LogOut,
-  Building2,
-  ClipboardList,
-  FileSpreadsheet
+  Building2
 } from "lucide-react";
 
 interface MenuItem {
@@ -33,16 +31,6 @@ const menuItems: MenuItem[] = [
     title: "Meus Eventos",
     url: "/organizadores",
     icon: LayoutDashboard,
-  },
-  {
-    title: "Inscritos",
-    url: "/organizadores/inscritos",
-    icon: ClipboardList,
-  },
-  {
-    title: "Relatórios",
-    url: "/organizadores/relatorios",
-    icon: FileSpreadsheet,
   },
 ];
 

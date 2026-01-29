@@ -12,8 +12,9 @@ import { useOrganizerAuth } from "@/contexts/OrganizerAuthContext";
 import { 
   ArrowLeft, Calendar, MapPin, Users, TrendingUp, Shirt, 
   DollarSign, Ticket, ClipboardList, BarChart3, Package,
-  CheckCircle2, Clock, XCircle
+  CheckCircle2, Clock, XCircle, Download, Layers, ExternalLink
 } from "lucide-react";
+import * as XLSX from "xlsx";
 import { formatDateOnlyBrazil, formatCurrency } from "@/lib/timezone";
 
 interface EventStats {
@@ -137,6 +138,12 @@ function OverviewTab({ event, stats, isLoading }: { event: Event; stats: EventSt
     ? Math.round((event.vagasOcupadas / event.limiteVagasTotal) * 100)
     : 0;
 
+  const activeBatches = stats?.batches?.filter(b => b.isVigente || b.status === "active") || [];
+  const upcomingBatches = stats?.batches?.filter(b => {
+    const startDate = new Date(b.dataInicio);
+    return startDate > new Date() && b.status !== "closed";
+  }) || [];
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -245,6 +252,61 @@ function OverviewTab({ event, stats, isLoading }: { event: Event; stats: EventSt
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Layers className="h-5 w-5" />
+            Lotes Ativos e Próximos
+          </CardTitle>
+          <CardDescription>Lotes de inscrição em andamento</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activeBatches.length === 0 && upcomingBatches.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <Layers className="h-10 w-10 mx-auto mb-2 opacity-50" />
+              <p>Nenhum lote ativo ou próximo</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activeBatches.map((batch) => (
+                <div key={batch.id} className="border rounded-lg p-4 bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-600 hover:bg-green-600">Ativo</Badge>
+                      <span className="font-medium">{batch.nome}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {batch.quantidadeUtilizada} / {batch.quantidadeMaxima ?? "∞"} vagas
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {formatDateOnlyBrazil(batch.dataInicio)}
+                    {batch.dataTermino && ` até ${formatDateOnlyBrazil(batch.dataTermino)}`}
+                  </p>
+                </div>
+              ))}
+              {upcomingBatches.filter(b => !activeBatches.find(a => a.id === b.id)).map((batch) => (
+                <div key={batch.id} className="border rounded-lg p-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="border-blue-500 text-blue-600">Próximo</Badge>
+                      <span className="font-medium">{batch.nome}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      0 / {batch.quantidadeMaxima ?? "∞"} vagas
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Início: {formatDateOnlyBrazil(batch.dataInicio)}
+                    {batch.dataTermino && ` até ${formatDateOnlyBrazil(batch.dataTermino)}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -357,7 +419,7 @@ function ModalitiesTab({ stats, isLoading }: { stats: EventStats | null; isLoadi
   );
 }
 
-function ShirtsTab({ stats, isLoading }: { stats: EventStats | null; isLoading: boolean }) {
+function ShirtsTab({ stats, isLoading, eventName }: { stats: EventStats | null; isLoading: boolean; eventName?: string }) {
   const sizeOrder: Record<string, number> = {
     'PP': 1, 'P': 2, 'M': 3, 'G': 4, 'GG': 5, 'XG': 6, 'XGG': 7, 'EG': 8, 'EGG': 9,
     '2': 10, '4': 11, '6': 12, '8': 13, '10': 14, '12': 15, '14': 16
@@ -371,6 +433,48 @@ function ShirtsTab({ stats, isLoading }: { stats: EventStats | null; isLoading: 
 
   const totalCamisas = sortedShirts.reduce((sum, s) => sum + s.quantidadeTotal, 0);
   const totalUtilizado = sortedShirts.reduce((sum, s) => sum + s.consumoConfirmado, 0);
+
+  const exportShirtsToExcel = () => {
+    const headers = ["Tamanho", "Total", "Confirmadas", "Pendentes", "Disponíveis", "Ocupação (%)"];
+    const rows = sortedShirts.map((shirt) => {
+      const ocupacao = shirt.quantidadeTotal > 0
+        ? Math.round((shirt.consumoConfirmado / shirt.quantidadeTotal) * 100)
+        : 0;
+      return [
+        shirt.tamanho,
+        shirt.quantidadeTotal,
+        shirt.consumoConfirmado,
+        shirt.consumoPendente,
+        shirt.quantidadeDisponivel,
+        ocupacao
+      ];
+    });
+    
+    rows.push([
+      "TOTAL",
+      totalCamisas,
+      totalUtilizado,
+      sortedShirts.reduce((sum, s) => sum + s.consumoPendente, 0),
+      totalCamisas - totalUtilizado,
+      totalCamisas > 0 ? Math.round((totalUtilizado / totalCamisas) * 100) : 0
+    ]);
+
+    const wsData = [headers, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    const colWidths = headers.map((_, i) => {
+      const maxLen = Math.max(
+        headers[i].length,
+        ...rows.map(row => String(row[i]).length)
+      );
+      return { wch: Math.min(maxLen + 2, 30) };
+    });
+    ws['!cols'] = colWidths;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Grade Camisas");
+    XLSX.writeFile(wb, `grade_camisas_${eventName?.replace(/\s+/g, '_') || 'evento'}_${new Date().toISOString().split("T")[0]}.xlsx`);
+  };
 
   if (isLoading) {
     return (
@@ -409,9 +513,15 @@ function ShirtsTab({ stats, isLoading }: { stats: EventStats | null; isLoading: 
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Grade de Camisas</CardTitle>
-          <CardDescription>Estoque por tamanho</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg">Grade de Camisas</CardTitle>
+            <CardDescription>Estoque por tamanho</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" onClick={exportShirtsToExcel}>
+            <Download className="h-4 w-4 mr-2" />
+            Baixar Excel
+          </Button>
         </CardHeader>
         <CardContent>
           <Table>
@@ -458,7 +568,7 @@ function ShirtsTab({ stats, isLoading }: { stats: EventStats | null; isLoading: 
   );
 }
 
-function RegistrationsTab({ event, stats, isLoading }: { event: Event; stats: EventStats | null; isLoading: boolean }) {
+function RegistrationsTab({ event, stats, isLoading, eventId }: { event: Event; stats: EventStats | null; isLoading: boolean; eventId: string }) {
   const totalCanceladas = 0;
   const totalInscritos = (stats?.totalInscritos ?? 0) + (stats?.totalPendentes ?? 0);
 
@@ -477,6 +587,15 @@ function RegistrationsTab({ event, stats, isLoading }: { event: Event; stats: Ev
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <Link href={`/organizadores/evento/${eventId}/inscritos`}>
+          <Button>
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Ver Lista Completa
+          </Button>
+        </Link>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-l-4 border-l-blue-500">
           <CardContent className="pt-6">
@@ -844,11 +963,11 @@ export default function OrganizerEventDashboardPage() {
           </TabsContent>
 
           <TabsContent value="shirts">
-            <ShirtsTab stats={stats} isLoading={isLoading} />
+            <ShirtsTab stats={stats} isLoading={isLoading} eventName={event.nome} />
           </TabsContent>
 
           <TabsContent value="registrations">
-            <RegistrationsTab event={event} stats={stats} isLoading={isLoading} />
+            <RegistrationsTab event={event} stats={stats} isLoading={isLoading} eventId={eventId!} />
           </TabsContent>
 
           <TabsContent value="finance">
