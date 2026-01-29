@@ -1,0 +1,24 @@
+Otimização de Antifraude Mercado Pago
+Contexto do Problema
+Minha integração com o Mercado Pago (Checkout Transparente) está sofrendo com altas taxas de rejeição por cc_rejected_high_risk. O diagnóstico técnico identificou que o sistema antifraude do Mercado Pago não está recebendo dados suficientes para validar a legitimidade das transações, sendo a ausência do Device ID o fator mais crítico.
+Objetivo
+Você deve atuar como um especialista em integrações de pagamento e ajustar meu projeto (Node.js + React) para garantir que todos os dados necessários para a análise de risco sejam enviados corretamente ao Mercado Pago.
+Instruções para o Backend (Node.js)
+No arquivo de serviço do Mercado Pago (ex: mercadopago-service.ts), realize as seguintes melhorias lógicas:
+Implementação do Device ID:
+Modifique a lógica de criação de pagamento para aceitar um identificador de dispositivo (deviceId) vindo do frontend.
+Este ID deve ser enviado obrigatoriamente no cabeçalho da requisição HTTP para a API do Mercado Pago usando a chave X-Device-Id.
+Utilize as opções de cabeçalho do SDK (requestOptions.headers) para garantir que o cabeçalho seja incluído na chamada payment.create().
+Refinamento de Dados Antifraude:
+Certifique-se de que os campos de endereço (street_name, street_number, zip_code) e telefone do pagador sejam validados e enviados tanto no objeto payer quanto no additional_info.
+Evite o uso de strings genéricas (como "Não informado") para nomes de rua; a lógica deve exigir dados reais ou tratar a ausência de forma que não prejudique o score de risco.
+Garanta que o external_reference e o statement_descriptor estejam configurados para facilitar a conciliação e reduzir chargebacks.
+Instruções para o Frontend (React)
+No componente de checkout ou formulário de pagamento, implemente a seguinte lógica:
+Captura do Identificador de Segurança:
+Certifique-se de que o SDK JS do Mercado Pago (v2) esteja carregado e inicializado.
+O SDK gera automaticamente um identificador único no navegador (geralmente em um campo oculto com ID mercadopago-device-id). Você deve capturar esse valor no momento da submissão do formulário.
+Envie esse valor para o backend junto com o token do cartão e os outros dados do pagamento.
+Fluxo de Testes:
+Prepare o ambiente para alternar facilmente entre credenciais de produção e de teste via variáveis de ambiente.
+Implemente um log claro para que eu possa verificar se o X-Device-Id está sendo enviado corretamente nas requisições durante os testes.

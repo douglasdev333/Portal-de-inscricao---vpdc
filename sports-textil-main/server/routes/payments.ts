@@ -34,7 +34,8 @@ const createPaymentSchema = z.object({
     type: z.string(),
     number: z.string()
   }).optional(),
-  cardholderName: z.string().optional()
+  cardholderName: z.string().optional(),
+  deviceId: z.string().optional()
 });
 
 router.post("/create", async (req, res) => {
@@ -60,7 +61,7 @@ router.post("/create", async (req, res) => {
       });
     }
 
-    const { orderId, paymentMethod, cardToken, installments, paymentMethodId, issuerId, payerIdentification, cardholderName } = parsed.data;
+    const { orderId, paymentMethod, cardToken, installments, paymentMethodId, issuerId, payerIdentification, cardholderName, deviceId } = parsed.data;
 
     const order = await storage.getOrder(orderId);
     if (!order) {
@@ -259,7 +260,8 @@ router.post("/create", async (req, res) => {
         description,
         clientIp,
         payerPhone,
-        payerAddress
+        payerAddress,
+        deviceId
       );
 
       if (!result.success) {

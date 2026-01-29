@@ -377,6 +377,7 @@ export default function PedidoDetailPage() {
       number: string;
     };
     cardholderName: string;
+    deviceId?: string;
   }) => {
     // Prevenir chamadas duplicadas
     if (isProcessingCard) {
@@ -395,6 +396,7 @@ export default function PedidoDetailPage() {
         installments: cardData.installments,
         payerIdentification: cardData.payerIdentification,
         cardholderName: cardData.cardholderName,
+        deviceId: cardData.deviceId,
       });
 
       const result = await response.json();

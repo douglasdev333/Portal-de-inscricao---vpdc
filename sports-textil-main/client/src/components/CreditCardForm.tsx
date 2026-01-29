@@ -24,6 +24,7 @@ interface CreditCardFormProps {
       number: string;
     };
     cardholderName: string;
+    deviceId?: string;
   }) => void;
   isProcessing: boolean;
   publicKey: string;
@@ -200,6 +201,28 @@ export default function CreditCardForm({ amount, onSubmit, isProcessing, publicK
         throw new Error(response.error);
       }
 
+      // Capturar Device ID do Mercado Pago para antifraude
+      // O SDK pode armazenar em um input hidden ou via método
+      let deviceId: string | undefined;
+      const deviceIdInput = document.getElementById("mercadopago-device-id") as HTMLInputElement;
+      if (deviceIdInput?.value) {
+        deviceId = deviceIdInput.value;
+      } else if ((mp as any).getDeviceId) {
+        // Alguns SDKs têm método direto
+        deviceId = (mp as any).getDeviceId();
+      } else {
+        // Fallback: tentar pegar do DOM por outros seletores
+        const hiddenInputs = document.querySelectorAll('input[type="hidden"]');
+        hiddenInputs.forEach((input: Element) => {
+          const el = input as HTMLInputElement;
+          if (el.name?.includes('device') || el.id?.includes('device')) {
+            deviceId = el.value;
+          }
+        });
+      }
+
+      console.log('[CreditCardForm] Device ID capturado:', deviceId ? `${deviceId.substring(0, 20)}...` : 'não encontrado');
+
       onSubmit({
         token: response.id,
         paymentMethodId: paymentMethodId,
@@ -210,6 +233,7 @@ export default function CreditCardForm({ amount, onSubmit, isProcessing, publicK
           number: identificationNumber.replace(/\D/g, ""),
         },
         cardholderName: cardholderName.toUpperCase(),
+        deviceId,
       });
     } catch (error: any) {
       console.error("Erro ao tokenizar cartão:", error);

@@ -121,7 +121,8 @@ export async function createCardPayment(
   description?: string,
   ipAddress?: string,
   payerPhone?: PayerPhoneInfo,
-  payerAddress?: PayerAddressInfo
+  payerAddress?: PayerAddressInfo,
+  deviceId?: string
 ): Promise<CardPaymentResult> {
   if (!paymentClient) {
     return {
@@ -233,19 +234,29 @@ export async function createCardPayment(
     }
 
     // Add payer address (critical for anti-fraud analysis)
-    if (payerAddress?.zipCode) {
+    // IMPORTANTE: Não enviar valores genéricos - só enviar endereço se tiver dados reais
+    const streetNameNormalized = payerAddress?.streetName?.trim().toLowerCase() || "";
+    const isValidStreetName = payerAddress?.streetName && 
+      payerAddress.streetName.trim() !== "" && 
+      streetNameNormalized !== "não informado" &&
+      streetNameNormalized !== "nao informado" &&
+      !streetNameNormalized.includes("não informado") &&
+      !streetNameNormalized.includes("nao informado");
+    
+    if (payerAddress?.zipCode && isValidStreetName) {
       const cleanZipCode = payerAddress.zipCode.replace(/\D/g, "");
       const streetNumber = parseInt(payerAddress.streetNumber || "0", 10) || 1;
+      const validatedStreetName = payerAddress.streetName!.trim();
       
       paymentBody.payer.address = {
         zip_code: cleanZipCode,
-        street_name: payerAddress.streetName || "Não informado",
+        street_name: validatedStreetName,
         street_number: streetNumber
       };
       
       paymentBody.additional_info.payer.address = {
         zip_code: cleanZipCode,
-        street_name: payerAddress.streetName || "Não informado",
+        street_name: validatedStreetName,
         street_number: streetNumber
       };
       
@@ -255,7 +266,7 @@ export async function createCardPayment(
           zip_code: cleanZipCode,
           state_name: payerAddress.federalUnit || "",
           city_name: payerAddress.city || "",
-          street_name: payerAddress.streetName || "Não informado",
+          street_name: validatedStreetName,
           street_number: streetNumber
         }
       };
@@ -277,6 +288,12 @@ export async function createCardPayment(
     // Gerar chave de idempotência única para evitar duplicatas
     const idempotencyKey = `${orderId}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
     
+    // Preparar headers customizados para antifraude
+    const customHeaders: Record<string, string> = {};
+    if (deviceId && deviceId.trim() !== "") {
+      customHeaders['X-Device-Id'] = deviceId.trim();
+    }
+
     console.log('[mercadopago-service] Enviando pagamento cartão:', {
       transaction_amount: paymentBody.transaction_amount,
       payment_method_id: paymentBody.payment_method_id,
@@ -292,13 +309,16 @@ export async function createCardPayment(
       payer_first_name: paymentBody.payer?.first_name,
       payer_last_name: paymentBody.payer?.last_name,
       three_d_secure: paymentBody.three_d_secure_mode,
-      idempotency_key: idempotencyKey
+      idempotency_key: idempotencyKey,
+      has_device_id: !!deviceId,
+      device_id_length: deviceId?.length || 0
     });
 
     const payment = await paymentClient.create({
       body: paymentBody,
       requestOptions: {
-        idempotencyKey: idempotencyKey
+        idempotencyKey: idempotencyKey,
+        ...(Object.keys(customHeaders).length > 0 && { headers: customHeaders })
       }
     });
 

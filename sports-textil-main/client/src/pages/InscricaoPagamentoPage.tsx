@@ -317,6 +317,7 @@ export default function InscricaoPagamentoPage() {
       number: string;
     };
     cardholderName: string;
+    deviceId?: string;
   }) => {
     if (isExpired) {
       toast({
@@ -338,6 +339,7 @@ export default function InscricaoPagamentoPage() {
         installments: cardData.installments,
         payerIdentification: cardData.payerIdentification,
         cardholderName: cardData.cardholderName,
+        deviceId: cardData.deviceId,
       });
       const result = await response.json();
 
