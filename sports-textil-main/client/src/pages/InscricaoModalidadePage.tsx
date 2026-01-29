@@ -273,6 +273,11 @@ export default function InscricaoModalidadePage() {
   const cannotRegister = registrationStatus !== 'open' && registrationStatus !== undefined;
   const selectedModality = modalities.find(m => m.id === modalidadeSelecionada);
   
+  const sizeOrder: Record<string, number> = {
+    'PP': 1, 'P': 2, 'M': 3, 'G': 4, 'GG': 5, 'XG': 6, 'XGG': 7, 'EG': 8, 'EGG': 9,
+    '2': 10, '4': 11, '6': 12, '8': 13, '10': 14, '12': 15, '14': 16
+  };
+  
   let availableSizes: ShirtSize[] = [];
   if (shirtSizes.byModality && modalidadeSelecionada) {
     const modalitySizes = (shirtSizes.data as { modalityId: string; sizes: ShirtSize[] }[])
@@ -281,6 +286,12 @@ export default function InscricaoModalidadePage() {
   } else if (!shirtSizes.byModality) {
     availableSizes = shirtSizes.data as ShirtSize[];
   }
+  
+  availableSizes = [...availableSizes].sort((a, b) => {
+    const orderA = sizeOrder[a.tamanho.toUpperCase()] ?? 99;
+    const orderB = sizeOrder[b.tamanho.toUpperCase()] ?? 99;
+    return orderA - orderB;
+  });
 
   const taxaComodidadeValor = selectedModality?.taxaComodidade ?? 0;
   const valorModalidade = selectedModality?.preco ?? 0;
