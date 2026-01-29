@@ -82,14 +82,19 @@ Preferred communication style: Simple, everyday language.
 ### Pages
 - **OrganizerMeusEventosPage**: Lists all events belonging to the organizer
 - **OrganizerEventDashboardPage**: Detailed read-only dashboard for a specific event with 6 tabs:
-  1. Visão Geral - KPIs, vagas disponíveis, distribuição por gênero
+  1. Visão Geral - KPIs, vagas disponíveis, distribuição por gênero, lotes ativos e próximos
   2. Modalidades - Vagas por modalidade e lotes
-  3. Camisas - Estoque por tamanho com percentuais
-  4. Inscrições - Resumo e lista de inscritos
+  3. Camisas - Estoque por tamanho com percentuais, exportação Excel
+  4. Inscrições - Resumo e link para lista completa
   5. Financeiro - Faturamento, taxas, métodos de pagamento
   6. Cupons - Lista de cupons utilizados
+- **OrganizerEventInscritosPage**: Lista completa de inscritos com busca, filtros por status/modalidade e exportação Excel
+
+### Sidebar Navigation
+- Menu simplificado com apenas "Meus Eventos"
 
 ### API Endpoints (Organizer-accessible)
 - `GET /api/admin/events` - Lists events (filtered by organizerId for organizers)
 - `GET /api/admin/events/:id/stats` - Event statistics (validated via checkEventOwnership)
+- `GET /api/admin/events/:id/registrations` - Registration list (validated via checkEventOwnership)
 - `GET /api/admin/events/:id/voucher-stats` - Voucher usage statistics
