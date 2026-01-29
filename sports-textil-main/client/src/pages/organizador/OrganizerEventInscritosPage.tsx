@@ -210,7 +210,9 @@ export default function OrganizerEventInscritosPage() {
       "Equipe",
       "Status",
       "Método Pagamento",
-      "Valor",
+      "Valor Inscrição",
+      "Taxa Comodidade",
+      "Desconto",
       "Data Inscrição",
     ];
 
@@ -220,7 +222,7 @@ export default function OrganizerEventInscritosPage() {
       formatCPF(reg.cpf),
       reg.athleteEmail,
       reg.athletePhone || "-",
-      reg.sexo === "M" ? "Masculino" : reg.sexo === "F" ? "Feminino" : "-",
+      reg.sexo === "masculino" ? "Masculino" : reg.sexo === "feminino" ? "Feminino" : "-",
       reg.dataNascimento ? formatDateOnlyBrazil(reg.dataNascimento) : "-",
       reg.modalityName,
       reg.tamanhoCamisa || "-",
@@ -229,6 +231,8 @@ export default function OrganizerEventInscritosPage() {
       statusLabels[reg.status] || reg.status,
       metodoPagamentoLabels[reg.metodoPagamento || ""] || "-",
       formatCurrency(reg.valorUnitario),
+      formatCurrency(reg.taxaComodidade),
+      formatCurrency(reg.valorDesconto),
       formatDateOnlyBrazil(reg.dataInscricao),
     ]);
 
