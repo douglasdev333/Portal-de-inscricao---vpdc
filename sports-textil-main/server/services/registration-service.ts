@@ -576,7 +576,8 @@ export async function decrementVagasOcupadas(
   eventId: string, 
   modalityId?: string, 
   batchId?: string,
-  tamanhoCamisa?: string | null
+  tamanhoCamisa?: string | null,
+  wasStockDeducted: boolean = false
 ): Promise<void> {
   const client = await pool.connect();
   try {
@@ -601,8 +602,9 @@ export async function decrementVagasOcupadas(
       );
     }
 
-    // Increment shirt size back if it was selected
-    if (tamanhoCamisa && modalityId) {
+    // Increment shirt size back ONLY if it was actually deducted
+    // For pending registrations, stock is never reserved, so we don't increment
+    if (tamanhoCamisa && modalityId && wasStockDeducted) {
       // Check if event uses modality-specific shirt sizes
       const eventResult = await client.query(
         `SELECT usar_grade_por_modalidade FROM events WHERE id = $1`,

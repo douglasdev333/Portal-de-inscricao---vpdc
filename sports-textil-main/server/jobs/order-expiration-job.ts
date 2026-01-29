@@ -89,11 +89,14 @@ export async function expireOrders(): Promise<{
         );
 
         for (const registration of registrationsResult.rows) {
+          // wasStockDeducted = false because pending registrations never have shirt stock reserved
+          // Stock is only decremented when payment is confirmed (status = 'confirmada')
           await decrementVagasOcupadas(
             registration.eventId,
             registration.modalityId,
             registration.batchId,
-            registration.tamanhoCamisa
+            registration.tamanhoCamisa,
+            false // wasStockDeducted
           );
 
           await client.query(
