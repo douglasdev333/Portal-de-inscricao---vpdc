@@ -250,3 +250,11 @@ export function formatRelativeDate(dateString: string | Date | null | undefined)
   
   return 'Menos de 1 hora';
 }
+
+export function formatCurrency(value: number | string | null | undefined): string {
+  const numValue = typeof value === 'string' ? parseFloat(value) : (value ?? 0);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(numValue);
+}

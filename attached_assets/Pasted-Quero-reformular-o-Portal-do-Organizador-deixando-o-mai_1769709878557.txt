@@ -1,0 +1,178 @@
+Quero reformular o Portal do Organizador, deixando-o mais completo, organizado e transparente.
+
+Atualmente, o organizador já consegue visualizar os eventos que pertencem a ele, porém faltam informações essenciais como:
+
+número de inscritos
+
+vagas disponíveis
+
+grade de camisas
+
+status das inscrições
+
+faturamento
+
+🎯 Objetivo geral
+
+Substituir o dashboard global do organizador por uma página de listagem de eventos.
+Ao selecionar um evento, o organizador será direcionado para um Dashboard do Evento, contendo todas as informações relevantes daquele evento.
+
+Esse dashboard deve ser:
+
+100% visualização (read-only) — sem permissão de edição
+
+bem organizado
+
+transparente
+
+inspirado na tela de configurações do admin, porém adaptado para leitura
+
+🧭 Estrutura proposta
+1️⃣ Página “Meus Eventos”
+
+Lista de eventos do organizador
+
+Informações básicas por evento:
+
+Nome
+
+Data
+
+Status (ativo, encerrado, finalizado)
+
+Total de inscritos
+
+Botão “Visualizar evento”
+
+2️⃣ Dashboard do Evento (visualização)
+
+Tela principal do evento, com layout organizado e uso de abas internas para separar informações.
+
+🗂️ Abas do Dashboard do Evento
+📊 Visão Geral
+
+Total de inscritos
+
+Vagas totais x vagas restantes
+
+Pagos
+
+Pendentes
+
+Cancelados
+
+Faturamento total
+
+Faturamento confirmado
+
+Período de inscrições
+
+Status do evento
+
+👟 Modalidades & Vagas
+
+Lista de modalidades
+
+Vagas por modalidade:
+
+Total
+
+Ocupadas
+
+Disponíveis
+
+Lotes vinculados a cada modalidade
+
+Datas e valores dos lotes
+
+🎽 Grade de Camisas
+
+Grade completa por:
+
+Tamanho
+
+Cor (se aplicável)
+
+Quantidade:
+
+Total
+
+Reservada
+
+Utilizada
+
+Disponível
+
+Percentual de ocupação por tamanho
+
+🧾 Inscrições
+
+Resumo geral:
+
+Total
+
+Pagas
+
+Pendentes
+
+Canceladas
+
+Filtros por status e modalidade
+
+Evolução de inscrições (linha do tempo ou gráfico simples)
+
+💰 Financeiro
+
+Faturamento bruto
+
+Faturamento líquido
+
+Total arrecadado por período
+
+Taxas
+
+Valor a repassar (se aplicável)
+
+Comparativo pagos x pendentes
+
+🎟️ Cupons & Vouchers
+
+Lista de cupons/vouchers do evento
+
+Tipo (percentual / valor fixo)
+
+Quantidade utilizada
+
+Impacto no faturamento
+
+🔐 Regras de Acesso
+
+Organizador não pode editar nenhuma informação
+
+Nenhum botão de ação (criar, editar, excluir)
+
+Visualização apenas dos eventos vinculados ao organizador
+
+🧠 Diretrizes de UX
+
+Uso de abas para evitar excesso de informação em uma única tela
+
+Cards para KPIs principais
+
+Tabelas colapsáveis para detalhes
+
+Visual claro e consistente com o painel administrativo
+
+Linguagem simples e objetiva
+
+📌 Resultado esperado
+
+Um Portal do Organizador completo, onde o organizador:
+
+entende claramente a situação do evento
+
+acompanha vendas, vagas e estoque
+
+confia nos dados apresentados
+
+não depende do admin para informações básicas

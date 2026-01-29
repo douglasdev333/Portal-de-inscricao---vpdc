@@ -510,4 +510,68 @@ router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) =
   }
 });
 
+router.get("/:eventId/voucher-stats", requireAuth, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    const event = await storage.getEvent(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
+      });
+    }
+
+    const hasAccess = await checkEventOwnership(req, res, eventId, event);
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
+      });
+    }
+
+    const [coupons, orders, modalities] = await Promise.all([
+      storage.getCouponsByEvent(eventId),
+      storage.getOrdersByEvent(eventId),
+      storage.getModalitiesByEvent(eventId)
+    ]);
+
+    const modalityMap = new Map(modalities.map(m => [m.id, m.nome]));
+    
+    const paidOrders = orders.filter(o => o.status === "pago");
+    
+    const voucherStats = coupons.map(coupon => {
+      const ordersWithCoupon = paidOrders.filter(o => o.cupomId === coupon.id);
+      const totalDesconto = ordersWithCoupon.reduce((sum, o) => sum + parseFloat(o.valorDesconto), 0);
+      
+      return {
+        id: coupon.id,
+        codigo: coupon.code,
+        tipo: coupon.discountType,
+        valor: coupon.discountValue || "0",
+        limiteUsos: coupon.maxUses,
+        quantidadeUtilizada: coupon.currentUses,
+        modalityName: null,
+        desconto: totalDesconto
+      };
+    });
+
+    const totalDescontos = voucherStats.reduce((sum, v) => sum + v.desconto, 0);
+
+    res.json({
+      success: true,
+      data: {
+        vouchers: voucherStats,
+        totalDescontos
+      }
+    });
+  } catch (error) {
+    console.error("Get voucher stats error:", error);
+    res.status(500).json({
+      success: false,
+      error: { code: "INTERNAL_ERROR", message: "Erro interno do servidor" }
+    });
+  }
+});
+
 export default router;

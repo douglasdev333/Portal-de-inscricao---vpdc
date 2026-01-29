@@ -30,7 +30,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   {
-    title: "Dashboard",
+    title: "Meus Eventos",
     url: "/organizadores",
     icon: LayoutDashboard,
   },
@@ -40,7 +40,7 @@ const menuItems: MenuItem[] = [
     icon: ClipboardList,
   },
   {
-    title: "Relatorios",
+    title: "Relatórios",
     url: "/organizadores/relatorios",
     icon: FileSpreadsheet,
   },

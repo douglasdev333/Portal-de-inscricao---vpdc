@@ -37,7 +37,8 @@ import ProtectedAdminRoute from "@/pages/admin/ProtectedAdminRoute";
 import { OrganizerAuthProvider } from "@/contexts/OrganizerAuthContext";
 import { AthleteAuthProvider } from "@/contexts/AthleteAuthContext";
 import OrganizerLoginPage from "@/pages/organizador/OrganizerLoginPage";
-import OrganizerDashboardPage from "@/pages/organizador/OrganizerDashboardPage";
+import OrganizerMeusEventosPage from "@/pages/organizador/OrganizerMeusEventosPage";
+import OrganizerEventDashboardPage from "@/pages/organizador/OrganizerEventDashboardPage";
 import OrganizerInscritosPage from "@/pages/organizador/OrganizerInscritosPage";
 import OrganizerRelatoriosPage from "@/pages/organizador/OrganizerRelatoriosPage";
 import OrganizerNotFound from "@/pages/organizador/OrganizerNotFound";
@@ -135,6 +136,11 @@ function OrganizerRoutes() {
     <OrganizerAuthProvider>
       <Switch>
         <Route path="/organizadores/login" component={OrganizerLoginPage} />
+        <Route path="/organizadores/evento/:id">
+          <ProtectedOrganizerRoute>
+            <OrganizerEventDashboardPage />
+          </ProtectedOrganizerRoute>
+        </Route>
         <Route path="/organizadores/inscritos">
           <ProtectedOrganizerRoute>
             <OrganizerInscritosPage />
@@ -147,7 +153,7 @@ function OrganizerRoutes() {
         </Route>
         <Route path="/organizadores">
           <ProtectedOrganizerRoute>
-            <OrganizerDashboardPage />
+            <OrganizerMeusEventosPage />
           </ProtectedOrganizerRoute>
         </Route>
         <Route>
