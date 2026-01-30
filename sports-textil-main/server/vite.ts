@@ -9,43 +9,93 @@ import { storage } from "./storage";
 
 const viteLogger = createLogger();
 
+function truncateWords(text: string, maxWords: number): string {
+  if (!text) return '';
+  const words = text.split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(' ') + '...';
+}
+
+function escapeHtml(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 async function injectOpenGraphMeta(html: string, url: string, host: string): Promise<string> {
+  const baseUrl = `https://${host}`;
+  const defaultImage = `${baseUrl}/og-images/Marathon_runners_landscape_hero_b439e181.png`;
   const eventMatch = url.match(/^\/evento\/([^\/\?]+)/);
+  
+  let ogTags = '';
   
   if (eventMatch) {
     const slug = eventMatch[1];
     try {
       const event = await storage.getEventBySlug(slug);
       if (event) {
-        const baseUrl = `https://${host}`;
         const eventUrl = `${baseUrl}/evento/${slug}`;
-        // Se o evento tem banner, usar a URL completa; senão, usar a imagem padrão
+        // Buscar banner: primeiro no campo banner_url, depois na tabela event_banners
         let imageUrl = event.bannerUrl;
+        
         if (!imageUrl) {
-          imageUrl = `${baseUrl}/og-images/Marathon_runners_landscape_hero_b439e181.png`;
+          // Buscar banner da tabela event_banners
+          const banners = await storage.getEventBannersByEvent(event.id);
+          if (banners && banners.length > 0) {
+            imageUrl = banners[0].imagemUrl;
+          }
+        }
+        
+        if (!imageUrl) {
+          imageUrl = defaultImage;
         } else if (!imageUrl.startsWith('http')) {
           // Se a URL é relativa, converter para absoluta
           imageUrl = `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
         }
         
-        const ogTags = `
+        const description = escapeHtml(truncateWords(event.descricao || '', 30)) || `Inscreva-se no evento ${escapeHtml(event.nome)}`;
+        const title = escapeHtml(event.nome);
+        
+        ogTags = `
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${eventUrl}" />
-    <meta property="og:title" content="${event.nome}" />
-    <meta property="og:description" content="${event.descricao?.substring(0, 200) || `Inscreva-se no evento ${event.nome}`}" />
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
     <meta property="og:image" content="${imageUrl}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="KitRunner" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${event.nome}" />
-    <meta name="twitter:description" content="${event.descricao?.substring(0, 200) || `Inscreva-se no evento ${event.nome}`}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
     <meta name="twitter:image" content="${imageUrl}" />`;
-        
-        html = html.replace('</head>', `${ogTags}\n  </head>`);
       }
     } catch (error) {
       console.error("Error injecting OG meta tags:", error);
     }
+  } else {
+    // Default OG tags para a página inicial e outras páginas
+    ogTags = `
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${baseUrl}${url}" />
+    <meta property="og:title" content="KitRunner - Portal de Inscrições" />
+    <meta property="og:description" content="Inscreva-se nas melhores corridas e eventos esportivos do Brasil. Portal para maratonas, corridas de rua, trail running e muito mais." />
+    <meta property="og:image" content="${defaultImage}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="KitRunner" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KitRunner - Portal de Inscrições" />
+    <meta name="twitter:description" content="Inscreva-se nas melhores corridas e eventos esportivos do Brasil. Portal para maratonas, corridas de rua, trail running e muito mais." />
+    <meta name="twitter:image" content="${defaultImage}" />`;
+  }
+  
+  if (ogTags) {
+    html = html.replace('</head>', `${ogTags}\n  </head>`);
   }
   
   return html;
