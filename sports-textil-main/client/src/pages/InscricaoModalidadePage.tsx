@@ -551,11 +551,11 @@ export default function InscricaoModalidadePage() {
                         key={size.id}
                         variant={tamanhoSelecionado === size.tamanho ? "default" : "outline"}
                         onClick={() => !isUnavailable && setTamanhoSelecionado(size.tamanho)}
-                        className={`font-semibold h-auto py-2 flex flex-col items-center ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`font-semibold h-auto py-2 px-2 flex flex-col items-center text-center whitespace-normal break-words min-h-[48px] ${isUnavailable ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={isUnavailable}
                         data-testid={`button-tamanho-${size.tamanho}`}
                       >
-                        <span>{size.tamanho}</span>
+                        <span className="text-xs sm:text-sm leading-tight">{size.tamanho}</span>
                         {!isUnavailable && ajuste !== 0 && (
                           <span className={`text-xs ${ajuste < 0 ? 'text-green-600 dark:text-green-400' : 'text-orange-600'}`}>
                             {ajuste < 0 ? `-R$ ${Math.abs(ajuste).toFixed(0)}` : `+R$ ${ajuste.toFixed(0)}`}
