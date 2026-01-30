@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { startOrderExpirationJob } from "./jobs/order-expiration-job";
 import { startPaymentPollingJob } from "./jobs/payment-polling-job";
 
 const app = express();
+
+// Servir attached_assets estaticamente para imagens de OG meta tags
+app.use('/og-images', express.static(path.resolve(import.meta.dirname, '..', 'attached_assets', 'generated_images')));
 
 declare module 'http' {
   interface IncomingMessage {

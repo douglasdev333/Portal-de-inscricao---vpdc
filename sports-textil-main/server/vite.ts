@@ -19,7 +19,14 @@ async function injectOpenGraphMeta(html: string, url: string, host: string): Pro
       if (event) {
         const baseUrl = `https://${host}`;
         const eventUrl = `${baseUrl}/evento/${slug}`;
-        const imageUrl = event.bannerUrl || `${baseUrl}/assets/generated_images/Marathon_runners_landscape_hero_b439e181.png`;
+        // Se o evento tem banner, usar a URL completa; senão, usar a imagem padrão
+        let imageUrl = event.bannerUrl;
+        if (!imageUrl) {
+          imageUrl = `${baseUrl}/og-images/Marathon_runners_landscape_hero_b439e181.png`;
+        } else if (!imageUrl.startsWith('http')) {
+          // Se a URL é relativa, converter para absoluta
+          imageUrl = `${baseUrl}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+        }
         
         const ogTags = `
     <meta property="og:type" content="website" />
