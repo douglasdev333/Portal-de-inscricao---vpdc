@@ -195,7 +195,7 @@ export const registrations = pgTable("registrations", {
   modalityId: varchar("modality_id").notNull().references(() => modalities.id),
   batchId: varchar("batch_id").notNull().references(() => registrationBatches.id),
   athleteId: varchar("athlete_id").notNull().references(() => athletes.id),
-  tamanhoCamisa: varchar("tamanho_camisa", { length: 10 }),
+  tamanhoCamisa: varchar("tamanho_camisa", { length: 50 }),
   valorUnitario: decimal("valor_unitario", { precision: 10, scale: 2 }).notNull(),
   taxaComodidade: decimal("taxa_comodidade", { precision: 10, scale: 2 }).default("0").notNull(),
   status: registrationStatusEnum("status").default("pendente").notNull(),
