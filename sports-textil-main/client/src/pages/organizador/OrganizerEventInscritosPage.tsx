@@ -218,11 +218,12 @@ export default function OrganizerEventInscritosPage() {
       "Lote",
       "Tamanho Camisa",
       "Equipe",
-      "Valor Inscrição",
+      "Valor Bruto",
       "Desconto",
       "Código Cupom/Voucher",
       "Taxa Comodidade",
-      "Valor Total Pago",
+      "Valor Líquido",
+      "Total Pago",
       "Forma Pagamento",
       "Status Inscrição",
       "Status Pedido",
@@ -231,10 +232,11 @@ export default function OrganizerEventInscritosPage() {
     ];
 
     const rows = dataToExport.map((reg) => {
-      const valorUnitario = parseFloat(reg.valorUnitario);
+      const valorBruto = parseFloat(reg.valorUnitario);
       const taxaComodidade = parseFloat(reg.taxaComodidade);
       const valorDesconto = parseFloat(reg.valorDesconto) / (reg.orderRegistrationsCount || 1);
-      const valorTotalPago = valorUnitario + taxaComodidade - valorDesconto;
+      const valorLiquido = valorBruto - valorDesconto;
+      const totalPago = valorLiquido + taxaComodidade;
       const codigoDesconto = reg.codigoCupom || reg.codigoVoucher || "";
       
       return [
@@ -250,11 +252,12 @@ export default function OrganizerEventInscritosPage() {
         reg.batchName,
         reg.tamanhoCamisa || "-",
         reg.equipe || "-",
-        formatCurrency(valorUnitario),
-        formatCurrency(valorDesconto),
+        valorBruto,
+        valorDesconto,
         codigoDesconto,
-        formatCurrency(taxaComodidade),
-        formatCurrency(valorTotalPago > 0 ? valorTotalPago : 0),
+        taxaComodidade,
+        valorLiquido > 0 ? valorLiquido : 0,
+        totalPago > 0 ? totalPago : 0,
         metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "-",
         statusLabels[reg.status] || reg.status,
         orderStatusLabels[reg.orderStatus] || reg.orderStatus,
@@ -263,16 +266,17 @@ export default function OrganizerEventInscritosPage() {
       ];
     });
 
-    // Calcular totais
+    // Calcular totais apenas de inscrições confirmadas
     const confirmedRegs = dataToExport.filter(r => r.status === "confirmada");
-    const totalValorInscricao = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.valorUnitario), 0);
+    const totalBruto = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.valorUnitario), 0);
     const totalTaxa = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.taxaComodidade), 0);
     const totalDesconto = confirmedRegs.reduce((sum, r) => sum + (parseFloat(r.valorDesconto) / (r.orderRegistrationsCount || 1)), 0);
-    const totalPago = totalValorInscricao + totalTaxa - totalDesconto;
+    const totalLiquido = totalBruto - totalDesconto;
+    const totalPago = totalLiquido + totalTaxa;
 
     // Linha de totais
     const totalsRow = [
-      "TOTAIS",
+      "TOTAIS (Confirmadas)",
       "",
       "",
       "",
@@ -284,11 +288,12 @@ export default function OrganizerEventInscritosPage() {
       "",
       "",
       "",
-      formatCurrency(totalValorInscricao),
-      formatCurrency(totalDesconto),
+      totalBruto,
+      totalDesconto,
       "",
-      formatCurrency(totalTaxa),
-      formatCurrency(totalPago),
+      totalTaxa,
+      totalLiquido,
+      totalPago,
       "",
       "",
       "",
@@ -312,6 +317,19 @@ export default function OrganizerEventInscritosPage() {
       return { wch: Math.min(maxLen + 2, 40) };
     });
     ws['!cols'] = colWidths;
+
+    // Formatar colunas monetárias como números (índices: 12=Bruto, 13=Desconto, 15=Taxa, 16=Líquido, 17=Total Pago)
+    const moneyColumns = [12, 13, 15, 16, 17];
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let row = 1; row <= range.e.r; row++) {
+      for (const col of moneyColumns) {
+        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+        if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+          ws[cellRef].t = 'n';
+          ws[cellRef].z = '#,##0.00';
+        }
+      }
+    }
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Inscritos");

@@ -1,0 +1,171 @@
+Prompt aprimorado – Correção de conceitos financeiros e relatórios
+Contexto do sistema
+
+Sistema de gerenciamento de eventos esportivos com:
+
+Tela administrativa (Admin)
+
+Tela de visualização do organizador
+
+Módulo de pedidos, pagamentos e relatórios financeiros
+
+Atualmente, o Total Bruto exibido na tela de pedidos está incorreto, pois está considerando descontos de cupons e/ou taxa de comodidade. Isso gera inconsistência financeira e quebra de transparência com o organizador.
+
+Objetivo
+
+Corrigir os conceitos financeiros, ajustar a exibição dos valores e garantir que Admin e Organizador visualizem dados consistentes, além de refletir corretamente esses conceitos nos relatórios em Excel.
+
+1. Correção dos conceitos financeiros (OBRIGATÓRIO)
+Definições oficiais (usar exatamente estas regras)
+Valor Bruto
+
+Soma do valor base das inscrições/pedidos
+
+NÃO inclui:
+
+Taxa de comodidade
+
+Descontos de cupom
+
+Representa o valor original do produto/evento
+
+Fórmula:
+Valor Bruto = Soma dos valores das inscrições (sem taxa e sem desconto)
+
+Valor de Desconto
+
+Valor total concedido por cupons promocionais
+
+Sempre exibido separadamente
+
+Nunca embutido no bruto
+
+Taxa de Comodidade
+
+Valor adicional pago pelo atleta/cliente
+
+Não pertence ao organizador
+
+Deve ser exibida separadamente
+
+Valor Líquido (do organizador)
+
+Valor efetivamente repassado ao organizador
+
+NÃO inclui taxa de comodidade
+
+NÃO inclui descontos
+
+Baseado apenas no valor real recebido após desconto
+
+Fórmula:
+Valor Líquido = Valor Bruto − Descontos
+
+Valor Total Pago pelo Cliente
+
+Valor final pago pelo cliente/atleta
+
+Fórmula:
+Total Pago = Valor Bruto − Descontos + Taxa de Comodidade
+
+2. Correções na Tela de Pedidos (Admin e Organizador)
+Ajustes obrigatórios
+
+Corrigir o cálculo do Total Bruto
+
+Exibir de forma clara e separada:
+
+Valor Bruto
+
+Descontos
+
+Taxa de Comodidade
+
+Valor Líquido do Organizador
+
+Total Pago pelo Cliente
+
+Regra
+
+Admin e Organizador devem visualizar os mesmos valores, respeitando permissões ().
+
+Nenhum valor pode ser calculado de forma implícita ou escondida.
+
+3. Impacto nos Relatórios
+3.1 Relatório de Pedidos (Excel)
+
+Garantir as seguintes colunas financeiras:
+
+Valor Bruto (sem taxa e sem desconto)
+
+Valor de Desconto
+
+Taxa de Comodidade
+
+Valor Líquido do Organizador
+
+Valor Total Pago pelo Cliente
+
+Totais no rodapé
+
+Total Bruto
+
+Total de Descontos
+
+Total de Taxa de Comodidade
+
+Total Líquido do Organizador
+
+Total Geral Pago pelos Clientes
+
+Importante:
+Pedidos cancelados ou pendentes:
+
+Não entram nos totais financeiros
+
+Devem aparecer no relatório apenas para auditoria
+
+3.2 Relatório de Inscritos (Excel)
+
+Ajustar para manter consistência absoluta com o Relatório de Pedidos.
+
+Cada inscrito deve conter:
+
+Valor Bruto da Inscrição
+
+Valor de Desconto aplicado
+
+Taxa de Comodidade
+
+Valor Líquido referente à inscrição
+
+Valor Total Pago pelo Atleta
+
+Forma de Pagamento
+
+Status da Inscrição
+
+O valor líquido do inscrito deve ser compatível com o valor líquido do pedido ao qual ele pertence.
+
+4. Regra de Consistência Global (CRÍTICA)
+
+A soma dos Valores Líquidos do Relatório de Inscritos
+deve bater exatamente com:
+
+Valor Líquido exibido na Tela de Pedidos
+
+Valor Líquido exibido para o Organizador
+
+Valor Líquido total do Relatório de Pedidos
+
+Qualquer divergência deve ser considerada bug crítico.
+
+5. Considerações finais
+
+Todas as telas e relatórios devem seguir as mesmas regras de cálculo
+
+Valores monetários sempre formatados em R$
+
+Datas e horários padronizados
+
+Priorizar clareza, transparência e auditoria financeira

@@ -150,12 +150,12 @@ export default function AdminEventPedidosPage() {
       "Data do Pedido",
       "Data do Pagamento",
       "Hora do Pagamento",
-      "Subtotal",
-      "Valor de Desconto",
+      "Valor Bruto",
+      "Desconto",
       "Código Cupom/Voucher",
       "Taxa de Comodidade",
-      "Valor Total",
       "Valor Líquido",
+      "Total Pago",
       "Forma de Pagamento",
       "ID Transação Gateway",
       "Qtd. Inscrições",
@@ -163,6 +163,9 @@ export default function AdminEventPedidosPage() {
 
     const rows = dataToExport.map((order) => {
       const dataPagamento = order.dataPagamento ? new Date(order.dataPagamento) : null;
+      const valorBruto = order.subtotal;
+      const valorLiquido = valorBruto - order.valorDesconto;
+      const totalPago = valorLiquido + order.taxaComodidade;
       
       return [
         order.numeroPedido,
@@ -174,28 +177,29 @@ export default function AdminEventPedidosPage() {
         formatDateOnlyBrazil(order.dataPedido),
         dataPagamento ? formatDateOnlyBrazil(order.dataPagamento!) : "-",
         dataPagamento ? dataPagamento.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "-",
-        formatCurrency(order.subtotal),
-        formatCurrency(order.valorDesconto),
+        valorBruto,
+        order.valorDesconto,
         order.codigoCupom || order.codigoVoucher || "-",
-        formatCurrency(order.taxaComodidade),
-        formatCurrency(order.valorTotal),
-        formatCurrency(order.valorLiquido),
+        order.taxaComodidade,
+        valorLiquido,
+        totalPago,
         metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-",
         order.idPagamentoGateway || "-",
         order.qtdInscricoes,
       ];
     });
 
-    // Calcular totais do filtro
+    // Calcular totais apenas de pedidos pagos
     const paidOrders = dataToExport.filter(o => o.status === "pago");
-    const totalBruto = paidOrders.reduce((sum, o) => sum + o.valorTotal, 0);
+    const totalBruto = paidOrders.reduce((sum, o) => sum + o.subtotal, 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0);
     const totalTaxa = paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0);
-    const totalLiquido = paidOrders.reduce((sum, o) => sum + o.valorLiquido, 0);
+    const totalLiquido = totalBruto - totalDescontos;
+    const totalPago = totalLiquido + totalTaxa;
 
     // Linha de totais
     const totalsRow = [
-      "TOTAIS",
+      "TOTAIS (Pagos)",
       "",
       "",
       "",
@@ -204,12 +208,12 @@ export default function AdminEventPedidosPage() {
       "",
       "",
       "",
+      totalBruto,
+      totalDescontos,
       "",
-      formatCurrency(totalDescontos),
-      "",
-      formatCurrency(totalTaxa),
-      formatCurrency(totalBruto),
-      formatCurrency(totalLiquido),
+      totalTaxa,
+      totalLiquido,
+      totalPago,
       "",
       "",
       "",
@@ -231,6 +235,19 @@ export default function AdminEventPedidosPage() {
       return { wch: Math.min(maxLen + 2, 40) };
     });
     ws['!cols'] = colWidths;
+
+    // Formatar colunas monetárias como números (índices: 9=Valor Bruto, 10=Desconto, 12=Taxa, 13=Líquido, 14=Total Pago)
+    const moneyColumns = [9, 10, 12, 13, 14];
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let row = 1; row <= range.e.r; row++) {
+      for (const col of moneyColumns) {
+        const cellRef = XLSX.utils.encode_cell({ r: row, c: col });
+        if (ws[cellRef] && typeof ws[cellRef].v === 'number') {
+          ws[cellRef].t = 'n';
+          ws[cellRef].z = '#,##0.00';
+        }
+      }
+    }
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
@@ -380,15 +397,21 @@ export default function AdminEventPedidosPage() {
                     <TableHead>Comprador</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Valor Total</TableHead>
+                    <TableHead className="text-right">Bruto</TableHead>
                     <TableHead className="text-right">Desconto</TableHead>
                     <TableHead className="text-right">Taxa</TableHead>
+                    <TableHead className="text-right">Líquido</TableHead>
+                    <TableHead className="text-right">Total Pago</TableHead>
                     <TableHead>Pagamento</TableHead>
                     <TableHead className="text-center">Inscrições</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => (
+                  {orders.map((order) => {
+                    const valorBruto = order.subtotal;
+                    const valorLiquido = valorBruto - order.valorDesconto;
+                    const totalPago = valorLiquido + order.taxaComodidade;
+                    return (
                     <TableRow key={order.id}>
                       <TableCell className="font-mono font-bold">#{order.numeroPedido}</TableCell>
                       <TableCell>
@@ -399,17 +422,19 @@ export default function AdminEventPedidosPage() {
                       </TableCell>
                       <TableCell><StatusBadge status={order.status} /></TableCell>
                       <TableCell>{formatDateOnlyBrazil(order.dataPedido)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(order.valorTotal)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(valorBruto)}</TableCell>
                       <TableCell className="text-right text-orange-600">
                         {order.valorDesconto > 0 ? `-${formatCurrency(order.valorDesconto)}` : "-"}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground">
                         {order.taxaComodidade > 0 ? formatCurrency(order.taxaComodidade) : "-"}
                       </TableCell>
+                      <TableCell className="text-right text-green-600">{formatCurrency(valorLiquido)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(totalPago)}</TableCell>
                       <TableCell>{metodoPagamentoLabels[order.metodoPagamento || ""] || "-"}</TableCell>
                       <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
                     </TableRow>
-                  ))}
+                  )})}
                 </TableBody>
               </Table>
             </div>
