@@ -315,7 +315,7 @@ router.get("/:registrationId", async (req, res) => {
       .text("Apresente este QR code no dia do evento", 230, doc.y + 18)
       .text("para agilizar sua identificação.", 230);
 
-    doc.y += 180;
+    const footerY = doc.y + 165;
 
     doc
       .fontSize(7)
@@ -323,10 +323,10 @@ router.get("/:registrationId", async (req, res) => {
       .fillColor(BRAND_COLORS.textLight)
       .text(
         "Este documento é um comprovante de inscrição gerado eletronicamente pelo sistema KitRunner.",
-        50, doc.y, { align: "center", width: 495 },
+        50, footerY, { align: "center", width: 495 },
       )
       .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
-        50, doc.y, { align: "center", width: 495 },
+        50, footerY + 10, { align: "center", width: 495 },
       );
 
     doc.end();
