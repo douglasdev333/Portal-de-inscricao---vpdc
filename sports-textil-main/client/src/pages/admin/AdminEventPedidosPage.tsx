@@ -155,7 +155,6 @@ export default function AdminEventPedidosPage() {
       "Código Cupom/Voucher",
       "Taxa de Comodidade",
       "Valor Líquido",
-      "Total Pago",
       "Forma de Pagamento",
       "ID Transação Gateway",
       "Qtd. Inscrições",
@@ -164,8 +163,7 @@ export default function AdminEventPedidosPage() {
     const rows = dataToExport.map((order) => {
       const dataPagamento = order.dataPagamento ? new Date(order.dataPagamento) : null;
       const valorBruto = order.subtotal;
-      const valorLiquido = valorBruto - order.valorDesconto;
-      const totalPago = valorLiquido + order.taxaComodidade;
+      const valorLiquido = valorBruto - order.valorDesconto - order.taxaComodidade;
       
       return [
         order.numeroPedido,
@@ -182,7 +180,6 @@ export default function AdminEventPedidosPage() {
         order.codigoCupom || order.codigoVoucher || "-",
         order.taxaComodidade,
         valorLiquido,
-        totalPago,
         metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-",
         order.idPagamentoGateway || "-",
         order.qtdInscricoes,
@@ -194,8 +191,7 @@ export default function AdminEventPedidosPage() {
     const totalBruto = paidOrders.reduce((sum, o) => sum + o.subtotal, 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0);
     const totalTaxa = paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0);
-    const totalLiquido = totalBruto - totalDescontos;
-    const totalPago = totalLiquido + totalTaxa;
+    const totalLiquido = totalBruto - totalDescontos - totalTaxa;
 
     // Linha de totais
     const totalsRow = [
@@ -213,7 +209,6 @@ export default function AdminEventPedidosPage() {
       "",
       totalTaxa,
       totalLiquido,
-      totalPago,
       "",
       "",
       "",
@@ -362,19 +357,19 @@ export default function AdminEventPedidosPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Bruto</p>
+                  <p className="text-sm text-muted-foreground">Valor Bruto</p>
                   <p className="text-xl font-bold">{formatCurrency(totais.totalBruto)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Descontos</p>
-                  <p className="text-xl font-bold text-orange-600">-{formatCurrency(totais.totalDescontos)}</p>
+                  <p className="text-sm text-muted-foreground">(-) Descontos</p>
+                  <p className="text-xl font-bold text-red-600">-{formatCurrency(totais.totalDescontos)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Taxa de Comodidade</p>
-                  <p className="text-xl font-bold">{formatCurrency(totais.totalTaxaComodidade)}</p>
+                  <p className="text-sm text-muted-foreground">(-) Taxa de Comodidade</p>
+                  <p className="text-xl font-bold text-orange-600">-{formatCurrency(totais.totalTaxaComodidade)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Líquido</p>
+                  <p className="text-sm text-muted-foreground">Valor Líquido (Organizador)</p>
                   <p className="text-xl font-bold text-green-600">{formatCurrency(totais.totalLiquido)}</p>
                 </div>
               </div>
@@ -401,7 +396,6 @@ export default function AdminEventPedidosPage() {
                     <TableHead className="text-right">Desconto</TableHead>
                     <TableHead className="text-right">Taxa</TableHead>
                     <TableHead className="text-right">Líquido</TableHead>
-                    <TableHead className="text-right">Total Pago</TableHead>
                     <TableHead>Pagamento</TableHead>
                     <TableHead className="text-center">Inscrições</TableHead>
                   </TableRow>
@@ -409,8 +403,7 @@ export default function AdminEventPedidosPage() {
                 <TableBody>
                   {orders.map((order) => {
                     const valorBruto = order.subtotal;
-                    const valorLiquido = valorBruto - order.valorDesconto;
-                    const totalPago = valorLiquido + order.taxaComodidade;
+                    const valorLiquido = valorBruto - order.valorDesconto - order.taxaComodidade;
                     return (
                     <TableRow key={order.id}>
                       <TableCell className="font-mono font-bold">#{order.numeroPedido}</TableCell>
@@ -423,14 +416,13 @@ export default function AdminEventPedidosPage() {
                       <TableCell><StatusBadge status={order.status} /></TableCell>
                       <TableCell>{formatDateOnlyBrazil(order.dataPedido)}</TableCell>
                       <TableCell className="text-right">{formatCurrency(valorBruto)}</TableCell>
-                      <TableCell className="text-right text-orange-600">
+                      <TableCell className="text-right text-red-600">
                         {order.valorDesconto > 0 ? `-${formatCurrency(order.valorDesconto)}` : "-"}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
-                        {order.taxaComodidade > 0 ? formatCurrency(order.taxaComodidade) : "-"}
+                      <TableCell className="text-right text-orange-600">
+                        {order.taxaComodidade > 0 ? `-${formatCurrency(order.taxaComodidade)}` : "-"}
                       </TableCell>
-                      <TableCell className="text-right text-green-600">{formatCurrency(valorLiquido)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(totalPago)}</TableCell>
+                      <TableCell className="text-right text-green-600 font-medium">{formatCurrency(valorLiquido)}</TableCell>
                       <TableCell>{metodoPagamentoLabels[order.metodoPagamento || ""] || "-"}</TableCell>
                       <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
                     </TableRow>

@@ -638,8 +638,8 @@ router.get("/:eventId/orders", requireAuth, async (req, res) => {
       const valorDesconto = safeNumber(order.valorDesconto);
       const valorTotal = safeNumber(order.valorTotal);
       
-      // Valor líquido: apenas pedidos pagos contam
-      const valorLiquido = order.status === "pago" ? valorTotal : 0;
+      // Valor líquido: subtotal - desconto - taxa (valor para o organizador)
+      const valorLiquido = subtotal - valorDesconto - taxaComodidade;
       
       return {
         id: order.id,
@@ -667,7 +667,7 @@ router.get("/:eventId/orders", requireAuth, async (req, res) => {
     // Calcular totais apenas de pedidos pagos
     const paidOrders = enrichedOrders.filter(o => o.status === "pago");
     const totais = {
-      totalBruto: paidOrders.reduce((sum, o) => sum + o.valorTotal, 0),
+      totalBruto: paidOrders.reduce((sum, o) => sum + o.subtotal, 0),
       totalDescontos: paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0),
       totalTaxaComodidade: paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0),
       totalLiquido: paidOrders.reduce((sum, o) => sum + o.valorLiquido, 0),
