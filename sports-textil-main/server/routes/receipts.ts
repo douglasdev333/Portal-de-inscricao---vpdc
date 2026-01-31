@@ -6,8 +6,8 @@ import { storage } from "../storage";
 const router = Router();
 
 const BRAND_COLORS = {
-  primary: "#032c6b",
-  accent: "#e8b73d",
+  primary: "#8B5CF6",
+  accent: "#A78BFA",
   text: "#333333",
   textLight: "#666666",
   border: "#e2e8f0",
@@ -113,87 +113,87 @@ router.get("/:registrationId", async (req, res) => {
 
     doc.pipe(res);
 
-    doc.rect(0, 0, 595, 100).fill(BRAND_COLORS.primary);
+    doc.rect(0, 0, 595, 70).fill(BRAND_COLORS.primary);
 
     doc.save();
     doc
-      .fontSize(32)
+      .fontSize(24)
       .font("Helvetica-Bold")
       .fillColor("#ffffff")
-      .text("KITRUNNER", 50, 30);
-
-    doc
-      .fontSize(12)
-      .font("Helvetica")
-      .fillColor(BRAND_COLORS.accent)
-      .text("Comprovante de Inscrição", 50, 65);
-    doc.restore();
-
-    doc
-      .rect(50, 110, 495, 50)
-      .fill(BRAND_COLORS.accent);
+      .text("KITRUNNER", 50, 20);
 
     doc
       .fontSize(10)
-      .font("Helvetica-Bold")
-      .fillColor(BRAND_COLORS.primary)
-      .text("INSCRIÇÃO CONFIRMADA", 60, 120);
+      .font("Helvetica")
+      .fillColor("#ffffff")
+      .text("Comprovante de Inscrição", 50, 48);
+    doc.restore();
 
     doc
-      .fontSize(18)
+      .rect(50, 80, 495, 40)
+      .fill(BRAND_COLORS.accent);
+
+    doc
+      .fontSize(9)
       .font("Helvetica-Bold")
-      .fillColor(BRAND_COLORS.primary)
-      .text(`#${registration.numeroInscricao}`, 60, 135);
+      .fillColor("#ffffff")
+      .text("INSCRIÇÃO CONFIRMADA", 60, 88);
+
+    doc
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .fillColor("#ffffff")
+      .text(`#${registration.numeroInscricao}`, 60, 102);
 
     const qrCodeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-    doc.image(qrCodeBuffer, 420, 115, { width: 40, height: 40 });
+    doc.image(qrCodeBuffer, 500, 82, { width: 35, height: 35 });
 
-    doc.y = 180;
+    doc.y = 130;
 
     doc
-      .fontSize(16)
+      .fontSize(13)
       .font("Helvetica-Bold")
       .fillColor(BRAND_COLORS.primary)
       .text(event.nome, 50, doc.y);
 
-    doc.moveDown(0.3);
+    doc.moveDown(0.2);
     doc
-      .fontSize(11)
+      .fontSize(9)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
       .text(`${formatDate(event.dataEvento)} | ${event.cidade} - ${event.estado}`, 50);
 
-    doc.moveDown(1.5);
+    doc.moveDown(0.8);
 
     const drawSectionHeader = (title: string) => {
       doc
-        .rect(50, doc.y, 495, 25)
+        .rect(50, doc.y, 495, 18)
         .fill("#f8fafc");
 
       doc
-        .fontSize(11)
+        .fontSize(9)
         .font("Helvetica-Bold")
         .fillColor(BRAND_COLORS.primary)
-        .text(title, 60, doc.y + 7);
+        .text(title, 55, doc.y + 5);
 
-      doc.y += 35;
+      doc.y += 22;
     };
 
     const drawDataRow = (label: string, value: string, isHighlighted = false) => {
-      const rowHeight = 20;
+      const rowHeight = 14;
       const startY = doc.y;
 
       doc
-        .fontSize(10)
+        .fontSize(9)
         .font("Helvetica")
         .fillColor(BRAND_COLORS.textLight)
-        .text(label, 60, startY);
+        .text(label, 55, startY);
 
       doc
-        .fontSize(10)
+        .fontSize(9)
         .font(isHighlighted ? "Helvetica-Bold" : "Helvetica")
         .fillColor(isHighlighted ? BRAND_COLORS.primary : BRAND_COLORS.text)
-        .text(value, 200, startY);
+        .text(value, 180, startY);
 
       doc.y = startY + rowHeight;
     };
@@ -232,7 +232,7 @@ router.get("/:registrationId", async (req, res) => {
     }
     drawDataRow("Data da Inscrição", formatDate(registration.dataInscricao));
 
-    doc.moveDown(1);
+    doc.moveDown(0.5);
 
     drawSectionHeader("PARTICIPANTE");
 
@@ -248,7 +248,7 @@ router.get("/:registrationId", async (req, res) => {
     }
 
     if (order) {
-      doc.moveDown(1);
+      doc.moveDown(0.5);
 
       drawSectionHeader("PAGAMENTO");
 
@@ -291,42 +291,40 @@ router.get("/:registrationId", async (req, res) => {
       }
     }
 
-    doc.moveDown(2);
+    doc.moveDown(1);
 
     doc
-      .rect(50, doc.y, 495, 100)
+      .rect(50, doc.y, 495, 70)
       .lineWidth(1)
       .strokeColor(BRAND_COLORS.border)
       .stroke();
 
     const qrCodeLargeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-    doc.image(qrCodeLargeBuffer, 65, doc.y + 10, { width: 80, height: 80 });
-
-    doc
-      .fontSize(10)
-      .font("Helvetica-Bold")
-      .fillColor(BRAND_COLORS.primary)
-      .text("QR Code de Verificação", 160, doc.y + 20);
+    doc.image(qrCodeLargeBuffer, 60, doc.y + 8, { width: 55, height: 55 });
 
     doc
       .fontSize(9)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND_COLORS.primary)
+      .text("QR Code de Verificação", 130, doc.y + 18);
+
+    doc
+      .fontSize(8)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
-      .text("Apresente este QR code no dia do evento", 160, doc.y + 10)
-      .text("para agilizar sua identificação.", 160);
+      .text("Apresente este QR code no dia do evento para agilizar sua identificação.", 130, doc.y + 8);
 
-    doc.y += 110;
+    doc.y += 80;
 
-    doc.moveDown(1);
     doc
       .moveTo(50, doc.y)
       .lineTo(545, doc.y)
       .strokeColor(BRAND_COLORS.border)
       .stroke();
 
-    doc.moveDown(0.5);
+    doc.moveDown(0.3);
     doc
-      .fontSize(8)
+      .fontSize(7)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
       .text(
