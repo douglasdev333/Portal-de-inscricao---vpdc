@@ -398,16 +398,15 @@ export async function registerForEventAtomic(
       }
     }
     
-    // 5. CREATE ORDER
+    // 5. CREATE ORDER (usando sequence para garantir número único)
     const orderResult = await client.query(
       `INSERT INTO orders (
         id, numero_pedido, event_id, comprador_id, valor_total, 
         valor_desconto, status, metodo_pagamento, ip_comprador, data_expiracao
       ) VALUES (
-        gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9
+        gen_random_uuid(), nextval('order_number_seq'), $1, $2, $3, $4, $5, $6, $7, $8
       ) RETURNING id, numero_pedido, valor_total, status, data_expiracao`,
       [
-        orderData.numeroPedido,
         orderData.eventId,
         orderData.compradorId,
         orderData.valorTotal,
@@ -421,17 +420,16 @@ export async function registerForEventAtomic(
     
     const order = orderResult.rows[0];
     
-    // 6. CREATE REGISTRATION
+    // 6. CREATE REGISTRATION (usando sequence para garantir número único)
     const registrationResult = await client.query(
       `INSERT INTO registrations (
         id, numero_inscricao, order_id, event_id, modality_id, batch_id,
         athlete_id, tamanho_camisa, valor_unitario, taxa_comodidade,
         status, equipe, nome_completo, cpf, data_nascimento, sexo
       ) VALUES (
-        gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+        gen_random_uuid(), nextval('registration_number_seq'), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
       ) RETURNING id, numero_inscricao, status`,
       [
-        registrationData.numeroInscricao,
         order.id,
         registrationData.eventId,
         registrationData.modalityId,
