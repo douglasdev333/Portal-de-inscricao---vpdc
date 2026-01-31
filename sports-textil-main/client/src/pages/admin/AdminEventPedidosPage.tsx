@@ -75,7 +75,7 @@ const statusLabels: Record<string, string> = {
 
 const metodoPagamentoLabels: Record<string, string> = {
   pix: "PIX",
-  credit_card: "Cartão de Crédito",
+  credit_card: "CC",
   boleto: "Boleto",
   cortesia: "Cortesia",
 };
@@ -382,6 +382,7 @@ export default function AdminEventPedidosPage() {
                     <TableHead>Data</TableHead>
                     <TableHead className="text-right">Valor Total</TableHead>
                     <TableHead className="text-right">Desconto</TableHead>
+                    <TableHead className="text-right">Taxa</TableHead>
                     <TableHead>Pagamento</TableHead>
                     <TableHead className="text-center">Inscrições</TableHead>
                   </TableRow>
@@ -401,6 +402,9 @@ export default function AdminEventPedidosPage() {
                       <TableCell className="text-right font-medium">{formatCurrency(order.valorTotal)}</TableCell>
                       <TableCell className="text-right text-orange-600">
                         {order.valorDesconto > 0 ? `-${formatCurrency(order.valorDesconto)}` : "-"}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {order.taxaComodidade > 0 ? formatCurrency(order.taxaComodidade) : "-"}
                       </TableCell>
                       <TableCell>{metodoPagamentoLabels[order.metodoPagamento || ""] || "-"}</TableCell>
                       <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
