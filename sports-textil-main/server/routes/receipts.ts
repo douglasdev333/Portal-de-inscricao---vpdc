@@ -291,31 +291,30 @@ router.get("/:registrationId", async (req, res) => {
       }
     }
 
-    doc.moveDown(0.8);
+    doc.moveDown(0.5);
 
+    const qrBoxY = doc.y;
     doc
-      .rect(50, doc.y, 495, 170)
+      .rect(50, qrBoxY, 495, 155)
       .lineWidth(1)
       .strokeColor(BRAND_COLORS.border)
       .stroke();
 
     const qrCodeLargeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-    doc.image(qrCodeLargeBuffer, 60, doc.y + 10, { width: 150, height: 150 });
+    doc.image(qrCodeLargeBuffer, 58, qrBoxY + 8, { width: 140, height: 140 });
 
     doc
-      .fontSize(12)
+      .fontSize(11)
       .font("Helvetica-Bold")
       .fillColor(BRAND_COLORS.primary)
-      .text("QR Code de Verificação", 230, doc.y + 55);
+      .text("QR Code de Verificação", 215, qrBoxY + 50);
 
     doc
-      .fontSize(10)
+      .fontSize(9)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
-      .text("Apresente este QR code no dia do evento", 230, doc.y + 18)
-      .text("para agilizar sua identificação.", 230);
-
-    const footerY = doc.y + 165;
+      .text("Apresente este QR code no dia do evento", 215, qrBoxY + 70)
+      .text("para agilizar sua identificação.", 215, qrBoxY + 82);
 
     doc
       .fontSize(7)
@@ -323,10 +322,10 @@ router.get("/:registrationId", async (req, res) => {
       .fillColor(BRAND_COLORS.textLight)
       .text(
         "Este documento é um comprovante de inscrição gerado eletronicamente pelo sistema KitRunner.",
-        50, footerY, { align: "center", width: 495 },
+        50, qrBoxY + 160, { align: "center", width: 495 },
       )
       .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
-        50, footerY + 10, { align: "center", width: 495 },
+        50, qrBoxY + 170, { align: "center", width: 495 },
       );
 
     doc.end();
