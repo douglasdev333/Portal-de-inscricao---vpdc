@@ -33,10 +33,11 @@ interface EventStats {
     vagasDisponiveis: number | null;
   }>;
   faturamento: {
-    total: number;
+    bruto: number;
     descontos: number;
     taxaComodidade: number;
     liquido: number;
+    totalPago: number;
   };
   vagas: {
     total: number;
@@ -163,7 +164,7 @@ function OverviewTab({ event, stats, isLoading }: { event: Event; stats: EventSt
         />
         <StatCard
           title="Faturamento Confirmado"
-          value={formatCurrency(stats?.faturamento.total ?? 0)}
+          value={formatCurrency(stats?.faturamento.totalPago ?? 0)}
           description="Valor arrecadado"
           icon={DollarSign}
           isLoading={isLoading}
@@ -696,15 +697,15 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
     );
   }
 
-  const faturamento = stats?.faturamento || { total: 0, descontos: 0, taxaComodidade: 0, liquido: 0 };
+  const faturamento = stats?.faturamento || { bruto: 0, descontos: 0, taxaComodidade: 0, liquido: 0, totalPago: 0 };
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Faturamento Bruto"
-          value={formatCurrency(faturamento.total)}
-          description="Total arrecadado"
+          title="Valor Bruto"
+          value={formatCurrency(faturamento.bruto)}
+          description="Valor das inscrições"
           icon={DollarSign}
         />
         <StatCard
@@ -735,8 +736,8 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">Faturamento Bruto</span>
-              <span className="font-medium text-lg">{formatCurrency(faturamento.total)}</span>
+              <span className="text-muted-foreground">Valor Bruto</span>
+              <span className="font-medium text-lg">{formatCurrency(faturamento.bruto)}</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-muted-foreground">(-) Descontos</span>
@@ -767,7 +768,7 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Valor</p>
-                <p className="font-medium">{formatCurrency(faturamento.total)}</p>
+                <p className="font-medium">{formatCurrency(faturamento.totalPago)}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950">

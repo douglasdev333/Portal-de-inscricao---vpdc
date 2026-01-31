@@ -60,9 +60,10 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
     });
 
     const paidOrders = orders.filter(o => o.status === "pago");
-    const totalFaturamento = paidOrders.reduce((sum, o) => sum + safeNumber(o.valorTotal), 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + safeNumber(o.valorDesconto), 0);
     const totalTaxaComodidade = confirmedRegistrations.reduce((sum, r) => sum + safeNumber(r.taxaComodidade), 0);
+    const totalBruto = confirmedRegistrations.reduce((sum, r) => sum + safeNumber(r.valorUnitario), 0);
+    const totalLiquido = totalBruto - totalDescontos;
 
     const shirtSizeConsumoConfirmado = confirmedRegistrations.reduce((acc, reg) => {
       if (reg.tamanhoCamisa) {
@@ -135,10 +136,11 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
         feminino: confirmedRegistrations.filter(r => r.sexo === "feminino").length,
         byModality,
         faturamento: {
-          total: totalFaturamento,
+          bruto: totalBruto,
           descontos: totalDescontos,
           taxaComodidade: totalTaxaComodidade,
-          liquido: totalFaturamento - totalDescontos
+          liquido: totalLiquido,
+          totalPago: totalLiquido + totalTaxaComodidade
         },
         vagas: {
           total: event.limiteVagasTotal,
