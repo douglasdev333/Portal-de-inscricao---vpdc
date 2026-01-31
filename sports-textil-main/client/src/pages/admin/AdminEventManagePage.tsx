@@ -113,7 +113,6 @@ interface EventStats {
     descontos: number;
     taxaComodidade: number;
     liquido: number;
-    totalPago: number;
   };
   vagas: {
     total: number;
@@ -556,7 +555,7 @@ export default function AdminEventManagePage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold" data-testid="text-faturamento">
-                {formatCurrency(stats?.faturamento.totalPago || 0)}
+                {formatCurrency(stats?.faturamento.bruto || 0)}
               </div>
               <p className="text-xs text-muted-foreground">
                 {formatCurrency(stats?.faturamento.liquido || 0)} líquido
@@ -687,22 +686,16 @@ export default function AdminEventManagePage() {
                     -{formatCurrency(stats?.faturamento.descontos || 0)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center border-t pt-3">
-                  <span className="font-semibold">Valor Líquido</span>
-                  <span className="font-bold text-lg text-green-600" data-testid="text-liquido">
-                    {formatCurrency(stats?.faturamento.liquido || 0)}
-                  </span>
-                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Taxa de Comodidade</span>
-                  <span className="font-medium" data-testid="text-taxa">
-                    +{formatCurrency(stats?.faturamento.taxaComodidade || 0)}
+                  <span className="font-medium text-orange-600" data-testid="text-taxa">
+                    -{formatCurrency(stats?.faturamento.taxaComodidade || 0)}
                   </span>
                 </div>
                 <div className="border-t pt-4 flex justify-between items-center">
-                  <span className="font-semibold">Total Pago</span>
-                  <span className="font-bold text-lg" data-testid="text-total-pago">
-                    {formatCurrency(stats?.faturamento.totalPago || 0)}
+                  <span className="font-semibold">Valor Líquido (Organizador)</span>
+                  <span className="font-bold text-lg text-green-600" data-testid="text-liquido">
+                    {formatCurrency(stats?.faturamento.liquido || 0)}
                   </span>
                 </div>
               </div>

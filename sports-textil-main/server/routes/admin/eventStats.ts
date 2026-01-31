@@ -63,7 +63,7 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
     const totalDescontos = paidOrders.reduce((sum, o) => sum + safeNumber(o.valorDesconto), 0);
     const totalTaxaComodidade = confirmedRegistrations.reduce((sum, r) => sum + safeNumber(r.taxaComodidade), 0);
     const totalBruto = confirmedRegistrations.reduce((sum, r) => sum + safeNumber(r.valorUnitario), 0);
-    const totalLiquido = totalBruto - totalDescontos;
+    const totalLiquido = totalBruto - totalDescontos - totalTaxaComodidade;
 
     const shirtSizeConsumoConfirmado = confirmedRegistrations.reduce((acc, reg) => {
       if (reg.tamanhoCamisa) {
@@ -139,8 +139,7 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
           bruto: totalBruto,
           descontos: totalDescontos,
           taxaComodidade: totalTaxaComodidade,
-          liquido: totalLiquido,
-          totalPago: totalLiquido + totalTaxaComodidade
+          liquido: totalLiquido
         },
         vagas: {
           total: event.limiteVagasTotal,

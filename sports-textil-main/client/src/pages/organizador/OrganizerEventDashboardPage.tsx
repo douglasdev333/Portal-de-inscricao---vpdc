@@ -37,7 +37,6 @@ interface EventStats {
     descontos: number;
     taxaComodidade: number;
     liquido: number;
-    totalPago: number;
   };
   vagas: {
     total: number;
@@ -163,9 +162,9 @@ function OverviewTab({ event, stats, isLoading }: { event: Event; stats: EventSt
           isLoading={isLoading}
         />
         <StatCard
-          title="Faturamento Confirmado"
-          value={formatCurrency(stats?.faturamento.totalPago ?? 0)}
-          description="Valor arrecadado"
+          title="Valor Líquido"
+          value={formatCurrency(stats?.faturamento.liquido ?? 0)}
+          description="Valor do organizador"
           icon={DollarSign}
           isLoading={isLoading}
         />
@@ -697,7 +696,7 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
     );
   }
 
-  const faturamento = stats?.faturamento || { bruto: 0, descontos: 0, taxaComodidade: 0, liquido: 0, totalPago: 0 };
+  const faturamento = stats?.faturamento || { bruto: 0, descontos: 0, taxaComodidade: 0, liquido: 0 };
 
   return (
     <div className="space-y-6">
@@ -744,12 +743,12 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
               <span className="font-medium text-red-600">-{formatCurrency(faturamento.descontos)}</span>
             </div>
             <div className="flex justify-between items-center py-2 border-b">
-              <span className="text-muted-foreground">(+) Taxas de Comodidade</span>
-              <span className="font-medium text-green-600">+{formatCurrency(faturamento.taxaComodidade)}</span>
+              <span className="text-muted-foreground">(-) Taxa de Comodidade</span>
+              <span className="font-medium text-orange-600">-{formatCurrency(faturamento.taxaComodidade)}</span>
             </div>
             <div className="flex justify-between items-center py-2 bg-muted/50 rounded-lg px-3">
-              <span className="font-medium">Faturamento Líquido</span>
-              <span className="font-bold text-xl">{formatCurrency(faturamento.liquido)}</span>
+              <span className="font-medium">Valor Líquido (Organizador)</span>
+              <span className="font-bold text-xl text-green-600">{formatCurrency(faturamento.liquido)}</span>
             </div>
           </CardContent>
         </Card>
@@ -767,8 +766,8 @@ function FinanceTab({ stats, isLoading }: { stats: EventStats | null; isLoading:
                 <p className="text-2xl font-bold text-green-600">{stats?.totalInscritos ?? 0}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Valor</p>
-                <p className="font-medium">{formatCurrency(faturamento.totalPago)}</p>
+                <p className="text-sm text-muted-foreground">Valor Líquido</p>
+                <p className="font-medium">{formatCurrency(faturamento.liquido)}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-950">
