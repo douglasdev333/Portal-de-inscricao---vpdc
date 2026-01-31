@@ -287,17 +287,6 @@ export default function InscricaoDetailPage() {
             )}
 
             <StatusCard status={registration.status} />
-
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-muted-foreground">Valor pago</span>
-              <span className="text-2xl font-bold text-primary">
-                {registration.valorPago === 0 ? (
-                  <span className="text-green-600 dark:text-green-400">Gratuito</span>
-                ) : (
-                  `R$ ${registration.valorPago.toFixed(2).replace(".", ",")}`
-                )}
-              </span>
-            </div>
           </CardContent>
         </Card>
 
