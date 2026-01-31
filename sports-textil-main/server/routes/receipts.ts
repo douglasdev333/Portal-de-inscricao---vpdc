@@ -248,6 +248,7 @@ router.get("/:registrationId", async (req, res) => {
 
       const valorUnitario = parseFloat(registration.valorUnitario);
       const taxaComodidade = parseFloat(registration.taxaComodidade);
+      const valorDesconto = parseFloat(order.valorDesconto || "0");
       const totalInscricao = valorUnitario + taxaComodidade;
 
       const pagamentoData = [
@@ -262,8 +263,22 @@ router.get("/:registrationId", async (req, res) => {
         });
       }
 
+      if (valorDesconto > 0) {
+        let descontoLabel = "Desconto";
+        if (order.codigoCupom) {
+          descontoLabel = `Desconto (Cupom: ${order.codigoCupom})`;
+        } else if (order.codigoVoucher) {
+          descontoLabel = `Desconto (Voucher: ${order.codigoVoucher})`;
+        }
+        pagamentoData.push({
+          label: descontoLabel,
+          value: `- ${formatCurrency(valorDesconto)}`,
+        });
+      }
+
+      const valorFinal = totalInscricao - valorDesconto;
       pagamentoData.push(
-        { label: "Valor Total", value: formatCurrency(totalInscricao) },
+        { label: "Valor Total Pago", value: formatCurrency(valorFinal > 0 ? valorFinal : 0) },
         { label: "Status do Pagamento", value: "PAGO" },
       );
 

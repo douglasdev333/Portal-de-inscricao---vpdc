@@ -375,6 +375,10 @@ router.get("/order/:orderId", async (req, res) => {
       }
     }
 
+    // Calcular subtotal e taxa total
+    const subtotal = registrationsWithDetails.reduce((acc, r) => acc + r.valorUnitario, 0);
+    const taxaTotal = registrationsWithDetails.reduce((acc, r) => acc + r.taxaComodidade, 0);
+
     return res.json({
       success: true,
       data: {
@@ -383,6 +387,10 @@ router.get("/order/:orderId", async (req, res) => {
         status: order.status,
         valorTotal: parseFloat(order.valorTotal),
         valorDesconto: parseFloat(order.valorDesconto),
+        subtotal,
+        taxaTotal,
+        codigoVoucher: order.codigoVoucher,
+        codigoCupom: order.codigoCupom,
         metodoPagamento: order.metodoPagamento,
         dataPedido: order.dataPedido,
         dataPagamento: order.dataPagamento,

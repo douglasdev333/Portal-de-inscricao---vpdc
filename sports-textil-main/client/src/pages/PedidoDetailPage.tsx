@@ -71,6 +71,10 @@ interface OrderDetail {
   status: string;
   valorTotal: number;
   valorDesconto: number;
+  subtotal: number;
+  taxaTotal: number;
+  codigoVoucher: string | null;
+  codigoCupom: string | null;
   metodoPagamento: string | null;
   dataPedido: string;
   dataPagamento: string | null;
@@ -710,11 +714,50 @@ export default function PedidoDetailPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-muted-foreground">Valor total</span>
-              <span className="text-2xl font-bold text-primary">
-                R$ {order.valorTotal.toFixed(2).replace(".", ",")}
-              </span>
+            <Separator className="my-4" />
+            
+            <div className="space-y-2">
+              {(order.subtotal !== undefined && order.subtotal > 0) && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal ({order.inscricoes.length} {order.inscricoes.length === 1 ? 'inscrição' : 'inscrições'})</span>
+                  <span className="font-medium">R$ {(order.subtotal || 0).toFixed(2).replace(".", ",")}</span>
+                </div>
+              )}
+              
+              {(order.taxaTotal !== undefined && order.taxaTotal > 0) && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Taxa de comodidade</span>
+                  <span className="font-medium">R$ {(order.taxaTotal || 0).toFixed(2).replace(".", ",")}</span>
+                </div>
+              )}
+              
+              {(order.valorDesconto !== undefined && order.valorDesconto > 0) && (
+                <div className="flex items-center justify-between text-sm text-green-600">
+                  <span className="flex items-center gap-1">
+                    Desconto
+                    {order.codigoCupom && (
+                      <Badge variant="outline" className="text-xs font-mono">
+                        {order.codigoCupom}
+                      </Badge>
+                    )}
+                    {order.codigoVoucher && !order.codigoCupom && (
+                      <Badge variant="outline" className="text-xs font-mono">
+                        {order.codigoVoucher}
+                      </Badge>
+                    )}
+                  </span>
+                  <span className="font-medium">- R$ {(order.valorDesconto || 0).toFixed(2).replace(".", ",")}</span>
+                </div>
+              )}
+              
+              <Separator className="my-2" />
+              
+              <div className="flex items-center justify-between pt-1">
+                <span className="font-semibold">Valor total</span>
+                <span className="text-2xl font-bold text-primary">
+                  R$ {(order.valorTotal || 0).toFixed(2).replace(".", ",")}
+                </span>
+              </div>
             </div>
           </CardContent>
         </Card>
