@@ -54,7 +54,8 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Ticket
+  Ticket,
+  ShoppingCart
 } from "lucide-react";
 import { formatDateOnlyBrazil, formatDateTimeBrazil, formatForInput } from "@/lib/timezone";
 import { useToast } from "@/hooks/use-toast";
@@ -938,7 +939,13 @@ export default function AdminEventManagePage() {
               <Link href={`/admin/eventos/${id}/inscritos`}>
                 <Button variant="outline" data-testid="button-report-inscritos">
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Relatorio de Inscritos
+                  Relatório de Inscritos
+                </Button>
+              </Link>
+              <Link href={`/admin/eventos/${id}/pedidos`}>
+                <Button variant="outline" data-testid="button-report-pedidos">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  Relatório de Pedidos
                 </Button>
               </Link>
             </div>

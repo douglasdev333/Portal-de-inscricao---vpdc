@@ -1,0 +1,138 @@
+1. Novo Relatório: Relatório de Pedidos
+Local
+
+Adicionar um novo botão/card na tela de gerenciamento do evento, ao lado do Relatório de Inscritos.
+
+Funcionalidade
+
+Ao clicar no botão Relatório de Pedidos, o usuário deve poder escolher:
+
+Todos os pedidos
+
+Pedidos Confirmados
+
+Pedidos Pendentes
+
+Pedidos Cancelados
+
+Formato de saída
+
+Arquivo Excel (.xlsx)
+
+Com cabeçalhos claros
+
+Valores monetários formatados em R$
+
+Datas no padrão dd/mm/aaaa
+
+Horário no padrão HH:mm
+
+Campos obrigatórios no Relatório de Pedidos
+Identificação
+
+ID do Pedido
+
+Nome do Evento
+
+Nome do Comprador
+
+E-mail do Comprador
+
+CPF (se disponível)
+
+Status e controle
+
+Status do Pedido (Confirmado / Pendente / Cancelado)
+
+Data do Pedido
+
+Data do Pagamento
+
+Hora do Pagamento
+
+Financeiro (detalhado)
+
+Valor Bruto do Pedido
+
+Subtotal (antes de desconto)
+
+Valor de Desconto
+
+Código do Cupom (se houver)
+
+Taxa de Comodidade
+
+Taxa do Gateway (se houver)
+
+Valor Líquido Pago
+
+Forma de Pagamento (Pix, Cartão de Crédito, Débito, etc.)
+
+Parcelamento (se houver)
+
+Auditoria
+
+ID da Transação no Gateway
+
+Meio de pagamento
+
+Observações (quando aplicável)
+
+Regras importantes
+
+Pedidos pendentes ou cancelados não devem impactar o total financeiro líquido.
+
+Pedidos cancelados devem manter histórico financeiro, mas com valor líquido igual a R$ 0,00.
+
+Relatório deve conter linha de totais ao final, com:
+
+Total bruto
+
+Total de descontos
+
+Total líquido recebido
+
+2. Ajustes no Relatório de Inscritos (existente)
+Problema atual
+
+O relatório de inscritos apresenta apenas:
+
+Valor da inscrição
+
+Taxa de comodidade
+
+Isso pode gerar divergência com o relatório financeiro.
+
+Melhorias obrigatórias
+
+Adicionar os seguintes campos ao Relatório de Inscritos:
+
+Valor da Inscrição (bruto)
+
+Valor de Desconto aplicado
+
+Código do Cupom (se houver)
+
+Taxa de Comodidade
+
+Valor Total Pago pelo Atleta
+
+Forma de Pagamento
+
+Status da Inscrição
+
+Regra de consistência
+
+O valor total pago do inscrito deve bater exatamente com o valor correspondente no Relatório de Pedidos.
+
+Descontos devem ser explicitamente visíveis, nunca implícitos.
+
+3. Considerações técnicas
+
+O relatório deve ser gerado sob demanda.
+
+Exportação exclusivamente em Excel (.xlsx).
+
+Estrutura pensada para prestação de contas ao organizador.
+
+Priorizar clareza, legibilidade e padronização financeira.

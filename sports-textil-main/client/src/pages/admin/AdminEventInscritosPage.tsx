@@ -105,6 +105,8 @@ interface EnrichedRegistration {
   dataPagamento: string | null;
   valorTotal: string;
   valorDesconto: string;
+  codigoCupom: string | null;
+  codigoVoucher: string | null;
   orderId: string;
   numeroPedido: number | null;
   orderRegistrationsCount: number;
@@ -138,7 +140,7 @@ const orderStatusLabels: Record<string, string> = {
 
 const metodoPagamentoLabels: Record<string, string> = {
   pix: "PIX",
-  credit_card: "Cartao de Credito",
+  credit_card: "Cartão de Crédito",
   boleto: "Boleto",
   cortesia: "Cortesia",
 };
@@ -253,7 +255,7 @@ export default function AdminEventInscritosPage() {
       return await apiRequest("PATCH", `/api/admin/events/${id}/registrations/${registrationId}/status`, { status, reason });
     },
     onSuccess: (_, variables) => {
-      toast({ title: "Status da inscricao atualizado com sucesso" });
+      toast({ title: "Status da inscrição atualizado com sucesso" });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/events", id, "registrations"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/events/status-history/registration", selectedRegistration?.id] });
       setConfirmDialogOpen(false);
@@ -298,7 +300,7 @@ export default function AdminEventInscritosPage() {
   
   const handleConfirmStatusChange = () => {
     if (!selectedRegistration || !statusChangeReason.trim()) {
-      toast({ title: "Por favor, informe o motivo da alteracao", variant: "destructive" });
+      toast({ title: "Por favor, informe o motivo da alteração", variant: "destructive" });
       return;
     }
     
@@ -369,7 +371,8 @@ export default function AdminEventInscritosPage() {
 
   const getExportData = () => {
     const headers = [
-      "Numero",
+      "Nº Inscrição",
+      "Nº Pedido",
       "Nome",
       "CPF",
       "Email",
@@ -377,32 +380,88 @@ export default function AdminEventInscritosPage() {
       "Sexo",
       "Data Nascimento",
       "Modalidade",
+      "Lote",
       "Tamanho Camisa",
       "Equipe",
-      "Valor",
-      "Taxa",
-      "Status",
-      "Data Inscricao",
+      "Valor Inscrição",
+      "Desconto",
+      "Código Cupom/Voucher",
+      "Taxa Comodidade",
+      "Valor Total Pago",
+      "Forma Pagamento",
+      "Status Inscrição",
+      "Status Pedido",
+      "Data Inscrição",
+      "Data Pagamento",
     ];
 
-    const rows = filteredRegistrations.map((reg) => [
-      reg.numeroInscricao,
-      reg.nomeCompleto || reg.athleteName,
-      reg.cpf || "",
-      reg.athleteEmail,
-      reg.athletePhone,
-      reg.sexo || "",
-      reg.dataNascimento ? formatDateOnlyBrazil(reg.dataNascimento) : "",
-      reg.modalityName,
-      reg.tamanhoCamisa || "",
-      reg.equipe || "",
-      reg.valorUnitario,
-      reg.taxaComodidade,
-      statusLabels[reg.status] || reg.status,
-      formatDateOnlyBrazil(reg.dataInscricao),
-    ]);
+    const rows = filteredRegistrations.map((reg) => {
+      const valorUnitario = parseFloat(reg.valorUnitario);
+      const taxaComodidade = parseFloat(reg.taxaComodidade);
+      const valorDesconto = parseFloat(reg.valorDesconto) / (reg.orderRegistrationsCount || 1);
+      const valorTotalPago = valorUnitario + taxaComodidade - valorDesconto;
+      const codigoDesconto = reg.codigoCupom || reg.codigoVoucher || "";
+      
+      return [
+        reg.numeroInscricao,
+        reg.numeroPedido || "",
+        reg.nomeCompleto || reg.athleteName,
+        reg.cpf || "",
+        reg.athleteEmail,
+        reg.athletePhone,
+        reg.sexo === "masculino" ? "Masculino" : reg.sexo === "feminino" ? "Feminino" : "",
+        reg.dataNascimento ? formatDateOnlyBrazil(reg.dataNascimento) : "",
+        reg.modalityName,
+        reg.batchName,
+        reg.tamanhoCamisa || "",
+        reg.equipe || "",
+        formatCurrency(valorUnitario),
+        formatCurrency(valorDesconto),
+        codigoDesconto,
+        formatCurrency(taxaComodidade),
+        formatCurrency(valorTotalPago > 0 ? valorTotalPago : 0),
+        metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "",
+        statusLabels[reg.status] || reg.status,
+        orderStatusLabels[reg.orderStatus] || reg.orderStatus,
+        formatDateOnlyBrazil(reg.dataInscricao),
+        reg.dataPagamento ? formatDateTimeBrazil(reg.dataPagamento) : "",
+      ];
+    });
 
-    return { headers, rows };
+    // Calcular totais
+    const confirmedRegs = filteredRegistrations.filter(r => r.status === "confirmada");
+    const totalValorInscricao = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.valorUnitario), 0);
+    const totalTaxa = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.taxaComodidade), 0);
+    const totalDesconto = confirmedRegs.reduce((sum, r) => sum + (parseFloat(r.valorDesconto) / (r.orderRegistrationsCount || 1)), 0);
+    const totalPago = totalValorInscricao + totalTaxa - totalDesconto;
+
+    // Linha de totais
+    const totalsRow = [
+      "TOTAIS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      formatCurrency(totalValorInscricao),
+      formatCurrency(totalDesconto),
+      "",
+      formatCurrency(totalTaxa),
+      formatCurrency(totalPago),
+      "",
+      "",
+      "",
+      "",
+      "",
+    ];
+
+    return { headers, rows: [...rows, totalsRow] };
   };
 
   const exportToCSV = () => {
@@ -616,8 +675,8 @@ export default function AdminEventInscritosPage() {
             {filteredRegistrations.length === 0 ? (
               <p className="text-center py-8 text-muted-foreground">
                 {registrations.length === 0 
-                  ? "Nenhuma inscricao cadastrada" 
-                  : "Nenhuma inscricao encontrada com os filtros aplicados"}
+                  ? "Nenhuma inscrição cadastrada" 
+                  : "Nenhuma inscrição encontrada com os filtros aplicados"}
               </p>
             ) : (
               <div className="overflow-x-auto">
@@ -718,7 +777,7 @@ export default function AdminEventInscritosPage() {
               <TabsList className="grid w-full grid-cols-3" data-testid="tabs-list-registration">
                 <TabsTrigger value="detalhes" data-testid="tab-detalhes">Detalhes</TabsTrigger>
                 <TabsTrigger value="status" data-testid="tab-status">Status</TabsTrigger>
-                <TabsTrigger value="historico" data-testid="tab-historico">Historico</TabsTrigger>
+                <TabsTrigger value="historico" data-testid="tab-historico">Histórico</TabsTrigger>
               </TabsList>
               
               <TabsContent value="detalhes" className="flex-1 overflow-auto">
@@ -931,7 +990,7 @@ export default function AdminEventInscritosPage() {
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Este pedido possui {selectedRegistration.orderRegistrationsCount} inscricao(oes). Alterar o status do pedido nao altera automaticamente o status das inscricoes.
+                      Este pedido possui {selectedRegistration.orderRegistrationsCount} inscrição(ões). Alterar o status do pedido não altera automaticamente o status das inscrições.
                     </p>
                   </div>
                 </div>
@@ -942,12 +1001,12 @@ export default function AdminEventInscritosPage() {
                   <div className="space-y-3">
                     <h4 className="font-medium flex items-center gap-2">
                       <History className="h-4 w-4" />
-                      Historico da Inscricao
+                      Histórico da Inscrição
                     </h4>
                     {registrationHistoryLoading ? (
-                      <p className="text-sm text-muted-foreground">Carregando historico...</p>
+                      <p className="text-sm text-muted-foreground">Carregando histórico...</p>
                     ) : registrationHistory.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhum historico disponivel</p>
+                      <p className="text-sm text-muted-foreground">Nenhum histórico disponível</p>
                     ) : (
                       <ScrollArea className="h-32">
                         <div className="space-y-2">
@@ -973,12 +1032,12 @@ export default function AdminEventInscritosPage() {
                   <div className="border-t pt-4 space-y-3">
                     <h4 className="font-medium flex items-center gap-2">
                       <History className="h-4 w-4" />
-                      Historico do Pedido #{selectedRegistration.numeroPedido}
+                      Histórico do Pedido #{selectedRegistration.numeroPedido}
                     </h4>
                     {orderHistoryLoading ? (
-                      <p className="text-sm text-muted-foreground">Carregando historico...</p>
+                      <p className="text-sm text-muted-foreground">Carregando histórico...</p>
                     ) : orderHistory.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">Nenhum historico disponivel</p>
+                      <p className="text-sm text-muted-foreground">Nenhum histórico disponível</p>
                     ) : (
                       <ScrollArea className="h-32">
                         <div className="space-y-2">
@@ -1010,19 +1069,19 @@ export default function AdminEventInscritosPage() {
       <AlertDialog open={confirmDialogOpen} onOpenChange={(open) => { if (!open) resetStatusChangeState(); setConfirmDialogOpen(open); }}>
         <AlertDialogContent data-testid="dialog-confirm-status-change">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteracao de status</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteração de status</AlertDialogTitle>
             <AlertDialogDescription>
               {statusChangeType === "registration" 
-                ? `Voce esta prestes a alterar o status da inscricao para "${statusLabels[newRegistrationStatus] || newRegistrationStatus}".`
-                : `Voce esta prestes a alterar o status do pedido para "${orderStatusLabels[newOrderStatus] || newOrderStatus}".`
+                ? `Você está prestes a alterar o status da inscrição para "${statusLabels[newRegistrationStatus] || newRegistrationStatus}".`
+                : `Você está prestes a alterar o status do pedido para "${orderStatusLabels[newOrderStatus] || newOrderStatus}".`
               }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <Label htmlFor="reason">Motivo da alteracao *</Label>
+            <Label htmlFor="reason">Motivo da alteração *</Label>
             <Textarea
               id="reason"
-              placeholder="Informe o motivo da alteracao..."
+              placeholder="Informe o motivo da alteração..."
               value={statusChangeReason}
               onChange={(e) => setStatusChangeReason(e.target.value)}
               className="mt-2"

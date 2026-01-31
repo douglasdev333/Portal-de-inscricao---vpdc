@@ -70,6 +70,8 @@ interface EnrichedRegistration {
   dataPagamento: string | null;
   valorTotal: string;
   valorDesconto: string;
+  codigoCupom: string | null;
+  codigoVoucher: string | null;
   orderId: string;
   numeroPedido: number | null;
   orderRegistrationsCount: number;
@@ -86,6 +88,13 @@ const statusLabels: Record<string, string> = {
   pendente: "Pendente",
   confirmada: "Confirmada",
   cancelada: "Cancelada",
+};
+
+const orderStatusLabels: Record<string, string> = {
+  pendente: "Pendente",
+  pago: "Pago",
+  cancelado: "Cancelado",
+  expirado: "Expirado",
 };
 
 const metodoPagamentoLabels: Record<string, string> = {
@@ -198,6 +207,7 @@ export default function OrganizerEventInscritosPage() {
 
     const headers = [
       "Nº Inscrição",
+      "Nº Pedido",
       "Nome",
       "CPF",
       "Email",
@@ -205,38 +215,88 @@ export default function OrganizerEventInscritosPage() {
       "Sexo",
       "Data Nascimento",
       "Modalidade",
-      "Tamanho Camisa",
       "Lote",
+      "Tamanho Camisa",
       "Equipe",
-      "Status",
-      "Método Pagamento",
       "Valor Inscrição",
-      "Taxa Comodidade",
       "Desconto",
+      "Código Cupom/Voucher",
+      "Taxa Comodidade",
+      "Valor Total Pago",
+      "Forma Pagamento",
+      "Status Inscrição",
+      "Status Pedido",
       "Data Inscrição",
+      "Data Pagamento",
     ];
 
-    const rows = dataToExport.map((reg) => [
-      reg.numeroInscricao,
-      reg.nomeCompleto || reg.athleteName,
-      formatCPF(reg.cpf),
-      reg.athleteEmail,
-      reg.athletePhone || "-",
-      reg.sexo === "masculino" ? "Masculino" : reg.sexo === "feminino" ? "Feminino" : "-",
-      reg.dataNascimento ? formatDateOnlyBrazil(reg.dataNascimento) : "-",
-      reg.modalityName,
-      reg.tamanhoCamisa || "-",
-      reg.batchName,
-      reg.equipe || "-",
-      statusLabels[reg.status] || reg.status,
-      metodoPagamentoLabels[reg.metodoPagamento || ""] || "-",
-      formatCurrency(reg.valorUnitario),
-      formatCurrency(reg.taxaComodidade),
-      formatCurrency(reg.valorDesconto),
-      formatDateOnlyBrazil(reg.dataInscricao),
-    ]);
+    const rows = dataToExport.map((reg) => {
+      const valorUnitario = parseFloat(reg.valorUnitario);
+      const taxaComodidade = parseFloat(reg.taxaComodidade);
+      const valorDesconto = parseFloat(reg.valorDesconto) / (reg.orderRegistrationsCount || 1);
+      const valorTotalPago = valorUnitario + taxaComodidade - valorDesconto;
+      const codigoDesconto = reg.codigoCupom || reg.codigoVoucher || "";
+      
+      return [
+        reg.numeroInscricao,
+        reg.numeroPedido || "",
+        reg.nomeCompleto || reg.athleteName,
+        formatCPF(reg.cpf),
+        reg.athleteEmail,
+        reg.athletePhone || "-",
+        reg.sexo === "masculino" ? "Masculino" : reg.sexo === "feminino" ? "Feminino" : "-",
+        reg.dataNascimento ? formatDateOnlyBrazil(reg.dataNascimento) : "-",
+        reg.modalityName,
+        reg.batchName,
+        reg.tamanhoCamisa || "-",
+        reg.equipe || "-",
+        formatCurrency(valorUnitario),
+        formatCurrency(valorDesconto),
+        codigoDesconto,
+        formatCurrency(taxaComodidade),
+        formatCurrency(valorTotalPago > 0 ? valorTotalPago : 0),
+        metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "-",
+        statusLabels[reg.status] || reg.status,
+        orderStatusLabels[reg.orderStatus] || reg.orderStatus,
+        formatDateOnlyBrazil(reg.dataInscricao),
+        reg.dataPagamento ? formatDateOnlyBrazil(reg.dataPagamento) : "-",
+      ];
+    });
 
-    return { headers, rows };
+    // Calcular totais
+    const confirmedRegs = dataToExport.filter(r => r.status === "confirmada");
+    const totalValorInscricao = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.valorUnitario), 0);
+    const totalTaxa = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.taxaComodidade), 0);
+    const totalDesconto = confirmedRegs.reduce((sum, r) => sum + (parseFloat(r.valorDesconto) / (r.orderRegistrationsCount || 1)), 0);
+    const totalPago = totalValorInscricao + totalTaxa - totalDesconto;
+
+    // Linha de totais
+    const totalsRow = [
+      "TOTAIS",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      formatCurrency(totalValorInscricao),
+      formatCurrency(totalDesconto),
+      "",
+      formatCurrency(totalTaxa),
+      formatCurrency(totalPago),
+      "",
+      "",
+      "",
+      "",
+      "",
+    ];
+
+    return { headers, rows: [...rows, totalsRow] };
   };
 
   const exportToExcel = () => {

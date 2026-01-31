@@ -12,7 +12,7 @@ import { useOrganizerAuth } from "@/contexts/OrganizerAuthContext";
 import { 
   ArrowLeft, Calendar, MapPin, Users, TrendingUp, Shirt, 
   DollarSign, Ticket, ClipboardList, BarChart3, Package,
-  CheckCircle2, Clock, XCircle, Download, Layers, ExternalLink
+  CheckCircle2, Clock, XCircle, Download, Layers, ExternalLink, ShoppingCart
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { formatDateOnlyBrazil, formatCurrency } from "@/lib/timezone";
@@ -587,11 +587,17 @@ function RegistrationsTab({ event, stats, isLoading, eventId }: { event: Event; 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
         <Link href={`/organizadores/evento/${eventId}/inscritos`}>
           <Button>
             <ExternalLink className="h-4 w-4 mr-2" />
             Ver Lista Completa
+          </Button>
+        </Link>
+        <Link href={`/organizadores/evento/${eventId}/pedidos`}>
+          <Button variant="outline">
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Relatório de Pedidos
           </Button>
         </Link>
       </div>

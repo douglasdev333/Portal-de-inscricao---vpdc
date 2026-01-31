@@ -44,6 +44,7 @@ import AdminNotFound from "@/pages/admin/AdminNotFound";
 import AdminEventManagePage from "@/pages/admin/AdminEventManagePage";
 import AdminEventInscritosPage from "@/pages/admin/AdminEventInscritosPage";
 import AdminEventVouchersPage from "@/pages/admin/AdminEventVouchersPage";
+import AdminEventPedidosPage from "@/pages/admin/AdminEventPedidosPage";
 import ProtectedAdminRoute from "@/pages/admin/ProtectedAdminRoute";
 
 import { OrganizerAuthProvider } from "@/contexts/OrganizerAuthContext";
@@ -52,6 +53,7 @@ import OrganizerLoginPage from "@/pages/organizador/OrganizerLoginPage";
 import OrganizerMeusEventosPage from "@/pages/organizador/OrganizerMeusEventosPage";
 import OrganizerEventDashboardPage from "@/pages/organizador/OrganizerEventDashboardPage";
 import OrganizerEventInscritosPage from "@/pages/organizador/OrganizerEventInscritosPage";
+import OrganizerEventPedidosPage from "@/pages/organizador/OrganizerEventPedidosPage";
 import OrganizerNotFound from "@/pages/organizador/OrganizerNotFound";
 import ProtectedOrganizerRoute from "@/pages/organizador/ProtectedOrganizerRoute";
 
@@ -108,6 +110,11 @@ function AdminRoutes() {
             <AdminEventVouchersPage />
           </ProtectedAdminRoute>
         </Route>
+        <Route path="/admin/eventos/:id/pedidos">
+          <ProtectedAdminRoute>
+            <AdminEventPedidosPage />
+          </ProtectedAdminRoute>
+        </Route>
         <Route path="/admin/eventos/:id">
           <ProtectedAdminRoute>
             <EditEventPage />
@@ -151,6 +158,11 @@ function OrganizerRoutes() {
         <Route path="/organizadores/evento/:id/inscritos">
           <ProtectedOrganizerRoute>
             <OrganizerEventInscritosPage />
+          </ProtectedOrganizerRoute>
+        </Route>
+        <Route path="/organizadores/evento/:id/pedidos">
+          <ProtectedOrganizerRoute>
+            <OrganizerEventPedidosPage />
           </ProtectedOrganizerRoute>
         </Route>
         <Route path="/organizadores/evento/:id">

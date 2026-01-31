@@ -8,6 +8,11 @@ import { logStatusChange, getStatusHistory } from "../../services/status-log-ser
 
 const router = Router({ mergeParams: true });
 
+const safeNumber = (val: any): number => {
+  const num = parseFloat(val);
+  return isNaN(num) ? 0 : num;
+};
+
 router.get("/:eventId/stats", requireAuth, async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -16,7 +21,7 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
     if (!event) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Evento nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
       });
     }
 
@@ -24,7 +29,7 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({
         success: false,
-        error: { code: "FORBIDDEN", message: "Sem permissao para acessar este evento" }
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
       });
     }
 
@@ -55,9 +60,9 @@ router.get("/:eventId/stats", requireAuth, async (req, res) => {
     });
 
     const paidOrders = orders.filter(o => o.status === "pago");
-    const totalFaturamento = paidOrders.reduce((sum, o) => sum + parseFloat(o.valorTotal), 0);
-    const totalDescontos = paidOrders.reduce((sum, o) => sum + parseFloat(o.valorDesconto), 0);
-    const totalTaxaComodidade = confirmedRegistrations.reduce((sum, r) => sum + parseFloat(r.taxaComodidade), 0);
+    const totalFaturamento = paidOrders.reduce((sum, o) => sum + safeNumber(o.valorTotal), 0);
+    const totalDescontos = paidOrders.reduce((sum, o) => sum + safeNumber(o.valorDesconto), 0);
+    const totalTaxaComodidade = confirmedRegistrations.reduce((sum, r) => sum + safeNumber(r.taxaComodidade), 0);
 
     const shirtSizeConsumoConfirmado = confirmedRegistrations.reduce((acc, reg) => {
       if (reg.tamanhoCamisa) {
@@ -162,7 +167,7 @@ router.get("/:eventId/registrations", requireAuth, async (req, res) => {
     if (!event) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Evento nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
       });
     }
 
@@ -170,7 +175,7 @@ router.get("/:eventId/registrations", requireAuth, async (req, res) => {
     if (!hasAccess) {
       return res.status(403).json({
         success: false,
-        error: { code: "FORBIDDEN", message: "Sem permissao para acessar este evento" }
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
       });
     }
 
@@ -214,6 +219,8 @@ router.get("/:eventId/registrations", requireAuth, async (req, res) => {
         dataPagamento: order?.dataPagamento || null,
         valorTotal: order?.valorTotal || "0",
         valorDesconto: order?.valorDesconto || "0",
+        codigoCupom: order?.codigoCupom || null,
+        codigoVoucher: order?.codigoVoucher || null,
         orderId: reg.orderId,
         numeroPedido: order?.numeroPedido || null,
         orderRegistrationsCount: orderRegistrationsCount[reg.orderId] || 1,
@@ -234,7 +241,7 @@ router.get("/:eventId/registrations", requireAuth, async (req, res) => {
 });
 
 const confirmPaymentSchema = z.object({
-  metodoPagamento: z.string().min(1, "Metodo de pagamento obrigatorio")
+  metodoPagamento: z.string().min(1, "Método de pagamento obrigatório")
 });
 
 router.post("/:eventId/orders/:orderId/confirm", requireAuth, async (req, res) => {
@@ -245,7 +252,7 @@ router.post("/:eventId/orders/:orderId/confirm", requireAuth, async (req, res) =
     if (!event) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Evento nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
       });
     }
 
@@ -253,7 +260,7 @@ router.post("/:eventId/orders/:orderId/confirm", requireAuth, async (req, res) =
     if (!hasAccess) {
       return res.status(403).json({
         success: false,
-        error: { code: "FORBIDDEN", message: "Sem permissao para acessar este evento" }
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
       });
     }
 
@@ -261,14 +268,14 @@ router.post("/:eventId/orders/:orderId/confirm", requireAuth, async (req, res) =
     if (!order) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Pedido nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Pedido não encontrado" }
       });
     }
 
     if (order.eventId !== eventId) {
       return res.status(400).json({
         success: false,
-        error: { code: "INVALID_ORDER", message: "Pedido nao pertence a este evento" }
+        error: { code: "INVALID_ORDER", message: "Pedido não pertence a este evento" }
       });
     }
 
@@ -314,7 +321,7 @@ router.get("/status-history/:entityType/:entityId", requireAuth, async (req, res
     if (!['event', 'order', 'registration'].includes(entityType)) {
       return res.status(400).json({
         success: false,
-        error: { code: "INVALID_ENTITY_TYPE", message: "Tipo de entidade invalido" }
+        error: { code: "INVALID_ENTITY_TYPE", message: "Tipo de entidade inválido" }
       });
     }
     
@@ -336,7 +343,7 @@ router.get("/status-history/:entityType/:entityId", requireAuth, async (req, res
 // Alterar status da inscrição
 const updateRegistrationStatusSchema = z.object({
   status: z.enum(["pendente", "confirmada", "cancelada"]),
-  reason: z.string().min(1, "Motivo obrigatorio")
+  reason: z.string().min(1, "Motivo obrigatório")
 });
 
 router.patch("/:eventId/registrations/:registrationId/status", requireAuth, async (req, res) => {
@@ -347,7 +354,7 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
     if (!event) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Evento nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
       });
     }
 
@@ -355,7 +362,7 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
     if (!hasAccess) {
       return res.status(403).json({
         success: false,
-        error: { code: "FORBIDDEN", message: "Sem permissao para acessar este evento" }
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
       });
     }
     
@@ -363,14 +370,14 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
     if (!registration) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Inscricao nao encontrada" }
+        error: { code: "NOT_FOUND", message: "Inscrição não encontrada" }
       });
     }
     
     if (registration.eventId !== eventId) {
       return res.status(400).json({
         success: false,
-        error: { code: "INVALID_REGISTRATION", message: "Inscricao nao pertence a este evento" }
+        error: { code: "INVALID_REGISTRATION", message: "Inscrição não pertence a este evento" }
       });
     }
     
@@ -388,7 +395,7 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
     if (oldStatus === newStatus) {
       return res.status(400).json({
         success: false,
-        error: { code: "SAME_STATUS", message: "Status ja esta definido como " + newStatus }
+        error: { code: "SAME_STATUS", message: "Status já está definido como " + newStatus }
       });
     }
     
@@ -410,7 +417,7 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
     
     res.json({
       success: true,
-      data: { message: "Status da inscricao atualizado com sucesso" }
+      data: { message: "Status da inscrição atualizado com sucesso" }
     });
   } catch (error) {
     console.error("Update registration status error:", error);
@@ -424,7 +431,7 @@ router.patch("/:eventId/registrations/:registrationId/status", requireAuth, asyn
 // Alterar status do pedido
 const updateOrderStatusSchema = z.object({
   status: z.enum(["pendente", "pago", "cancelado", "expirado"]),
-  reason: z.string().min(1, "Motivo obrigatorio")
+  reason: z.string().min(1, "Motivo obrigatório")
 });
 
 router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) => {
@@ -435,7 +442,7 @@ router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) =
     if (!event) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Evento nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
       });
     }
 
@@ -443,7 +450,7 @@ router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) =
     if (!hasAccess) {
       return res.status(403).json({
         success: false,
-        error: { code: "FORBIDDEN", message: "Sem permissao para acessar este evento" }
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
       });
     }
     
@@ -451,14 +458,14 @@ router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) =
     if (!order) {
       return res.status(404).json({
         success: false,
-        error: { code: "NOT_FOUND", message: "Pedido nao encontrado" }
+        error: { code: "NOT_FOUND", message: "Pedido não encontrado" }
       });
     }
     
     if (order.eventId !== eventId) {
       return res.status(400).json({
         success: false,
-        error: { code: "INVALID_ORDER", message: "Pedido nao pertence a este evento" }
+        error: { code: "INVALID_ORDER", message: "Pedido não pertence a este evento" }
       });
     }
     
@@ -476,7 +483,7 @@ router.patch("/:eventId/orders/:orderId/status", requireAuth, async (req, res) =
     if (oldStatus === newStatus) {
       return res.status(400).json({
         success: false,
-        error: { code: "SAME_STATUS", message: "Status ja esta definido como " + newStatus }
+        error: { code: "SAME_STATUS", message: "Status já está definido como " + newStatus }
       });
     }
     
@@ -542,7 +549,7 @@ router.get("/:eventId/voucher-stats", requireAuth, async (req, res) => {
     
     const voucherStats = coupons.map(coupon => {
       const ordersWithCoupon = paidOrders.filter(o => o.cupomId === coupon.id);
-      const totalDesconto = ordersWithCoupon.reduce((sum, o) => sum + parseFloat(o.valorDesconto), 0);
+      const totalDesconto = ordersWithCoupon.reduce((sum, o) => sum + safeNumber(o.valorDesconto), 0);
       
       return {
         id: coupon.id,
@@ -567,6 +574,113 @@ router.get("/:eventId/voucher-stats", requireAuth, async (req, res) => {
     });
   } catch (error) {
     console.error("Get voucher stats error:", error);
+    res.status(500).json({
+      success: false,
+      error: { code: "INTERNAL_ERROR", message: "Erro interno do servidor" }
+    });
+  }
+});
+
+// Endpoint para relatório de pedidos
+router.get("/:eventId/orders", requireAuth, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    
+    const event = await storage.getEvent(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: { code: "NOT_FOUND", message: "Evento não encontrado" }
+      });
+    }
+
+    const hasAccess = await checkEventOwnership(req, res, eventId, event);
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        error: { code: "FORBIDDEN", message: "Sem permissão para acessar este evento" }
+      });
+    }
+
+    const [orders, registrations] = await Promise.all([
+      storage.getOrdersByEvent(eventId),
+      storage.getRegistrationsByEvent(eventId)
+    ]);
+
+    const athleteIds = Array.from(new Set(orders.map(o => o.compradorId)));
+    const athletesData = await Promise.all(athleteIds.map(id => storage.getAthlete(id)));
+    const athleteMap = new Map(athletesData.filter(Boolean).map(a => [a!.id, a!]));
+
+    // Calcular quantidade de inscrições por pedido
+    const registrationCountByOrder = registrations.reduce((acc, reg) => {
+      acc[reg.orderId] = (acc[reg.orderId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Calcular taxa de comodidade total por pedido
+    const taxaComodidadeByOrder = registrations.reduce((acc, reg) => {
+      acc[reg.orderId] = (acc[reg.orderId] || 0) + safeNumber(reg.taxaComodidade);
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Calcular subtotal (valor unitário) por pedido
+    const subtotalByOrder = registrations.reduce((acc, reg) => {
+      acc[reg.orderId] = (acc[reg.orderId] || 0) + safeNumber(reg.valorUnitario);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const enrichedOrders = orders.map(order => {
+      const comprador = athleteMap.get(order.compradorId);
+      const qtdInscricoes = registrationCountByOrder[order.id] || 0;
+      const taxaComodidade = taxaComodidadeByOrder[order.id] || 0;
+      const subtotal = subtotalByOrder[order.id] || 0;
+      const valorDesconto = safeNumber(order.valorDesconto);
+      const valorTotal = safeNumber(order.valorTotal);
+      
+      // Valor líquido: apenas pedidos pagos contam
+      const valorLiquido = order.status === "pago" ? valorTotal : 0;
+      
+      return {
+        id: order.id,
+        numeroPedido: order.numeroPedido,
+        nomeEvento: event.nome,
+        nomeComprador: comprador?.nome || "N/A",
+        emailComprador: comprador?.email || "N/A",
+        cpfComprador: comprador?.cpf || null,
+        status: order.status,
+        dataPedido: order.dataPedido,
+        dataPagamento: order.dataPagamento,
+        subtotal: subtotal,
+        valorDesconto: valorDesconto,
+        codigoCupom: order.codigoCupom || null,
+        codigoVoucher: order.codigoVoucher || null,
+        taxaComodidade: taxaComodidade,
+        valorTotal: valorTotal,
+        valorLiquido: valorLiquido,
+        metodoPagamento: order.metodoPagamento || null,
+        idPagamentoGateway: order.idPagamentoGateway || null,
+        qtdInscricoes: qtdInscricoes,
+      };
+    });
+
+    // Calcular totais apenas de pedidos pagos
+    const paidOrders = enrichedOrders.filter(o => o.status === "pago");
+    const totais = {
+      totalBruto: paidOrders.reduce((sum, o) => sum + o.valorTotal, 0),
+      totalDescontos: paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0),
+      totalTaxaComodidade: paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0),
+      totalLiquido: paidOrders.reduce((sum, o) => sum + o.valorLiquido, 0),
+    };
+
+    res.json({
+      success: true,
+      data: {
+        orders: enrichedOrders,
+        totais
+      }
+    });
+  } catch (error) {
+    console.error("Get event orders error:", error);
     res.status(500).json({
       success: false,
       error: { code: "INTERNAL_ERROR", message: "Erro interno do servidor" }
