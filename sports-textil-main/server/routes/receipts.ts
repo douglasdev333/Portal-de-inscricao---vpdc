@@ -294,28 +294,28 @@ router.get("/:registrationId", async (req, res) => {
     doc.moveDown(0.8);
 
     doc
-      .rect(50, doc.y, 495, 130)
+      .rect(50, doc.y, 495, 170)
       .lineWidth(1)
       .strokeColor(BRAND_COLORS.border)
       .stroke();
 
     const qrCodeLargeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-    doc.image(qrCodeLargeBuffer, 60, doc.y + 8, { width: 115, height: 115 });
+    doc.image(qrCodeLargeBuffer, 60, doc.y + 10, { width: 150, height: 150 });
 
     doc
-      .fontSize(11)
+      .fontSize(12)
       .font("Helvetica-Bold")
       .fillColor(BRAND_COLORS.primary)
-      .text("QR Code de Verificação", 190, doc.y + 35);
+      .text("QR Code de Verificação", 230, doc.y + 55);
 
     doc
-      .fontSize(9)
+      .fontSize(10)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
-      .text("Apresente este QR code no dia do evento", 190, doc.y + 15)
-      .text("para agilizar sua identificação.", 190);
+      .text("Apresente este QR code no dia do evento", 230, doc.y + 18)
+      .text("para agilizar sua identificação.", 230);
 
-    doc.y += 138;
+    doc.y += 180;
 
     doc
       .fontSize(7)
@@ -323,11 +323,11 @@ router.get("/:registrationId", async (req, res) => {
       .fillColor(BRAND_COLORS.textLight)
       .text(
         "Este documento é um comprovante de inscrição gerado eletronicamente pelo sistema KitRunner.",
-        { align: "center" },
+        50, doc.y, { align: "center", width: 495 },
       )
-      .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`, {
-        align: "center",
-      });
+      .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
+        50, doc.y, { align: "center", width: 495 },
+      );
 
     doc.end();
   } catch (error) {
