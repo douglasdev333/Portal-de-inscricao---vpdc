@@ -392,10 +392,7 @@ export default function AdminEventPedidosPage() {
                     <TableHead>Comprador</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Data</TableHead>
-                    <TableHead className="text-right">Bruto</TableHead>
-                    <TableHead className="text-right">Desconto</TableHead>
-                    <TableHead className="text-right">Taxa</TableHead>
-                    <TableHead className="text-right">Líquido</TableHead>
+                    <TableHead className="text-right">Total Pago</TableHead>
                     <TableHead>Pagamento</TableHead>
                     <TableHead className="text-center">Inscrições</TableHead>
                   </TableRow>
@@ -403,7 +400,9 @@ export default function AdminEventPedidosPage() {
                 <TableBody>
                   {orders.map((order) => {
                     const valorBruto = order.subtotal;
-                    const valorLiquido = valorBruto - order.valorDesconto - order.taxaComodidade;
+                    const totalPago = valorBruto - order.valorDesconto + order.taxaComodidade;
+                    const isGratuito = totalPago === 0;
+                    const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || "-");
                     return (
                     <TableRow key={order.id}>
                       <TableCell className="font-mono font-bold">#{order.numeroPedido}</TableCell>
@@ -415,15 +414,8 @@ export default function AdminEventPedidosPage() {
                       </TableCell>
                       <TableCell><StatusBadge status={order.status} /></TableCell>
                       <TableCell>{formatDateOnlyBrazil(order.dataPedido)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(valorBruto)}</TableCell>
-                      <TableCell className="text-right text-red-600">
-                        {order.valorDesconto > 0 ? `-${formatCurrency(order.valorDesconto)}` : "-"}
-                      </TableCell>
-                      <TableCell className="text-right text-orange-600">
-                        {order.taxaComodidade > 0 ? `-${formatCurrency(order.taxaComodidade)}` : "-"}
-                      </TableCell>
-                      <TableCell className="text-right text-green-600 font-medium">{formatCurrency(valorLiquido)}</TableCell>
-                      <TableCell>{metodoPagamentoLabels[order.metodoPagamento || ""] || "-"}</TableCell>
+                      <TableCell className="text-right font-medium">{formatCurrency(totalPago)}</TableCell>
+                      <TableCell>{formaPagamento}</TableCell>
                       <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
                     </TableRow>
                   )})}
