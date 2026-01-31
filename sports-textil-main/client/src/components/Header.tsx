@@ -19,6 +19,7 @@ export default function Header() {
 
   const navItems = [
     { path: "/", label: "Eventos" },
+    { path: "/resultados", label: "Resultados" },
     { path: "/minhas-inscricoes", label: "Minhas Inscrições" },
   ];
 

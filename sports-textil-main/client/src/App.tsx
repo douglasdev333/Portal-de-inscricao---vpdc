@@ -29,6 +29,7 @@ import InscricaoPagamentoPage from "@/pages/InscricaoPagamentoPage";
 import InscricaoDetailPage from "@/pages/InscricaoDetailPage";
 import PedidoDetailPage from "@/pages/PedidoDetailPage";
 import EventoResultadosPage from "@/pages/EventoResultadosPage";
+import ResultadosPage from "@/pages/ResultadosPage";
 
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import AdminLoginPage from "@/pages/admin/AdminLoginPage";
@@ -58,6 +59,7 @@ function PublicRouter() {
   return (
     <Switch>
       <Route path="/" component={EventosPage} />
+      <Route path="/resultados" component={ResultadosPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/cadastro" component={CadastroPage} />
       <Route path="/evento/:slug" component={EventoDetailPage} />
