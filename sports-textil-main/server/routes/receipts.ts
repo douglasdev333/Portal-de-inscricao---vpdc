@@ -6,8 +6,8 @@ import { storage } from "../storage";
 const router = Router();
 
 const BRAND_COLORS = {
-  primary: "#8B5CF6",
-  accent: "#A78BFA",
+  primary: "#6D28D9",
+  accent: "#8B5CF6",
   text: "#333333",
   textLight: "#666666",
   border: "#e2e8f0",
@@ -294,27 +294,28 @@ router.get("/:registrationId", async (req, res) => {
     doc.moveDown(1);
 
     doc
-      .rect(50, doc.y, 495, 70)
+      .rect(50, doc.y, 495, 95)
       .lineWidth(1)
       .strokeColor(BRAND_COLORS.border)
       .stroke();
 
     const qrCodeLargeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
-    doc.image(qrCodeLargeBuffer, 60, doc.y + 8, { width: 55, height: 55 });
+    doc.image(qrCodeLargeBuffer, 60, doc.y + 8, { width: 80, height: 80 });
+
+    doc
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND_COLORS.primary)
+      .text("QR Code de Verificação", 155, doc.y + 25);
 
     doc
       .fontSize(9)
-      .font("Helvetica-Bold")
-      .fillColor(BRAND_COLORS.primary)
-      .text("QR Code de Verificação", 130, doc.y + 18);
-
-    doc
-      .fontSize(8)
       .font("Helvetica")
       .fillColor(BRAND_COLORS.textLight)
-      .text("Apresente este QR code no dia do evento para agilizar sua identificação.", 130, doc.y + 8);
+      .text("Apresente este QR code no dia do evento", 155, doc.y + 12)
+      .text("para agilizar sua identificação.", 155);
 
-    doc.y += 80;
+    doc.y += 105;
 
     doc
       .moveTo(50, doc.y)
