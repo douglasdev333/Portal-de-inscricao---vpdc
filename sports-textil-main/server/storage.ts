@@ -669,7 +669,9 @@ export class DbStorage implements IStorage {
   async getNextOrderNumber(): Promise<number> {
     const result = await db.select({ maxNum: max(orders.numeroPedido) })
       .from(orders);
-    return (result[0]?.maxNum ?? 0) + 1;
+    const maxNum = result[0]?.maxNum ?? 0;
+    // Iniciar a partir de 1000 se ainda não houver pedidos ou se o maior número for menor que 1000
+    return maxNum < 1000 ? 1000 : maxNum + 1;
   }
 
   async updateOrderPaymentId(orderId: string, paymentId: string, paymentMethod: string): Promise<void> {
@@ -857,7 +859,9 @@ export class DbStorage implements IStorage {
   async getNextRegistrationNumber(): Promise<number> {
     const result = await db.select({ maxNum: max(registrations.numeroInscricao) })
       .from(registrations);
-    return (result[0]?.maxNum ?? 0) + 1;
+    const maxNum = result[0]?.maxNum ?? 0;
+    // Iniciar a partir de 1000 se ainda não houver inscrições ou se o maior número for menor que 1000
+    return maxNum < 1000 ? 1000 : maxNum + 1;
   }
 
   async getDocumentAcceptancesByRegistration(registrationId: string): Promise<DocumentAcceptance[]> {
