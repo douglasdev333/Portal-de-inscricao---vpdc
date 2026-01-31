@@ -110,3 +110,16 @@ Flexible pricing based on shirt size selection:
   - "Sem camisa" with -R$25 discount for athletes who don't want a shirt
   - "GG", "EG", "EGG" with +R$10 surcharge for special sizes
 - **Documentation**: Full implementation details in `docs/IMPLEMENTACAO_SEM_CAMISA.md`
+
+### Enhanced Reports System (January 2026)
+Comprehensive reports with financial details and export capabilities:
+
+- **Registration Report Enhancements**: Added order number, batch, discount amount, coupon/voucher codes, payment method, order status, and payment date columns
+- **New Orders Report**: Dedicated reports for Admin (`/admin/eventos/:id/pedidos`) and Organizer (`/organizadores/evento/:id/pedidos`) with:
+  - Filter by status (all/paid/pending/cancelled)
+  - Financial summary (bruto, descontos, taxa comodidade, líquido)
+  - Excel export with totals row
+  - Fields: order number, buyer info, status, dates, subtotal, discount, coupon code, convenience fee, total, net value, payment method, gateway ID
+- **Totals Row**: Both reports include a totals row at the end calculated from confirmed/paid records only
+- **NaN Protection**: safeNumber() helper prevents NaN in legacy data with null/empty numeric fields
+- **Portuguese Accents**: All user-facing text properly accented (inscrição, alteração, histórico, Cartão de Crédito, etc.)
