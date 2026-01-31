@@ -78,11 +78,6 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-foreground">Para Organizadores</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/admin" className="text-muted-foreground hover:text-primary text-sm transition-colors">
-                  Área do Organizador
-                </Link>
-              </li>
-              <li>
                 <a 
                   href="https://wa.me/5583981302961?text=Olá! Gostaria de cadastrar meu evento no KitRunner." 
                   target="_blank" 
