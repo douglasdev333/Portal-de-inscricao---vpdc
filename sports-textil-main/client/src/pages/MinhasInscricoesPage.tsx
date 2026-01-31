@@ -86,11 +86,11 @@ function formatDate(dateString: string) {
 }
 
 function getStatusConfig(status: string) {
-  const configs: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; icon: typeof CheckCircle2 }> = {
+  const configs: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; icon: typeof CheckCircle2; className?: string }> = {
     pago: { variant: "default", label: "Pago", icon: CheckCircle2 },
     confirmado: { variant: "default", label: "Confirmado", icon: CheckCircle2 },
     confirmada: { variant: "default", label: "Confirmada", icon: CheckCircle2 },
-    pendente: { variant: "secondary", label: "Pendente", icon: Clock },
+    pendente: { variant: "secondary", label: "Pendente", icon: Clock, className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300" },
     cancelado: { variant: "destructive", label: "Cancelado", icon: XCircle },
     cancelada: { variant: "destructive", label: "Cancelada", icon: XCircle },
     concluido: { variant: "outline", label: "Concluído", icon: CheckCircle2 },
@@ -108,7 +108,7 @@ function InscricaoItem({ inscricao, evento }: { inscricao: Inscricao; evento: Ev
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">#{inscricao.numeroInscricao}</span>
-          <Badge variant={statusConfig.variant} className="text-xs">
+          <Badge variant={statusConfig.variant} className={`text-xs ${statusConfig.className || ''}`}>
             {statusConfig.label}
           </Badge>
         </div>
@@ -183,7 +183,7 @@ function PedidoCard({ pedido }: { pedido: Pedido }) {
                     Pedido #{pedido.numeroPedido}
                   </h3>
                 </Link>
-                <Badge variant={statusConfig.variant} className="text-xs">
+                <Badge variant={statusConfig.variant} className={`text-xs ${statusConfig.className || ''}`}>
                   <StatusIcon className="h-3 w-3 mr-1" />
                   {statusConfig.label}
                 </Badge>

@@ -231,9 +231,9 @@ export default function InscricaoDetailPage() {
   const formattedInscricaoDate = formatDateOnlyLong(registration.dataInscricao);
 
   const statusConfig = {
-    confirmada: { variant: "default" as const, label: "Confirmada" },
-    pendente: { variant: "secondary" as const, label: "Pendente" },
-    cancelada: { variant: "destructive" as const, label: "Cancelada" }
+    confirmada: { variant: "default" as const, label: "Confirmada", className: "" },
+    pendente: { variant: "secondary" as const, label: "Pendente", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300" },
+    cancelada: { variant: "destructive" as const, label: "Cancelada", className: "" }
   };
   const currentStatus = statusConfig[registration.status as keyof typeof statusConfig] || statusConfig.pendente;
 
@@ -266,7 +266,7 @@ export default function InscricaoDetailPage() {
                   <p className="text-sm text-muted-foreground">{formattedInscricaoDate}</p>
                 </div>
               </div>
-              <Badge variant={currentStatus.variant} className="text-sm px-3 py-1 w-fit">
+              <Badge variant={currentStatus.variant} className={`text-sm px-3 py-1 w-fit ${currentStatus.className || ''}`}>
                 {currentStatus.label}
               </Badge>
             </div>

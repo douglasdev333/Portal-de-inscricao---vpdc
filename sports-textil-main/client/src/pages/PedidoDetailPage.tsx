@@ -115,11 +115,11 @@ function formatDateTime(dateString: string | null) {
 }
 
 function getStatusConfig(status: string) {
-  const configs: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; icon: typeof CheckCircle2; color: string }> = {
+  const configs: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string; icon: typeof CheckCircle2; color: string; className?: string }> = {
     pago: { variant: "default", label: "Pago", icon: CheckCircle2, color: "text-green-600" },
     confirmado: { variant: "default", label: "Confirmado", icon: CheckCircle2, color: "text-green-600" },
     confirmada: { variant: "default", label: "Confirmada", icon: CheckCircle2, color: "text-green-600" },
-    pendente: { variant: "secondary", label: "Aguardando Pagamento", icon: Clock, color: "text-yellow-600" },
+    pendente: { variant: "secondary", label: "Aguardando Pagamento", icon: Clock, color: "text-yellow-600", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300" },
     cancelado: { variant: "destructive", label: "Cancelado", icon: XCircle, color: "text-red-600" },
     cancelada: { variant: "destructive", label: "Cancelada", icon: XCircle, color: "text-red-600" },
     expirado: { variant: "destructive", label: "Expirado", icon: AlertCircle, color: "text-red-600" },
@@ -223,7 +223,7 @@ function InscricaoCard({ inscricao, showDetails = true }: { inscricao: Inscricao
           <Hash className="h-4 w-4 text-primary" />
           <span className="font-mono font-bold text-primary">#{inscricao.numeroInscricao}</span>
         </div>
-        <Badge variant={statusConfig.variant} className="text-xs">
+        <Badge variant={statusConfig.variant} className={`text-xs ${statusConfig.className || ''}`}>
           <StatusIcon className="h-3 w-3 mr-1" />
           {statusConfig.label}
         </Badge>
@@ -558,7 +558,7 @@ export default function PedidoDetailPage() {
                   <p className="text-sm text-muted-foreground">{formatDateTime(order.dataPedido)}</p>
                 </div>
               </div>
-              <Badge variant={statusConfig.variant} className="text-sm px-3 py-1">
+              <Badge variant={statusConfig.variant} className={`text-sm px-3 py-1 ${statusConfig.className || ''}`}>
                 <StatusIcon className="h-4 w-4 mr-1" />
                 {statusConfig.label}
               </Badge>
