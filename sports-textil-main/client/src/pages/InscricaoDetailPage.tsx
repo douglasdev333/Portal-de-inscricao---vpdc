@@ -26,6 +26,7 @@ import {
 import { formatDateOnlyLong, formatDateOnlyBrazil, formatCPF, formatPhone } from "@/lib/timezone";
 import { useAthleteAuth } from "@/contexts/AthleteAuthContext";
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { useToast } from "@/hooks/use-toast";
 
 interface RegistrationDetail {
@@ -292,7 +293,32 @@ export default function InscricaoDetailPage() {
 
         {registration.status === "confirmada" && (
           <Card className="mb-4">
-            <CardContent className="py-4">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-5 w-5" />
+                QR Code de Verificação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col items-center">
+                <div className="bg-white p-4 rounded-lg border">
+                  <QRCodeSVG
+                    value={JSON.stringify({
+                      nome: registration.participanteNome,
+                      cpf: registration.participanteCpf || "",
+                      n_inscricao: registration.numeroInscricao,
+                      n_pedido: registration.pedido?.numeroPedido || "",
+                    })}
+                    size={180}
+                    level="M"
+                    fgColor="#6D28D9"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-3 text-center">
+                  Apresente este QR code no dia do evento para agilizar sua identificação.
+                </p>
+              </div>
+              <Separator />
               <Button 
                 onClick={handleDownloadComprovante}
                 disabled={isDownloading}
