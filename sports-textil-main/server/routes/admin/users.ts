@@ -12,7 +12,7 @@ const createUserSchema = z.object({
   email: z.string().email("Email invalido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  role: z.enum(["admin", "organizador"]),
+  role: z.enum(["superadmin", "admin", "organizador"]),
   organizerId: z.string().uuid().optional().nullable()
 }).refine(
   (data) => {
@@ -28,6 +28,7 @@ const updateUserSchema = z.object({
   email: z.string().email("Email invalido").optional(),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres").optional(),
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").optional(),
+  role: z.enum(["superadmin", "admin", "organizador"]).optional(),
   status: z.enum(["ativo", "inativo", "bloqueado"]).optional(),
   organizerId: z.string().uuid().optional().nullable()
 });
@@ -127,12 +128,6 @@ router.patch("/:id", requireRole("superadmin"), async (req, res) => {
       });
     }
 
-    if (user.role === "superadmin" && req.adminUser?.id !== user.id) {
-      return res.status(403).json({
-        success: false,
-        error: { code: "FORBIDDEN", message: "Nao e possivel editar outro superadmin" }
-      });
-    }
 
     const validation = updateUserSchema.safeParse(req.body);
     if (!validation.success) {
@@ -142,7 +137,7 @@ router.patch("/:id", requireRole("superadmin"), async (req, res) => {
       });
     }
 
-    const { email, password, nome, status, organizerId } = validation.data;
+    const { email, password, nome, role, status, organizerId } = validation.data;
 
     if (email && email !== user.email) {
       const existingUser = await storage.getAdminUserByEmail(email);
@@ -167,6 +162,7 @@ router.patch("/:id", requireRole("superadmin"), async (req, res) => {
     const updateData: Record<string, unknown> = {};
     if (email) updateData.email = email;
     if (nome) updateData.nome = nome;
+    if (role) updateData.role = role;
     if (status) updateData.status = status;
     if (password) updateData.passwordHash = hashPassword(password);
     if (organizerId !== undefined) updateData.organizerId = organizerId;

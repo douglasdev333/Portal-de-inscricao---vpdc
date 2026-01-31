@@ -60,7 +60,7 @@ const createUserSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  role: z.enum(["admin", "organizador"]),
+  role: z.enum(["superadmin", "admin", "organizador"]),
   organizerId: z.string().optional(),
 }).refine((data) => {
   if (data.role === "organizador" && !data.organizerId) {
@@ -75,7 +75,7 @@ const createUserSchema = z.object({
 const updateUserSchema = z.object({
   email: z.string().email("Email inválido"),
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  role: z.enum(["admin", "organizador"]),
+  role: z.enum(["superadmin", "admin", "organizador"]),
   status: z.enum(["ativo", "inativo", "bloqueado"]),
   organizerId: z.string().optional().nullable(),
   password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres").optional().or(z.literal("")),
@@ -230,7 +230,7 @@ export default function AdminUsersPage() {
     editForm.reset({
       email: user.email,
       nome: user.nome,
-      role: user.role as "admin" | "organizador",
+      role: user.role as "superadmin" | "admin" | "organizador",
       status: user.status as "ativo" | "inativo" | "bloqueado",
       organizerId: user.organizerId || "",
       password: "",
@@ -331,17 +331,15 @@ export default function AdminUsersPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            {!isSuperadmin && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(user)}
-                                data-testid={`button-edit-user-${user.id}`}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {!isSuperadmin && !isCurrentUser && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEdit(user)}
+                              data-testid={`button-edit-user-${user.id}`}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            {!isCurrentUser && (
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -425,6 +423,7 @@ export default function AdminUsersPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="superadmin">Super Admin</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="organizador">Organizador</SelectItem>
                       </SelectContent>
@@ -535,6 +534,7 @@ export default function AdminUsersPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="superadmin">Super Admin</SelectItem>
                         <SelectItem value="admin">Admin</SelectItem>
                         <SelectItem value="organizador">Organizador</SelectItem>
                       </SelectContent>
