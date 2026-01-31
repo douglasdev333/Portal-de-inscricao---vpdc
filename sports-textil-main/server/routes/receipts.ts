@@ -1,8 +1,18 @@
 import { Router } from "express";
 import PDFDocument from "pdfkit";
+import QRCode from "qrcode";
 import { storage } from "../storage";
 
 const router = Router();
+
+const BRAND_COLORS = {
+  primary: "#032c6b",
+  accent: "#e8b73d",
+  text: "#333333",
+  textLight: "#666666",
+  border: "#e2e8f0",
+  success: "#22c55e",
+};
 
 function formatDate(dateString: string | Date | null) {
   if (!dateString) return "";
@@ -17,6 +27,13 @@ function formatDate(dateString: string | Date | null) {
 function formatCurrency(value: number | string) {
   const numValue = typeof value === "string" ? parseFloat(value) : value;
   return `R$ ${numValue.toFixed(2).replace(".", ",")}`;
+}
+
+function formatCPF(cpf: string | null): string {
+  if (!cpf) return "N/A";
+  const cleaned = cpf.replace(/\D/g, "");
+  if (cleaned.length !== 11) return cpf;
+  return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9)}`;
 }
 
 router.get("/:registrationId", async (req, res) => {
@@ -62,6 +79,22 @@ router.get("/:registrationId", async (req, res) => {
         .json({ success: false, error: "Dados não encontrados" });
     }
 
+    const qrData = JSON.stringify({
+      nome: registration.nomeCompleto || athlete.nome,
+      cpf: registration.cpf || athlete.cpf || "",
+      n_inscricao: registration.numeroInscricao,
+      n_pedido: order?.numeroPedido || "",
+    });
+
+    const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+      width: 120,
+      margin: 1,
+      color: {
+        dark: BRAND_COLORS.primary,
+        light: "#ffffff",
+      },
+    });
+
     const doc = new PDFDocument({
       size: "A4",
       margin: 50,
@@ -80,89 +113,108 @@ router.get("/:registrationId", async (req, res) => {
 
     doc.pipe(res);
 
+    doc.rect(0, 0, 595, 100).fill(BRAND_COLORS.primary);
+
+    doc.save();
     doc
-      .fontSize(24)
+      .fontSize(32)
       .font("Helvetica-Bold")
-      .fillColor("#1a365d")
-      .text("KITRUNNER", { align: "center" });
+      .fillColor("#ffffff")
+      .text("KITRUNNER", 50, 30);
 
-    doc.moveDown(0.5);
     doc
-      .fontSize(16)
+      .fontSize(12)
       .font("Helvetica")
-      .fillColor("#333333")
-      .text("Comprovante de Inscrição", { align: "center" });
+      .fillColor(BRAND_COLORS.accent)
+      .text("Comprovante de Inscrição", 50, 65);
+    doc.restore();
 
-    doc.moveDown(2);
+    doc
+      .rect(50, 110, 495, 50)
+      .fill(BRAND_COLORS.accent);
 
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
-
-    doc.moveDown(1);
+    doc
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND_COLORS.primary)
+      .text("INSCRIÇÃO CONFIRMADA", 60, 120);
 
     doc
       .fontSize(18)
       .font("Helvetica-Bold")
-      .fillColor("#1a365d")
-      .text(event.nome);
+      .fillColor(BRAND_COLORS.primary)
+      .text(`#${registration.numeroInscricao}`, 60, 135);
 
-    doc.moveDown(0.5);
+    const qrCodeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
+    doc.image(qrCodeBuffer, 420, 115, { width: 40, height: 40 });
+
+    doc.y = 180;
+
+    doc
+      .fontSize(16)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND_COLORS.primary)
+      .text(event.nome, 50, doc.y);
+
+    doc.moveDown(0.3);
     doc
       .fontSize(11)
       .font("Helvetica")
-      .fillColor("#4a5568")
-      .text(`Data do Evento: ${formatDate(event.dataEvento)}`)
-      .text(`Local: ${event.endereco}`)
-      .text(`${event.cidade} - ${event.estado}`);
+      .fillColor(BRAND_COLORS.textLight)
+      .text(`${formatDate(event.dataEvento)} | ${event.cidade} - ${event.estado}`, 50);
 
     doc.moveDown(1.5);
 
-    doc
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .fillColor("#1a365d")
-      .text("Dados da Inscrição");
+    const drawSectionHeader = (title: string) => {
+      doc
+        .rect(50, doc.y, 495, 25)
+        .fill("#f8fafc");
 
-    doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
+      doc
+        .fontSize(11)
+        .font("Helvetica-Bold")
+        .fillColor(BRAND_COLORS.primary)
+        .text(title, 60, doc.y + 7);
 
-    doc.moveDown(0.5);
-    doc.fontSize(11).font("Helvetica").fillColor("#333333");
+      doc.y += 35;
+    };
 
-    const inscricaoData = [
-      {
-        label: "Número da Inscrição",
-        value: `#${registration.numeroInscricao}`,
-      },
-      { label: "Status", value: "CONFIRMADA" },
-      {
-        label: "Modalidade",
-        value: `${modality.nome} - ${modality.distancia} ${modality.unidadeDistancia}`,
-      },
-      {
-        label: "Horário de Largada",
-        value: modality.horarioLargada || "A confirmar",
-      },
-    ];
+    const drawDataRow = (label: string, value: string, isHighlighted = false) => {
+      const rowHeight = 20;
+      const startY = doc.y;
 
+      doc
+        .fontSize(10)
+        .font("Helvetica")
+        .fillColor(BRAND_COLORS.textLight)
+        .text(label, 60, startY);
+
+      doc
+        .fontSize(10)
+        .font(isHighlighted ? "Helvetica-Bold" : "Helvetica")
+        .fillColor(isHighlighted ? BRAND_COLORS.primary : BRAND_COLORS.text)
+        .text(value, 200, startY);
+
+      doc.y = startY + rowHeight;
+    };
+
+    drawSectionHeader("MODALIDADE");
+
+    drawDataRow("Modalidade", `${modality.nome} - ${modality.distancia} ${modality.unidadeDistancia}`, true);
+    drawDataRow("Horário de Largada", modality.horarioLargada || "A confirmar");
     if (batch) {
-      inscricaoData.push({ label: "Lote", value: batch.nome });
+      drawDataRow("Lote", batch.nome);
     }
-
     if (registration.tamanhoCamisa) {
       let camisaValue = registration.tamanhoCamisa;
-
       const usarGradePorModalidade = event.usarGradePorModalidade || false;
       let shirtSizes;
       if (usarGradePorModalidade) {
-        shirtSizes = await storage.getShirtSizesByModality(
-          registration.modalityId,
-        );
+        shirtSizes = await storage.getShirtSizesByModality(registration.modalityId);
       } else {
         shirtSizes = await storage.getShirtSizesByEvent(event.id);
       }
-      const selectedSize = shirtSizes.find(
-        (s) => s.tamanho === registration.tamanhoCamisa,
-      );
+      const selectedSize = shirtSizes.find((s) => s.tamanho === registration.tamanhoCamisa);
       if (selectedSize) {
         const ajustePreco = parseFloat(selectedSize.ajustePreco || "0");
         if (ajustePreco !== 0) {
@@ -173,94 +225,42 @@ router.get("/:registrationId", async (req, res) => {
           camisaValue = `${registration.tamanhoCamisa} ${ajusteText}`;
         }
       }
-
-      inscricaoData.push({ label: "Tamanho da Camisa", value: camisaValue });
+      drawDataRow("Tamanho da Camisa", camisaValue);
     }
-
     if (registration.equipe) {
-      inscricaoData.push({ label: "Equipe", value: registration.equipe });
+      drawDataRow("Equipe", registration.equipe);
     }
+    drawDataRow("Data da Inscrição", formatDate(registration.dataInscricao));
 
-    inscricaoData.push({
-      label: "Data da Inscrição",
-      value: formatDate(registration.dataInscricao),
-    });
+    doc.moveDown(1);
 
-    inscricaoData.forEach((item) => {
-      doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
-      doc.font("Helvetica").text(item.value);
-    });
+    drawSectionHeader("PARTICIPANTE");
 
-    doc.moveDown(1.5);
-
-    doc
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .fillColor("#1a365d")
-      .text("Dados do Participante");
-
-    doc.moveDown(0.5);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
-
-    doc.moveDown(0.5);
-    doc.fontSize(11).font("Helvetica").fillColor("#333333");
-
-    const participanteData = [
-      { label: "Nome", value: registration.nomeCompleto || athlete.nome },
-      { label: "CPF", value: registration.cpf || athlete.cpf || "N/A" },
-      { label: "Email", value: athlete.email },
-      { label: "Telefone", value: athlete.telefone || "N/A" },
-    ];
-
+    drawDataRow("Nome Completo", registration.nomeCompleto || athlete.nome, true);
+    drawDataRow("CPF", formatCPF(registration.cpf || athlete.cpf));
+    drawDataRow("E-mail", athlete.email);
+    drawDataRow("Telefone", athlete.telefone || "N/A");
     if (athlete.dataNascimento) {
-      participanteData.push({
-        label: "Data de Nascimento",
-        value: formatDate(athlete.dataNascimento),
-      });
+      drawDataRow("Data de Nascimento", formatDate(athlete.dataNascimento));
     }
-
     if (athlete.cidade && athlete.estado) {
-      participanteData.push({
-        label: "Cidade/Estado",
-        value: `${athlete.cidade} - ${athlete.estado}`,
-      });
+      drawDataRow("Cidade/Estado", `${athlete.cidade} - ${athlete.estado}`);
     }
-
-    participanteData.forEach((item) => {
-      doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
-      doc.font("Helvetica").text(item.value);
-    });
 
     if (order) {
-      doc.moveDown(1.5);
+      doc.moveDown(1);
 
-      doc
-        .fontSize(14)
-        .font("Helvetica-Bold")
-        .fillColor("#1a365d")
-        .text("Dados do Pagamento");
-
-      doc.moveDown(0.5);
-      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
-
-      doc.moveDown(0.5);
-      doc.fontSize(11).font("Helvetica").fillColor("#333333");
+      drawSectionHeader("PAGAMENTO");
 
       const valorUnitario = parseFloat(registration.valorUnitario);
       const taxaComodidade = parseFloat(registration.taxaComodidade);
       const valorDesconto = parseFloat(order.valorDesconto || "0");
-      const totalInscricao = valorUnitario + taxaComodidade;
 
-      const pagamentoData = [
-        { label: "Número do Pedido", value: `#${order.numeroPedido}` },
-        { label: "Valor da Inscrição", value: formatCurrency(valorUnitario) },
-      ];
+      drawDataRow("Número do Pedido", `#${order.numeroPedido}`);
+      drawDataRow("Valor da Inscrição", formatCurrency(valorUnitario));
 
       if (taxaComodidade > 0) {
-        pagamentoData.push({
-          label: "Taxa de Comodidade",
-          value: formatCurrency(taxaComodidade),
-        });
+        drawDataRow("Taxa de Comodidade", formatCurrency(taxaComodidade));
       }
 
       if (valorDesconto > 0) {
@@ -270,23 +270,14 @@ router.get("/:registrationId", async (req, res) => {
         } else if (order.codigoVoucher) {
           descontoLabel = `Desconto (Voucher: ${order.codigoVoucher})`;
         }
-        pagamentoData.push({
-          label: descontoLabel,
-          value: `- ${formatCurrency(valorDesconto)}`,
-        });
+        drawDataRow(descontoLabel, `- ${formatCurrency(valorDesconto)}`);
       }
 
-      const valorFinal = totalInscricao - valorDesconto;
-      pagamentoData.push(
-        { label: "Valor Total Pago", value: formatCurrency(valorFinal > 0 ? valorFinal : 0) },
-        { label: "Status do Pagamento", value: "PAGO" },
-      );
+      const valorFinal = valorUnitario + taxaComodidade - valorDesconto;
+      drawDataRow("Valor Total Pago", formatCurrency(valorFinal > 0 ? valorFinal : 0), true);
 
       if (order.dataPagamento) {
-        pagamentoData.push({
-          label: "Data do Pagamento",
-          value: formatDate(order.dataPagamento),
-        });
+        drawDataRow("Data do Pagamento", formatDate(order.dataPagamento));
       }
 
       if (order.metodoPagamento) {
@@ -296,35 +287,50 @@ router.get("/:registrationId", async (req, res) => {
             : order.metodoPagamento === "credit_card"
               ? "Cartão de Crédito"
               : order.metodoPagamento;
-        pagamentoData.push({
-          label: "Método de Pagamento",
-          value: metodoPagamentoLabel,
-        });
+        drawDataRow("Método de Pagamento", metodoPagamentoLabel);
       }
-
-      if (order.idPagamentoGateway) {
-        pagamentoData.push({
-          label: "ID da Transação",
-          value: order.idPagamentoGateway,
-        });
-      }
-
-      pagamentoData.forEach((item) => {
-        doc.font("Helvetica-Bold").text(`${item.label}: `, { continued: true });
-        doc.font("Helvetica").text(item.value);
-      });
     }
 
-    doc.moveDown(3);
-    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor("#e2e8f0").stroke();
+    doc.moveDown(2);
 
-    doc.moveDown(1);
+    doc
+      .rect(50, doc.y, 495, 100)
+      .lineWidth(1)
+      .strokeColor(BRAND_COLORS.border)
+      .stroke();
+
+    const qrCodeLargeBuffer = Buffer.from(qrCodeDataUrl.split(",")[1], "base64");
+    doc.image(qrCodeLargeBuffer, 65, doc.y + 10, { width: 80, height: 80 });
+
+    doc
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .fillColor(BRAND_COLORS.primary)
+      .text("QR Code de Verificação", 160, doc.y + 20);
+
     doc
       .fontSize(9)
       .font("Helvetica")
-      .fillColor("#718096")
+      .fillColor(BRAND_COLORS.textLight)
+      .text("Apresente este QR code no dia do evento", 160, doc.y + 10)
+      .text("para agilizar sua identificação.", 160);
+
+    doc.y += 110;
+
+    doc.moveDown(1);
+    doc
+      .moveTo(50, doc.y)
+      .lineTo(545, doc.y)
+      .strokeColor(BRAND_COLORS.border)
+      .stroke();
+
+    doc.moveDown(0.5);
+    doc
+      .fontSize(8)
+      .font("Helvetica")
+      .fillColor(BRAND_COLORS.textLight)
       .text(
-        "Este documento é um comprovante de inscrição gerado eletronicamente.",
+        "Este documento é um comprovante de inscrição gerado eletronicamente pelo sistema KitRunner.",
         { align: "center" },
       )
       .text(`Documento gerado em: ${new Date().toLocaleString("pt-BR")}`, {
