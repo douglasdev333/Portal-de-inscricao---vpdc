@@ -121,7 +121,7 @@ router.post("/create", async (req, res) => {
     }
 
     const amount = parseFloat(order.valorTotal);
-    const description = `Inscrição - ${event.nome}`;
+    const description = `Pedido #${order.numeroPedido} - Inscrição - ${event.nome}`;
     const externalReference = `order_${order.id}`;
 
     if (paymentMethod === "pix") {
