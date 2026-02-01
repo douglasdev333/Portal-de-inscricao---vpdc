@@ -172,8 +172,8 @@ export default function OrganizerEventPedidosPage() {
     const rows = dataToExport.map((order) => {
       const dataPagamento = order.dataPagamento ? new Date(order.dataPagamento) : null;
       const valorBruto = order.subtotal;
-      const valorLiquido = valorBruto - order.valorDesconto;
-      const totalPago = valorLiquido + order.taxaComodidade;
+      const valorLiquido = valorBruto - order.valorDesconto - order.taxaComodidade;
+      const totalPago = valorBruto - order.valorDesconto + order.taxaComodidade;
       const isGratuito = totalPago === 0;
       const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-");
       
@@ -203,8 +203,8 @@ export default function OrganizerEventPedidosPage() {
     const totalBruto = paidOrders.reduce((sum, o) => sum + o.subtotal, 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0);
     const totalTaxa = paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0);
-    const totalLiquido = totalBruto - totalDescontos;
-    const totalPagoGeral = totalLiquido + totalTaxa;
+    const totalLiquido = totalBruto - totalDescontos - totalTaxa;
+    const totalPagoGeral = totalBruto - totalDescontos + totalTaxa;
 
     // Linha de totais
     const totalsRow = [

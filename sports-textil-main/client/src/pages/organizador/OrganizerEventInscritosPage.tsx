@@ -236,8 +236,8 @@ export default function OrganizerEventInscritosPage() {
       const valorBruto = parseFloat(reg.valorUnitario);
       const taxaComodidade = parseFloat(reg.taxaComodidade);
       const valorDesconto = parseFloat(reg.valorDesconto) / (reg.orderRegistrationsCount || 1);
-      const valorLiquido = valorBruto - valorDesconto;
-      const totalPago = valorLiquido + taxaComodidade;
+      const valorLiquido = valorBruto - valorDesconto - taxaComodidade;
+      const totalPago = valorBruto - valorDesconto + taxaComodidade;
       const isGratuito = totalPago === 0;
       const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "-");
       const codigoDesconto = reg.codigoCupom || reg.codigoVoucher || "";
@@ -274,8 +274,8 @@ export default function OrganizerEventInscritosPage() {
     const totalBruto = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.valorUnitario), 0);
     const totalTaxa = confirmedRegs.reduce((sum, r) => sum + parseFloat(r.taxaComodidade), 0);
     const totalDesconto = confirmedRegs.reduce((sum, r) => sum + (parseFloat(r.valorDesconto) / (r.orderRegistrationsCount || 1)), 0);
-    const totalLiquido = totalBruto - totalDesconto;
-    const totalPago = totalLiquido + totalTaxa;
+    const totalLiquido = totalBruto - totalDesconto - totalTaxa;
+    const totalPago = totalBruto - totalDesconto + totalTaxa;
 
     // Linha de totais
     const totalsRow = [
