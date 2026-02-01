@@ -43,7 +43,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Plus, Pencil, Loader2, Eye, Search, X, Users } from "lucide-react";
+import { Plus, Pencil, Loader2, Eye, Search, X, Users, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Athlete, Registration } from "@shared/schema";
 
 const BRAZILIAN_STATES = [
@@ -240,12 +240,16 @@ function getStatusBadge(status: string) {
   }
 }
 
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+
 export default function AdminAthletesPage() {
   const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingAthlete, setEditingAthlete] = useState<Athlete | null>(null);
   const [viewingAthlete, setViewingAthlete] = useState<Athlete | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const { data: athletesData, isLoading } = useQuery<{ success: boolean; data: Athlete[] }>({
     queryKey: ["/api/admin/athletes"],
@@ -268,6 +272,23 @@ export default function AdminAthletesPage() {
       athlete.cidade.toLowerCase().includes(search)
     );
   });
+
+  // Paginação
+  const totalPages = Math.ceil(filteredAthletes.length / itemsPerPage);
+  const paginatedAthletes = filteredAthletes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const form = useForm<AthleteFormData>({
     resolver: zodResolver(athleteSchema),
@@ -417,25 +438,39 @@ export default function AdminAthletesPage() {
                 <Users className="h-5 w-5" />
                 Lista de Atletas ({filteredAthletes.length})
               </CardTitle>
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, CPF, email ou cidade..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  data-testid="input-search-athlete"
-                />
-                {searchTerm && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="relative w-full max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, CPF, email ou cidade..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-athlete"
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                      onClick={() => handleSearchChange("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option.toString()}>
+                        {option} por página
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardHeader>
@@ -465,7 +500,7 @@ export default function AdminAthletesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAthletes.map((athlete) => (
+                    {paginatedAthletes.map((athlete) => (
                       <TableRow key={athlete.id} data-testid={`row-athlete-${athlete.id}`}>
                         <TableCell className="font-medium">{athlete.nome}</TableCell>
                         <TableCell>{formatCpf(athlete.cpf)}</TableCell>
@@ -497,6 +532,38 @@ export default function AdminAthletesPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredAthletes.length)} de {filteredAthletes.length} atletas
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm px-2">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
