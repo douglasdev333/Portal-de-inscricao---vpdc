@@ -73,7 +73,9 @@ import {
   ShoppingCart,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { formatDateOnlyBrazil, formatDateTimeBrazil } from "@/lib/timezone";
 import { useToast } from "@/hooks/use-toast";
@@ -197,6 +199,8 @@ function formatCurrency(value: string | number | null | undefined): string {
   }).format(num);
 }
 
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+
 export default function AdminEventInscritosPage() {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
@@ -206,6 +210,10 @@ export default function AdminEventInscritosPage() {
   const [selectedRegistration, setSelectedRegistration] = useState<EnrichedRegistration | null>(null);
   const [sortColumn, setSortColumn] = useState<"numero" | "nome" | "status" | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   
   // Status change states
   const [newRegistrationStatus, setNewRegistrationStatus] = useState<string>("");
@@ -352,6 +360,24 @@ export default function AdminEventInscritosPage() {
     
     return sortDirection === "desc" ? -comparison : comparison;
   });
+
+  // Paginação
+  const totalPages = Math.ceil(sortedRegistrations.length / itemsPerPage);
+  const paginatedRegistrations = sortedRegistrations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset página quando filtros mudam
+  const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const handleSort = (column: "numero" | "nome" | "status") => {
     if (sortColumn === column) {
@@ -643,6 +669,12 @@ export default function AdminEventInscritosPage() {
               <Download className="mr-2 h-4 w-4" />
               Exportar
             </Button>
+            <Link href={`/admin/eventos/${id}/pedidos`}>
+              <Button variant="outline" data-testid="button-orders">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Ver Pedidos
+              </Button>
+            </Link>
             <Link href={`/admin/eventos/${id}/gerenciar`}>
               <Button variant="outline" data-testid="button-manage-event">
                 <Settings className="mr-2 h-4 w-4" />
@@ -658,14 +690,14 @@ export default function AdminEventInscritosPage() {
               <div className="relative flex-1 min-w-[200px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nome, CPF ou numero..."
+                  placeholder="Buscar por nome, CPF ou número..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                   className="pl-9"
                   data-testid="input-search-inscritos"
                 />
               </div>
-              <Select value={modalityFilter} onValueChange={setModalityFilter}>
+              <Select value={modalityFilter} onValueChange={(v) => handleFilterChange(setModalityFilter, v)}>
                 <SelectTrigger className="w-[180px]" data-testid="select-modality-filter">
                   <SelectValue placeholder="Modalidade" />
                 </SelectTrigger>
@@ -678,7 +710,7 @@ export default function AdminEventInscritosPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => handleFilterChange(setStatusFilter, v)}>
                 <SelectTrigger className="w-[150px]" data-testid="select-status-filter">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -687,6 +719,18 @@ export default function AdminEventInscritosPage() {
                   <SelectItem value="confirmada">Confirmada</SelectItem>
                   <SelectItem value="pendente">Pendente</SelectItem>
                   <SelectItem value="cancelada">Cancelada</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option.toString()}>
+                      {option} por página
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -739,7 +783,7 @@ export default function AdminEventInscritosPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedRegistrations.map((reg) => (
+                    {paginatedRegistrations.map((reg) => (
                       <TableRow key={reg.id} data-testid={`row-inscrito-${reg.id}`}>
                         <TableCell className="font-medium">
                           #{reg.numeroInscricao}
@@ -777,6 +821,38 @@ export default function AdminEventInscritosPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, sortedRegistrations.length)} de {sortedRegistrations.length} inscrições
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm px-2">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
