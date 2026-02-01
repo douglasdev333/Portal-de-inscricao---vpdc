@@ -85,6 +85,7 @@ const metodoPagamentoLabels: Record<string, string> = {
   credit_card: "CC",
   boleto: "Boleto",
   cortesia: "Cortesia",
+  free: "Cortesia",
 };
 
 function formatCPF(cpf: string | null): string {
@@ -162,7 +163,7 @@ export default function OrganizerEventPedidosPage() {
       "Desconto",
       "Código Cupom/Voucher",
       "Taxa de Comodidade",
-      "Valor Líquido",
+      "Total Pago",
       "Forma de Pagamento",
       "Qtd. Inscrições",
     ];
@@ -170,7 +171,9 @@ export default function OrganizerEventPedidosPage() {
     const rows = dataToExport.map((order) => {
       const dataPagamento = order.dataPagamento ? new Date(order.dataPagamento) : null;
       const valorBruto = order.subtotal;
-      const valorLiquido = valorBruto - order.valorDesconto - order.taxaComodidade;
+      const totalPago = valorBruto + order.taxaComodidade - order.valorDesconto;
+      const isGratuito = totalPago === 0;
+      const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-");
       
       return [
         order.numeroPedido,
@@ -186,8 +189,8 @@ export default function OrganizerEventPedidosPage() {
         order.valorDesconto,
         order.codigoCupom || order.codigoVoucher || "-",
         order.taxaComodidade,
-        valorLiquido,
-        metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-",
+        totalPago,
+        formaPagamento,
         order.qtdInscricoes,
       ];
     });
@@ -197,7 +200,7 @@ export default function OrganizerEventPedidosPage() {
     const totalBruto = paidOrders.reduce((sum, o) => sum + o.subtotal, 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0);
     const totalTaxa = paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0);
-    const totalLiquido = totalBruto - totalDescontos - totalTaxa;
+    const totalPagoGeral = totalBruto + totalTaxa - totalDescontos;
 
     // Linha de totais
     const totalsRow = [
@@ -214,7 +217,7 @@ export default function OrganizerEventPedidosPage() {
       totalDescontos,
       "",
       totalTaxa,
-      totalLiquido,
+      totalPagoGeral,
       "",
       "",
     ];
