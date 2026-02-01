@@ -667,11 +667,14 @@ export class DbStorage implements IStorage {
   }
 
   async getNextOrderNumber(): Promise<number> {
-    const result = await db.select({ maxNum: max(orders.numeroPedido) })
-      .from(orders);
-    const maxNum = result[0]?.maxNum ?? 0;
-    // Iniciar a partir de 1000 se ainda não houver pedidos ou se o maior número for menor que 1000
-    return maxNum < 1000 ? 1000 : maxNum + 1;
+    // Usar FOR UPDATE para evitar race conditions
+    const result = await db.execute(sql`
+      SELECT COALESCE(MAX(numero_pedido), 999) as max_num 
+      FROM orders 
+      FOR UPDATE
+    `);
+    const maxNum = Number(result.rows[0]?.max_num ?? 999);
+    return maxNum + 1;
   }
 
   async updateOrderPaymentId(orderId: string, paymentId: string, paymentMethod: string): Promise<void> {
@@ -857,11 +860,14 @@ export class DbStorage implements IStorage {
   }
 
   async getNextRegistrationNumber(): Promise<number> {
-    const result = await db.select({ maxNum: max(registrations.numeroInscricao) })
-      .from(registrations);
-    const maxNum = result[0]?.maxNum ?? 0;
-    // Iniciar a partir de 1000 se ainda não houver inscrições ou se o maior número for menor que 1000
-    return maxNum < 1000 ? 1000 : maxNum + 1;
+    // Usar FOR UPDATE para evitar race conditions
+    const result = await db.execute(sql`
+      SELECT COALESCE(MAX(numero_inscricao), 999) as max_num 
+      FROM registrations 
+      FOR UPDATE
+    `);
+    const maxNum = Number(result.rows[0]?.max_num ?? 999);
+    return maxNum + 1;
   }
 
   async getDocumentAcceptancesByRegistration(registrationId: string): Promise<DocumentAcceptance[]> {

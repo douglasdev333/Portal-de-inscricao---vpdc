@@ -165,7 +165,7 @@ export const athletes = pgTable("athletes", {
 
 export const orders = pgTable("orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  numeroPedido: integer("numero_pedido").notNull(),
+  numeroPedido: integer("numero_pedido").notNull().unique(),
   eventId: varchar("event_id").notNull().references(() => events.id),
   compradorId: varchar("comprador_id").notNull().references(() => athletes.id),
   valorTotal: decimal("valor_total", { precision: 10, scale: 2 }).notNull(),
@@ -189,7 +189,7 @@ export const orders = pgTable("orders", {
 
 export const registrations = pgTable("registrations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  numeroInscricao: integer("numero_inscricao").notNull(),
+  numeroInscricao: integer("numero_inscricao").notNull().unique(),
   orderId: varchar("order_id").notNull().references(() => orders.id),
   eventId: varchar("event_id").notNull().references(() => events.id),
   modalityId: varchar("modality_id").notNull().references(() => modalities.id),
