@@ -163,6 +163,7 @@ router.post("/create", async (req, res) => {
         amount,
         description,
         athlete.email,
+        athlete.nome,
         externalReference
       );
 

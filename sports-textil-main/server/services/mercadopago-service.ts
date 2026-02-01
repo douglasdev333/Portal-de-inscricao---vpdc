@@ -48,6 +48,7 @@ export async function createPixPayment(
   amount: number,
   description: string,
   buyerEmail: string,
+  buyerName?: string,
   externalReference?: string
 ): Promise<PixPaymentResult> {
   if (!paymentClient) {
@@ -61,6 +62,11 @@ export async function createPixPayment(
     const expirationMinutes = parseInt(process.env.ORDER_EXPIRATION_MINUTES || "30", 10);
     const expirationDate = new Date(Date.now() + expirationMinutes * 60 * 1000);
 
+    // Separar nome em primeiro nome e sobrenome
+    const nameParts = (buyerName || "").trim().split(/\s+/);
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     const payment = await paymentClient.create({
       body: {
         transaction_amount: amount,
@@ -68,7 +74,9 @@ export async function createPixPayment(
         payment_method_id: 'pix',
         statement_descriptor: "KITRUNNER",
         payer: {
-          email: buyerEmail
+          email: buyerEmail,
+          first_name: firstName || undefined,
+          last_name: lastName || undefined
         },
         external_reference: externalReference || orderId,
         date_of_expiration: expirationDate.toISOString()
