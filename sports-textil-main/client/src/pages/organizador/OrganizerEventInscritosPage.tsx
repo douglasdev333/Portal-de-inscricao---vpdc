@@ -40,7 +40,9 @@ import {
   Check,
   X,
   Clock,
-  Users
+  Users,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { formatDateOnlyBrazil } from "@/lib/timezone";
 import { useOrganizerAuth } from "@/contexts/OrganizerAuthContext";
@@ -105,6 +107,8 @@ const metodoPagamentoLabels: Record<string, string> = {
   free: "Cortesia",
 };
 
+const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+
 function formatCPF(cpf: string | null): string {
   if (!cpf) return "-";
   const cleaned = cpf.replace(/\D/g, "");
@@ -165,6 +169,8 @@ export default function OrganizerEventInscritosPage() {
   const [modalityFilter, setModalityFilter] = useState<string>("todos");
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportFilter, setExportFilter] = useState<string>("todos");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const { data: eventsData, isLoading: eventsLoading } = useQuery<{ success: boolean; data: Event[] }>({
     queryKey: ["/api/admin/events"],
@@ -194,6 +200,28 @@ export default function OrganizerEventInscritosPage() {
 
     return matchesSearch && matchesStatus && matchesModality;
   });
+
+  // Paginação
+  const totalPages = Math.ceil(filteredRegistrations.length / itemsPerPage);
+  const paginatedRegistrations = filteredRegistrations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const getExportData = (filter: string) => {
     let dataToExport = registrations;
@@ -418,11 +446,11 @@ export default function OrganizerEventInscritosPage() {
                 <Input
                   placeholder="Buscar por nome, CPF, email ou nº inscrição..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-10"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select value={statusFilter} onValueChange={(v) => handleFilterChange(setStatusFilter, v)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -433,7 +461,7 @@ export default function OrganizerEventInscritosPage() {
                   <SelectItem value="cancelada">Canceladas</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={modalityFilter} onValueChange={setModalityFilter}>
+              <Select value={modalityFilter} onValueChange={(v) => handleFilterChange(setModalityFilter, v)}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Modalidade" />
                 </SelectTrigger>
@@ -467,7 +495,7 @@ export default function OrganizerEventInscritosPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredRegistrations.map((reg) => (
+                    {paginatedRegistrations.map((reg) => (
                       <TableRow key={reg.id}>
                         <TableCell className="font-mono text-sm">
                           {reg.numeroInscricao}
@@ -496,6 +524,54 @@ export default function OrganizerEventInscritosPage() {
                     ))}
                   </TableBody>
                 </Table>
+              </div>
+            )}
+
+            {/* Paginação */}
+            {filteredRegistrations.length > 0 && (
+              <div className="flex items-center justify-between pt-4 border-t mt-4 flex-wrap gap-4">
+                <div className="flex items-center gap-4">
+                  <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option.toString()}>
+                          {option} por página
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredRegistrations.length)} de {filteredRegistrations.length} inscrições
+                  </p>
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                    <span className="text-sm px-2">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
