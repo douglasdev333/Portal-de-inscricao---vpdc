@@ -362,37 +362,43 @@ export async function registerForEventAtomic(
     // This ensures the valorTotal in the order already includes the adjustment
     
     // 4. CHECK DUPLICATE REGISTRATION
+    console.log(`[registration-service] Verificando duplicatas: permitir_multiplas_modalidades=${event.permitir_multiplas_modalidades}, eventId=${registrationData.eventId}, athleteId=${registrationData.athleteId}, modalityId=${registrationData.modalityId}`);
+    
     if (!event.permitir_multiplas_modalidades) {
       const existingRegistration = await client.query(
-        `SELECT id FROM registrations 
+        `SELECT id, modality_id, status FROM registrations 
          WHERE event_id = $1 AND athlete_id = $2 
          AND status != 'cancelada'
          LIMIT 1`,
         [registrationData.eventId, registrationData.athleteId]
       );
       
+      console.log(`[registration-service] Evento não permite múltiplas modalidades. Inscrições existentes:`, existingRegistration.rows);
+      
       if (existingRegistration.rows.length > 0) {
         await client.query('ROLLBACK');
         return {
           success: false,
-          error: 'Voce ja possui inscrição neste evento',
+          error: 'Você já possui inscrição neste evento',
           errorCode: 'JA_INSCRITO'
         };
       }
     } else {
       const existingModalityRegistration = await client.query(
-        `SELECT id FROM registrations 
+        `SELECT id, modality_id, status FROM registrations 
          WHERE event_id = $1 AND athlete_id = $2 AND modality_id = $3
          AND status != 'cancelada'
          LIMIT 1`,
         [registrationData.eventId, registrationData.athleteId, registrationData.modalityId]
       );
       
+      console.log(`[registration-service] Evento permite múltiplas modalidades. Inscrições na mesma modalidade:`, existingModalityRegistration.rows);
+      
       if (existingModalityRegistration.rows.length > 0) {
         await client.query('ROLLBACK');
         return {
           success: false,
-          error: 'Voce ja possui inscrição nesta modalidade',
+          error: 'Você já possui inscrição nesta modalidade',
           errorCode: 'JA_INSCRITO'
         };
       }
