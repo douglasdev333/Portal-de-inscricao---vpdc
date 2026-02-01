@@ -270,7 +270,7 @@ export default function AdminEventsPage() {
                                   Pedidos
                                 </DropdownMenuItem>
                               </Link>
-                              <Link href={`/admin/eventos/${event.id}/cupons`}>
+                              <Link href={`/admin/eventos/${event.id}/vouchers`}>
                                 <DropdownMenuItem data-testid={`menu-cupons-${event.id}`}>
                                   <Ticket className="mr-2 h-4 w-4" />
                                   Cupons
