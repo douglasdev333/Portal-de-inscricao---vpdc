@@ -160,10 +160,11 @@ export default function OrganizerEventPedidosPage() {
       "Data do Pagamento",
       "Hora do Pagamento",
       "Valor Bruto",
-      "Taxa de Comodidade",
       "Desconto",
       "Código Cupom/Voucher",
-      "Total Pago",
+      "Valor Líquido (Organizador)",
+      "Taxa de Comodidade",
+      "Total Pago (Cliente)",
       "Forma de Pagamento",
       "Qtd. Inscrições",
     ];
@@ -171,7 +172,8 @@ export default function OrganizerEventPedidosPage() {
     const rows = dataToExport.map((order) => {
       const dataPagamento = order.dataPagamento ? new Date(order.dataPagamento) : null;
       const valorBruto = order.subtotal;
-      const totalPago = valorBruto + order.taxaComodidade - order.valorDesconto;
+      const valorLiquido = valorBruto - order.valorDesconto;
+      const totalPago = valorLiquido + order.taxaComodidade;
       const isGratuito = totalPago === 0;
       const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || order.metodoPagamento || "-");
       
@@ -186,9 +188,10 @@ export default function OrganizerEventPedidosPage() {
         dataPagamento ? formatDateOnlyBrazil(order.dataPagamento!) : "-",
         dataPagamento ? dataPagamento.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "-",
         valorBruto,
-        order.taxaComodidade,
         order.valorDesconto,
         order.codigoCupom || order.codigoVoucher || "-",
+        valorLiquido,
+        order.taxaComodidade,
         totalPago,
         formaPagamento,
         order.qtdInscricoes,
@@ -200,7 +203,8 @@ export default function OrganizerEventPedidosPage() {
     const totalBruto = paidOrders.reduce((sum, o) => sum + o.subtotal, 0);
     const totalDescontos = paidOrders.reduce((sum, o) => sum + o.valorDesconto, 0);
     const totalTaxa = paidOrders.reduce((sum, o) => sum + o.taxaComodidade, 0);
-    const totalPagoGeral = totalBruto + totalTaxa - totalDescontos;
+    const totalLiquido = totalBruto - totalDescontos;
+    const totalPagoGeral = totalLiquido + totalTaxa;
 
     // Linha de totais
     const totalsRow = [
@@ -214,9 +218,10 @@ export default function OrganizerEventPedidosPage() {
       "",
       "",
       totalBruto,
-      totalTaxa,
       totalDescontos,
       "",
+      totalLiquido,
+      totalTaxa,
       totalPagoGeral,
       "",
       "",

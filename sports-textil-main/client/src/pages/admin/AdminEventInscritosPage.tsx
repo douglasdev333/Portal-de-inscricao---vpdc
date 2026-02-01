@@ -386,9 +386,9 @@ export default function AdminEventInscritosPage() {
       "Valor Bruto",
       "Desconto",
       "Código Cupom/Voucher",
+      "Valor Líquido (Organizador)",
       "Taxa Comodidade",
-      "Valor Líquido",
-      "Total Pago",
+      "Total Pago (Cliente)",
       "Forma Pagamento",
       "Status Inscrição",
       "Status Pedido",
@@ -402,6 +402,8 @@ export default function AdminEventInscritosPage() {
       const valorDesconto = parseFloat(reg.valorDesconto) / (reg.orderRegistrationsCount || 1);
       const valorLiquido = valorBruto - valorDesconto;
       const totalPago = valorLiquido + taxaComodidade;
+      const isGratuito = totalPago === 0;
+      const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "");
       const codigoDesconto = reg.codigoCupom || reg.codigoVoucher || "";
       
       return [
@@ -420,10 +422,10 @@ export default function AdminEventInscritosPage() {
         valorBruto,
         valorDesconto,
         codigoDesconto,
-        taxaComodidade,
         valorLiquido > 0 ? valorLiquido : 0,
+        taxaComodidade,
         totalPago > 0 ? totalPago : 0,
-        metodoPagamentoLabels[reg.metodoPagamento || ""] || reg.metodoPagamento || "",
+        formaPagamento,
         statusLabels[reg.status] || reg.status,
         orderStatusLabels[reg.orderStatus] || reg.orderStatus,
         formatDateOnlyBrazil(reg.dataInscricao),
@@ -456,8 +458,8 @@ export default function AdminEventInscritosPage() {
       totalBruto,
       totalDesconto,
       "",
-      totalTaxa,
       totalLiquido,
+      totalTaxa,
       totalPago,
       "",
       "",
