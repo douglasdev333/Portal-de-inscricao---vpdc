@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -6,6 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +40,10 @@ import {
   Check,
   X,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { formatDateOnlyBrazil, formatDateTimeBrazil } from "@/lib/timezone";
 import type { Event } from "@shared/schema";
@@ -110,10 +121,15 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export default function AdminEventPedidosPage() {
   const { id } = useParams<{ id: string }>();
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportFilter, setExportFilter] = useState("todos");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("todos");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: eventData, isLoading: eventLoading } = useQuery<{ success: boolean; data: Event }>({
     queryKey: ["/api/admin/events", id],
@@ -129,6 +145,52 @@ export default function AdminEventPedidosPage() {
   const event = eventData?.data;
   const orders = ordersData?.data?.orders || [];
   const totais = ordersData?.data?.totais;
+
+  // Filtrar pedidos com base na pesquisa e status
+  const filteredOrders = useMemo(() => {
+    let result = orders;
+
+    // Filtrar por status
+    if (statusFilter !== "todos") {
+      if (statusFilter === "cancelados") {
+        result = result.filter(o => o.status === "cancelado" || o.status === "expirado");
+      } else {
+        result = result.filter(o => o.status === statusFilter);
+      }
+    }
+
+    // Filtrar por pesquisa
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(o => 
+        o.numeroPedido.toString().includes(query) ||
+        o.nomeComprador.toLowerCase().includes(query) ||
+        o.emailComprador.toLowerCase().includes(query) ||
+        (o.idPagamentoGateway && o.idPagamentoGateway.toLowerCase().includes(query)) ||
+        (o.cpfComprador && o.cpfComprador.includes(query))
+      );
+    }
+
+    return result;
+  }, [orders, statusFilter, searchQuery]);
+
+  // Paginação
+  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredOrders.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredOrders, currentPage]);
+
+  // Reset para página 1 quando filtros mudam
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
 
   const getExportData = (filter: string) => {
     let dataToExport = orders;
@@ -389,9 +451,38 @@ export default function AdminEventPedidosPage() {
         <Card>
           <CardHeader>
             <CardTitle>Lista de Pedidos</CardTitle>
-            <CardDescription>{orders.length} pedidos encontrados</CardDescription>
+            <CardDescription>
+              {filteredOrders.length === orders.length 
+                ? `${orders.length} pedidos encontrados`
+                : `${filteredOrders.length} de ${orders.length} pedidos`}
+            </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Filtros e Pesquisa */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar por nº pedido, nome, email, CPF ou ID transação..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filtrar por status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os status</SelectItem>
+                  <SelectItem value="pago">Pagos</SelectItem>
+                  <SelectItem value="pendente">Pendentes</SelectItem>
+                  <SelectItem value="cancelados">Cancelados/Expirados</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tabela */}
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -406,30 +497,71 @@ export default function AdminEventPedidosPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => {
-                    const valorBruto = order.subtotal;
-                    const totalPago = valorBruto - order.valorDesconto + order.taxaComodidade;
-                    const isGratuito = totalPago === 0;
-                    const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || "-");
-                    return (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono font-bold">#{order.numeroPedido}</TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{order.nomeComprador}</p>
-                          <p className="text-sm text-muted-foreground">{order.emailComprador}</p>
-                        </div>
+                  {paginatedOrders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        Nenhum pedido encontrado
                       </TableCell>
-                      <TableCell><StatusBadge status={order.status} /></TableCell>
-                      <TableCell>{formatDateOnlyBrazil(order.dataPedido)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(totalPago)}</TableCell>
-                      <TableCell>{formaPagamento}</TableCell>
-                      <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
                     </TableRow>
-                  )})}
+                  ) : (
+                    paginatedOrders.map((order) => {
+                      const valorBruto = order.subtotal;
+                      const totalPago = valorBruto - order.valorDesconto + order.taxaComodidade;
+                      const isGratuito = totalPago === 0;
+                      const formaPagamento = isGratuito ? "Cortesia" : (metodoPagamentoLabels[order.metodoPagamento || ""] || "-");
+                      return (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-mono font-bold">#{order.numeroPedido}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{order.nomeComprador}</p>
+                              <p className="text-sm text-muted-foreground">{order.emailComprador}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell><StatusBadge status={order.status} /></TableCell>
+                          <TableCell>{formatDateOnlyBrazil(order.dataPedido)}</TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(totalPago)}</TableCell>
+                          <TableCell>{formaPagamento}</TableCell>
+                          <TableCell className="text-center">{order.qtdInscricoes}</TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
                 </TableBody>
               </Table>
             </div>
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} a {Math.min(currentPage * ITEMS_PER_PAGE, filteredOrders.length)} de {filteredOrders.length} pedidos
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm px-2">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Próxima
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
