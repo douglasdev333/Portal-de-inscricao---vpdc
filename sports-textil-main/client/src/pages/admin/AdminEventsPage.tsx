@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, MoreHorizontal, Pencil, Users, Settings } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Pencil, Users, Settings, ShoppingCart, Ticket } from "lucide-react";
 import { formatDateOnlyBrazil } from "@/lib/timezone";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -262,6 +262,18 @@ export default function AdminEventsPage() {
                                 <DropdownMenuItem data-testid={`menu-inscritos-${event.id}`}>
                                   <Users className="mr-2 h-4 w-4" />
                                   Inscritos
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/admin/eventos/${event.id}/pedidos`}>
+                                <DropdownMenuItem data-testid={`menu-pedidos-${event.id}`}>
+                                  <ShoppingCart className="mr-2 h-4 w-4" />
+                                  Pedidos
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link href={`/admin/eventos/${event.id}/cupons`}>
+                                <DropdownMenuItem data-testid={`menu-cupons-${event.id}`}>
+                                  <Ticket className="mr-2 h-4 w-4" />
+                                  Cupons
                                 </DropdownMenuItem>
                               </Link>
                             </DropdownMenuContent>
