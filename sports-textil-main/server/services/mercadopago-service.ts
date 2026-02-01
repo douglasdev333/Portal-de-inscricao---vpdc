@@ -66,6 +66,7 @@ export async function createPixPayment(
         transaction_amount: amount,
         description: description,
         payment_method_id: 'pix',
+        statement_descriptor: "KITRUNNER",
         payer: {
           email: buyerEmail
         },
