@@ -27,7 +27,9 @@ function escapeHtml(text: string): string {
 }
 
 async function injectOpenGraphMeta(html: string, url: string, host: string): Promise<string> {
-  const baseUrl = `https://${host}`;
+  // Usar PUBLIC_URL se definida, senão usar o host da requisição
+  const publicUrl = process.env.PUBLIC_URL;
+  const baseUrl = publicUrl || `https://${host}`;
   const defaultImage = `${baseUrl}/og-images/Marathon_runners_landscape_hero_b439e181.png`;
   const eventMatch = url.match(/^\/evento\/([^\/\?]+)/);
   
