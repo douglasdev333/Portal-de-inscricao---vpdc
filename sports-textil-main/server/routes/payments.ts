@@ -126,8 +126,10 @@ router.post("/create", async (req, res) => {
 
     if (paymentMethod === "pix") {
       // Verificar se já existe um PIX válido para este pedido
-      // Usar pixPaymentId (campo dedicado) em vez de idPagamentoGateway (pode ter sido sobrescrito por cartão)
-      const pixPaymentId = order.pixPaymentId || order.idPagamentoGateway;
+      // IMPORTANTE: Usar APENAS pixPaymentId (campo dedicado) para reutilização
+      // NÃO usar idPagamentoGateway pois pode ter sido sobrescrito por tentativa de cartão
+      const pixPaymentId = order.pixPaymentId; // Removido fallback para idPagamentoGateway
+      console.log(`[payments] Verificando PIX existente para pedido ${order.id}: pixPaymentId=${pixPaymentId}, pixExpiracao=${order.pixExpiracao}`);
       if (order.pixQrCode && order.pixQrCodeBase64 && order.pixExpiracao && pixPaymentId) {
         const pixExpiration = new Date(order.pixExpiracao);
         const now = new Date();
@@ -174,6 +176,7 @@ router.post("/create", async (req, res) => {
         });
       }
 
+      console.log(`[payments] Novo PIX criado para pedido ${order.id}: paymentId=${result.paymentId}`);
       await storage.updateOrderPaymentId(order.id, result.paymentId!, "pix");
 
       let newOrderExpiration: Date | null = order.dataExpiracao;

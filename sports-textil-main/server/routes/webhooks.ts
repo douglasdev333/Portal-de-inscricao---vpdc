@@ -58,10 +58,15 @@ router.post("/mercadopago", async (req, res) => {
         console.log(`[webhook] Buscando pedido pelo external_reference: ${paymentResult.externalReference} -> orderId: ${orderId}`);
         order = await storage.getOrder(orderId);
         
-        // Atualiza o ID do pagamento no pedido se encontrado
+        // PROTEÇÃO: Só atualiza o payment ID se o pedido não tiver um ID diferente já definido
+        // Isso evita sobrescrever o ID de um pagamento válido com outro
         if (order) {
-          console.log(`[webhook] Pedido encontrado via external_reference, atualizando payment ID`);
-          await storage.updateOrder(order.id, { idPagamentoGateway: paymentId });
+          if (!order.idPagamentoGateway || order.idPagamentoGateway === paymentId) {
+            console.log(`[webhook] Pedido encontrado via external_reference, atualizando payment ID`);
+            await storage.updateOrder(order.id, { idPagamentoGateway: paymentId });
+          } else {
+            console.warn(`[webhook] Pedido ${order.id} já tem payment ID diferente (${order.idPagamentoGateway}), não sobrescrevendo com ${paymentId}`);
+          }
         }
       }
 
